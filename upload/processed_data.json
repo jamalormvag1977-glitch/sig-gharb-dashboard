@@ -1,0 +1,641 @@
+[
+  {
+    "province": "Sidi Kacem",
+    "commune": "KHENICHET",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Travaux de curage des canaux en terre",
+    "consistance": "Curage des collecteurs d'assainissement du secteur EST2",
+    "cout": 2091568
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "KHENICHET",
+    "rubrique": "40-21",
+    "intitule_rubrique": "Travaux de pistes",
+    "intitule_projet": "Travaux de réhabilitation des pistes agricoles",
+    "consistance": "Entretien des pistes agricoles Douar Nouagra et Douar ouled Salem",
+    "cout": 78000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "KHENICHET",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Curage des prises sur l’oued, bâche d’aspiration et bassin de régulation.",
+    "consistance": "Curage de la chambre des joints de démontage des siphonnes  de la station de pompage EST2.",
+    "cout": 126000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "KHENICHET",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Prestation de maintenance des débitmètres et leurs équipements annexes installés au niveau des station de pompage",
+    "consistance": "Changement trois débitmètre Ø 600mm inondés de la station de pompage EST 2 et deux capteurs VEGASON 62",
+    "cout": 165500
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "BIR TALEB",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Travaux de curage des canaux en terre",
+    "consistance": "Curage du canal d'assainisement Tihli Aval",
+    "cout": 1000000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "BIR TALEB",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "",
+    "consistance": "Curage des collecteurs d'assainissement du secteur P11/1",
+    "cout": 846731
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "BIR TALEB",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Curage des prises sur l’oued, bâche d’aspiration et bassin de régulation.",
+    "consistance": "Curage des prises sur l’oued de la station de pompage P11/1.",
+    "cout": 200000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "BIR TALEB",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Prestation de maintenance des débitmètres et leurs équipements annexes installés au niveau des station de pompage",
+    "consistance": "Changement trois débitmètre Ø 400mm inondés de la station de pompage P11/1",
+    "cout": 141900
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "BIR TALEB",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Prestations de maintenance et de réparation mécanique des pompes et des groupes motopompes submersibles des stations de pompage.",
+    "consistance": "Démontage et expertise des roues des  pompes principaux et pompes a vide de la station P11/1\nChangement des roulements, tresses et organes d’effectués de la station P11/1",
+    "cout": 26700
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "BIR TALEB",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Stabilisation Berge oued",
+    "consistance": "Pose de  gabions et recouvrement du talus par matelas Reno des stations de pompage P11/1.",
+    "cout": 480000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "BIR TALEB",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Génie civile des locaux des stations de pompage.",
+    "consistance": "Expertise d’état et d’étanchéité des locaux pompes.\nRenforcement d’étanchéité des locaux pompe sous niveau des oueds des stations de pompage P11/1.\nEntretien des supports en béton des conduites d’aspiration.",
+    "cout": 300000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "CHEBANAT",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Travaux de curage des canaux en terre",
+    "consistance": "Curage des collecteurs d'assainissement des secteur SH5 et SH6.",
+    "cout": 1000000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "CHEBANAT",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Travaux de curage des canaux révetus",
+    "consistance": "Curage du canal principal d'irrigation beht partie aval 1.",
+    "cout": 739200
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "ZIRARA",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Travaux de curage des canaux révetus",
+    "consistance": "Curage du canal principal d'irrigation beht partie aval 2.",
+    "cout": 1276800
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "DAR LAASLOUJI",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Travaux de curage des canaux en terre",
+    "consistance": "Curage des collecteurs d'assainissement des secteurs P8-1 et P8-2",
+    "cout": 5796360
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "DAR LAASLOUJI",
+    "rubrique": "40-21",
+    "intitule_rubrique": "Travaux de pistes",
+    "intitule_projet": "Entretien des pistes agricoles",
+    "consistance": "Entretien des pistes agricoles",
+    "cout": 340000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "HOUAFATE",
+    "rubrique": "20-11",
+    "intitule_rubrique": "Travaux de réhabilitation des équipements",
+    "intitule_projet": "Travaux de réhabilitation des canaux portés d'irrigation",
+    "consistance": "Fourniture et de pose de canaux porté et accessoires du réseau S3 du secteur S13",
+    "cout": 397934
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "HOUAFATE",
+    "rubrique": "20-11",
+    "intitule_rubrique": "Travaux de réhabilitation des équipements",
+    "intitule_projet": "",
+    "consistance": "Fourniture et de pose de canaux porté et accessoires du réseau T2S1 du secteur S13",
+    "cout": 207575
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "HOUAFATE",
+    "rubrique": "40-21",
+    "intitule_rubrique": "Travaux de pistes",
+    "intitule_projet": "Entretien des pistes agricoles",
+    "consistance": "Entretien des pistes agricoles",
+    "cout": 2200000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "HOUAFATE",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Curage des prises sur l’oued, bâche d’aspiration et bassin de régulation.",
+    "consistance": "Curage des prises sur l’oued de la station de pompage S17 et S13.\nNettoyage des grilles de préfiltration des boues colmaté de la station de pompage S17 et S13.\nCurage de la bâche d’aspiration de la station S17 et S13.",
+    "cout": 300000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "HOUAFATE",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Prestation de maintenance des débitmètres et leurs équipements annexes installés au niveau des station de pompage",
+    "consistance": "Changement trois débitmètre Ø 600mm inondés de la station de pompage S13.",
+    "cout": 250000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "HOUAFATE",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Prestations de maintenance des moteurs électriques des stations de pompage.",
+    "consistance": "Révision des trois moteurs électriques 200 KW principaux de la station S13. \nRévision des deux moteurs électriques 5,5 KW groupes vide de la station S13.",
+    "cout": 25000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "HOUAFATE",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Prestations de maintenance et de réparation mécanique des pompes et des groupes motopompes submersibles des stations de pompage.",
+    "consistance": "Démontage et expertise des roues des  pompes principaux et pompes a vide de la station S13.\nChangement des roulements, tresses et organes d’effectués de la station S13.",
+    "cout": 38000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "HOUAFATE",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Stabilisation Berge oued",
+    "consistance": "Pose de  gabions et recouvrement du talus par matelas Reno des stations de pompage S13.",
+    "cout": 10560000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "HOUAFATE",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Mur clôture des stations de pompage.",
+    "consistance": "Stabilisation du sol et reconstruction des murs clôture (270m) cote oued de la station S17.",
+    "cout": 144000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "HOUAFATE",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Génie civile des locaux des stations de pompage.",
+    "consistance": "Expertise d’état et d’étanchéité des locaux pompes, commande, puissance des stations de pompage S17 et S13.\nRenforcement d’étanchéité des locaux pompe sous niveau des oueds des stations de pompage S17 et S13.",
+    "cout": 800000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "NOUIRAT",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Travaux de curage des canaux en terre",
+    "consistance": "Curage des collecteurs d'assainissement des secteurs EST1 et N5",
+    "cout": 1733306
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "NOUIRAT",
+    "rubrique": "40-21",
+    "intitule_rubrique": "Travaux de pistes",
+    "intitule_projet": "Entretien des pistes agricoles",
+    "consistance": "Entretien des pistes agricoles",
+    "cout": 670000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "NOUIRAT",
+    "rubrique": "20-11",
+    "intitule_rubrique": "Travaux de réhabilitation des équipements",
+    "intitule_projet": "Travaux de réhabilitation des ouvrages de génie civil",
+    "consistance": "Réhabilitation de l'ouvrage( genie civil ,gabiollannage,clapet anti retour et buse) de l'ouvrage de débouche SE1",
+    "cout": 2500000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "NOUIRAT",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Curage des prises sur l’oued, bâche d’aspiration et bassin de régulation.",
+    "consistance": "Curage des prises sur l’oued de la station de pompage E1.\nNettoyage des grilles de préfiltration des boues colmaté de la station de pompage E1.\nCurage de la bâche d’aspiration de la station E1.",
+    "cout": 800000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "NOUIRAT",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Prestation de maintenance des débitmètres et leurs équipements annexes installés au niveau des station de pompage",
+    "consistance": "Changement du débitmètre Ø 1200mm inondé de la station de pompage E1.",
+    "cout": 195000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "NOUIRAT",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Prestations de maintenance des moteurs électriques des stations de pompage.",
+    "consistance": "Révision des deux moteurs électriques principaux de la station E1.",
+    "cout": 50000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "NOUIRAT",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Prestations de maintenance et de réparation mécanique des pompes et des groupes motopompes submersibles des stations de pompage.",
+    "consistance": "Démontage et expertise des cinq pompes principaux et pompes a vide de la station E1.\nChangement des roulements, tresses et organes d’effectués de la station E1.",
+    "cout": 245000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "NOUIRAT",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Génie civile des locaux des stations de pompage.",
+    "consistance": "Expertise d’état et d’étanchéité des locaux pompes, commande, puissance de la station de pompage E1.\nRenforcement d’étanchéité des locaux pompe sous niveau des oueds de la station de pompage E1.",
+    "cout": 1000000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "RMILAT",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Travaux de curage des canaux en terre",
+    "consistance": "Curage des collecteurs d'assainissement des secteurs P7",
+    "cout": 5024032
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "RMILAT",
+    "rubrique": "40-21",
+    "intitule_rubrique": "Travaux de pistes",
+    "intitule_projet": "Entretien des pistes agricoles",
+    "consistance": "Entretien des pistes agricoles",
+    "cout": 400000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "SAFSAF",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Travaux de curage des canaux en terre",
+    "consistance": "Curage des collecteurs d'assainissement des secteurs S7, S9 et S11",
+    "cout": 6000000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "SAFSAF",
+    "rubrique": "20-11",
+    "intitule_rubrique": "Travaux de réhabilitation des équipements",
+    "intitule_projet": "Travaux de réhabilitation des canaux portés d'irrigation",
+    "consistance": "Fourniture et  pose de canaux porté et accessoires du réseau S4 du secteur S11",
+    "cout": 232266
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "SAFSAF",
+    "rubrique": "20-11",
+    "intitule_rubrique": "Travaux de réhabilitation des équipements",
+    "intitule_projet": "",
+    "consistance": "Recalage des canaux portés du réseau T5S5 du secteur S9",
+    "cout": 1055025
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "SAFSAF",
+    "rubrique": "20-11",
+    "intitule_rubrique": "Travaux de réhabilitation des équipements",
+    "intitule_projet": "",
+    "consistance": "Recalage des canaux portés du réseau T7S5 du secteur S9",
+    "cout": 1004535
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "SAFSAF",
+    "rubrique": "20-11",
+    "intitule_rubrique": "Travaux de réhabilitation des équipements",
+    "intitule_projet": "",
+    "consistance": "Recalage des canaux portés du réseau T2S5 du secteur S9",
+    "cout": 793830
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "SAFSAF",
+    "rubrique": "40-21",
+    "intitule_rubrique": "Travaux de pistes",
+    "intitule_projet": "Entretien des pistes agricoles",
+    "consistance": "Entretien des pistes agricoles",
+    "cout": 2000000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "SAFSAF",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Curage des prises sur l’oued, bâche d’aspiration et bassin de régulation.",
+    "consistance": "Curage des prises sur l’oued des stations de pompage S11, S9, 7D et 7B.\nNettoyage des grilles de préfiltration des boues colmaté des stations de pompage S11, S9, 7D et 7B.\nNettoyage des crépines des boues colmaté de station pompage 7D.\nCurage des dalots et bâche d’aspiration des stations de pompage S11, S9, 7B.",
+    "cout": 200000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "SAFSAF",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Prestation de maintenance des débitmètres et leurs équipements annexes installés au niveau des station de pompage",
+    "consistance": "Changements Sept des débitmètres Ø 600mm inondé des deux stations de pompage S11 et S9.",
+    "cout": 580000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "SAFSAF",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Stabilisation Berge oued",
+    "consistance": "Pose de murs en gabions et recouvrement du talus par matelas Reno des stations de pompage S11, S9, 7D et 7B .",
+    "cout": 4000000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "SIDI AZZOUZ",
+    "rubrique": "40-21",
+    "intitule_rubrique": "Travaux de pistes",
+    "intitule_projet": "Entretien des pistes agricoles",
+    "consistance": "Entretien des pistes agricoles",
+    "cout": 655000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "SIDI EL KAMEL",
+    "rubrique": "20-11",
+    "intitule_rubrique": "Travaux de réhabilitation des équipements",
+    "intitule_projet": "Travaux de réhabilitation des canaux portés d'irrigation",
+    "consistance": "Fourniture et de pose de canaux porté et accessoires du réseau SR4 du secteur S3R",
+    "cout": 5182920
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "SIDI EL KAMEL",
+    "rubrique": "20-11",
+    "intitule_rubrique": "Travaux de réhabilitation des équipements",
+    "intitule_projet": "",
+    "consistance": "Fourniture et de pose de canaux porté et accessoires du réseau SR6 du secteur S1RIZ",
+    "cout": 152818
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "SIDI EL KAMEL",
+    "rubrique": "20-11",
+    "intitule_rubrique": "Travaux de réhabilitation des équipements",
+    "intitule_projet": "",
+    "consistance": "Recalage des canaux portés du réseau SR4 du secteur S3R",
+    "cout": 1418000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "SIDI EL KAMEL",
+    "rubrique": "20-11",
+    "intitule_rubrique": "Travaux de réhabilitation des équipements",
+    "intitule_projet": "Travaux de réhabilitation des ouvrages de génie civil",
+    "consistance": "Réhabilitation des murs de soutènements des ouvrages de franchissements du canal d'assainissement CS3 secteur S3 et de l’ouvrage de franchissement du canal primaire d’irrigation du secteur S1R au niveau de la route provinciale P4234",
+    "cout": 800000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "SIDI EL KAMEL",
+    "rubrique": "40-21",
+    "intitule_rubrique": "Travaux de pistes",
+    "intitule_projet": "Entretien des pistes agricoles",
+    "consistance": "Entretien des pistes agricoles",
+    "cout": 3700000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "SIDI EL KAMEL",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Prestation de maintenance des débitmètres et leurs équipements annexes installés au niveau des station de pompage",
+    "consistance": "Changement de quatre débitmètres Ø 500mm et trois Ø 800mm inondé des stations de pompage 1R, 3R et 5R.",
+    "cout": 705000
+  },
+  {
+    "province": "Sidi Kacem",
+    "commune": "SIDI EL KAMEL",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Mur clôture des stations de pompage.",
+    "consistance": "Stabilisation et reconstruction des murs clôture cote oued des stations de pompage 7A, 3R et 1R.",
+    "cout": 372000
+  },
+  {
+    "province": "Kénitra",
+    "commune": "Bni malek",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Travaux de curage des canaux en terre",
+    "consistance": "Curage des emissaires et colatures secondaire au niveau des secteurs MDA ET N9",
+    "cout": 10000000
+  },
+  {
+    "province": "Kénitra",
+    "commune": "Bni malek",
+    "rubrique": "40-21",
+    "intitule_rubrique": "Travaux de pistes",
+    "intitule_projet": "Travaux de réhabilitation des pistes agricoles",
+    "consistance": "Entretien des pistes agricoles des secteurs MDA et N3",
+    "cout": 2000000
+  },
+  {
+    "province": "Kénitra",
+    "commune": "Bni malek",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Prestations de maintenance et de réparation mécanique des pompes et des groupes motopompes submersibles des stations de pompage.",
+    "consistance": "station de pompage MDA secteur MDA",
+    "cout": 300000
+  },
+  {
+    "province": "Kénitra",
+    "commune": "Bni malek",
+    "rubrique": "20-11",
+    "intitule_rubrique": "Travaux de réhabilitation des équipements",
+    "intitule_projet": "Travaux de réhabilitation des ouvrages de génie civil",
+    "consistance": "Rétablissement des bornes affaissées des secteurs N2 et N3",
+    "cout": 100000
+  },
+  {
+    "province": "Kénitra",
+    "commune": "SOUK TLET",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Travaux de curage des canaux en terre",
+    "consistance": "curage des emissaires et colatures secondaire au niveau des secteurs N2,N3 ET N4,",
+    "cout": 3000000
+  },
+  {
+    "province": "Kénitra",
+    "commune": "SOUK TLET",
+    "rubrique": "40-21",
+    "intitule_rubrique": "Travaux de pistes",
+    "intitule_projet": "Travaux de réhabilitation des pistes agricoles",
+    "consistance": "Entretien des pistes des secteurs N2,N3,N4 et C4R,",
+    "cout": 5000000
+  },
+  {
+    "province": "Kénitra",
+    "commune": "Sidi Med Lahmar",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Travaux de curage des canaux en terre",
+    "consistance": "Curage des emissaires et colatures secondaires secteurs N1",
+    "cout": 3000000
+  },
+  {
+    "province": "Kénitra",
+    "commune": "Sidi Med Lahmar",
+    "rubrique": "40-21",
+    "intitule_rubrique": "Travaux de pistes",
+    "intitule_projet": "Travaux de réhabilitation des pistes agricoles",
+    "consistance": "Entretien des pistes agricoles des secteurs N9 et N1",
+    "cout": 3000000
+  },
+  {
+    "province": "Kénitra",
+    "commune": "Mograne",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Travaux de curage des canaux en terre",
+    "consistance": "Curage des canaux d'assainissement Hors secteur équipé ghoufera et laison beht sebou ,",
+    "cout": 6000000
+  },
+  {
+    "province": "Kénitra",
+    "commune": "Mograne",
+    "rubrique": "40-21",
+    "intitule_rubrique": "Travaux de pistes",
+    "intitule_projet": "Travaux de réhabilitation des pistes agricoles",
+    "consistance": "Entretien des pistes agricoles des secteurs SEBOU1,SEBOU2? BEHT3 et BEHT4",
+    "cout": 6000000
+  },
+  {
+    "province": "Kénitra",
+    "commune": "Sidi allal tazi",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Travaux de curage des canaux en terre",
+    "consistance": "Curage du canaL d'assainissement CK,",
+    "cout": 3000000
+  },
+  {
+    "province": "Kénitra",
+    "commune": "AMEUR SAFLIA",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Travaux de curage des canaux en terre",
+    "consistance": "Curage des canaux d'assainissement amontTtiflt Sebou,",
+    "cout": 1000000
+  },
+  {
+    "province": "Kénitra",
+    "commune": "Oulad SLAMA",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Travaux de curage des canaux en terre",
+    "consistance": "Curage des canaux d'assainissement debouche Tiflt aval,",
+    "cout": 1000000
+  },
+  {
+    "province": "Kénitra",
+    "commune": "BHARA Oulad AYAD",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Travaux de curage des canaux en terre",
+    "consistance": "Curage des canaux d'assainissement canal nador bas et haut segmet,",
+    "cout": 6600000
+  },
+  {
+    "province": "Sidi Slimane",
+    "commune": "OULED HCEINE",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Travaux de curage des canaux en terre",
+    "consistance": "Curage des collecteurs d'assainissement du secteur EST4.",
+    "cout": 1805475
+  },
+  {
+    "province": "Sidi Slimane",
+    "commune": "OULED HCEINE",
+    "rubrique": "40-21",
+    "intitule_rubrique": "Travaux de pistes",
+    "intitule_projet": "Travaux de réhabilitation des pistes agricoles",
+    "consistance": "Entretien des pistes agricoles",
+    "cout": 3500000
+  },
+  {
+    "province": "Sidi Slimane",
+    "commune": "OULED HCEINE",
+    "rubrique": "50-21",
+    "intitule_rubrique": "Entretien et réparation des stations de pompage",
+    "intitule_projet": "Travaux de réparation des équipements hydromécaniques et éléctriques et entretien de la partie génie civil des stations de pompage.",
+    "consistance": "Démontage et expertise des roues des  pompes principaux et pompes a vide de la station EST4 et P11/2.\nChangement des roulements, tresses et organes d’effectués de la station EST4 et P11/2\nChangement deux débitmètre Ø 1200 mm de la station EST4 et un débimétre de la station P11/2.\nChangement des capteurs de niveau inondés.\nRévision et réparation des moteurs des vannes motorisées inondées.\nchangement de six contrôleurs de débits DW181 inondés.\nUn capteur de débitmètre inondé nécessitent un diagnostic VEGASON  .\nEntretien de l'éclairage du local de vide et bâche d’aspiration inondé de la station EST4 et la partie de l’éclairage du local des pompes inondées de la station P11/2.\nPose de gabions et recouvrement du talus par matelas Reno des stations de pompage P11/2",
+    "cout": 870000
+  },
+  {
+    "province": "Sidi Slimane",
+    "commune": "OULED HCEINE",
+    "rubrique": "50-23",
+    "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+    "intitule_projet": "Travaux de curage des prises des stations de pompage.",
+    "consistance": "Curage des siphones des station de pompage EST2 et P11/2.",
+    "cout": 500000
+  }
+]
