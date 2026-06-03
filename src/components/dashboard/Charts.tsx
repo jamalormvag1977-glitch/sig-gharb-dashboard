@@ -12,6 +12,7 @@ import {
   Pie,
   Cell,
   Legend,
+  LabelList,
 } from "recharts";
 import { CommuneSummary, SECTEUR_COLORS, SECTEUR_SHORT, PROVINCE_COLORS } from "@/data/types";
 
@@ -25,54 +26,76 @@ const formatCost = (value: number) => {
   return `${(value / 1e6).toFixed(1)} MDH`;
 };
 
+// Distinct colors for each commune - vibrant and distinguishable
+const COMMUNE_PALETTE = [
+  "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6",
+  "#ec4899", "#06b6d4", "#84cc16", "#f97316", "#6366f1",
+  "#14b8a6", "#e11d48", "#a855f7", "#0ea5e9", "#d946ef",
+  "#22c55e", "#eab308", "#64748b", "#fb923c", "#2dd4bf",
+];
+
 export function CostByCommuneChart({ summary, selectedProvince }: ChartsProps) {
   const data = Object.entries(summary)
     .filter(([, d]) => !selectedProvince || d.province === selectedProvince)
-    .map(([name, d]) => ({
-      name: name.length > 12 ? name.substring(0, 12) + "…" : name,
+    .map(([name, d], idx) => ({
+      name: name.length > 14 ? name.substring(0, 14) + "…" : name,
       fullName: name,
       cout: d.cout_total,
       province: d.province,
+      color: COMMUNE_PALETTE[idx % COMMUNE_PALETTE.length],
     }))
     .sort((a, b) => b.cout - a.cout);
 
+  // Re-assign colors after sort to maintain distinct colors
+  const coloredData = data.map((d, idx) => ({ ...d, color: COMMUNE_PALETTE[idx % COMMUNE_PALETTE.length] }));
+
   return (
-    <ResponsiveContainer width="100%" height={320}>
-      <BarChart data={data} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+    <ResponsiveContainer width="100%" height={350}>
+      <BarChart data={coloredData} layout="vertical" margin={{ left: 10, right: 50, top: 5, bottom: 5 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" horizontal={false} />
         <XAxis
           type="number"
           tickFormatter={formatCost}
-          fontSize={11}
-          tick={{ fill: "#666" }}
+          fontSize={10}
+          tick={{ fill: "#94a3b8" }}
+          axisLine={{ stroke: "#e5e7eb" }}
         />
         <YAxis
           type="category"
           dataKey="name"
-          width={100}
+          width={105}
           fontSize={10}
-          tick={{ fill: "#333" }}
+          tick={{ fill: "#475569" }}
+          axisLine={false}
+          tickLine={false}
         />
         <Tooltip
           formatter={(value: number) => [formatCost(value), "Coût global"]}
           labelFormatter={(label) => {
-            const item = data.find((d) => d.name === label);
+            const item = coloredData.find((d) => d.name === label);
             return item?.fullName || label;
           }}
           contentStyle={{
-            borderRadius: "8px",
-            border: "1px solid #e0e0e0",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            borderRadius: "10px",
+            border: "1px solid #e2e8f0",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            fontSize: "12px",
           }}
         />
-        <Bar dataKey="cout" radius={[0, 4, 4, 0]} maxBarSize={24}>
-          {data.map((entry, index) => (
+        <Bar dataKey="cout" radius={[0, 6, 6, 0]} maxBarSize={22}>
+          {coloredData.map((entry, index) => (
             <Cell
               key={`cell-${index}`}
-              fill={PROVINCE_COLORS[entry.province] || "#999"}
-              fillOpacity={0.8}
+              fill={entry.color}
+              fillOpacity={0.85}
             />
           ))}
+          <LabelList
+            dataKey="cout"
+            position="right"
+            formatter={(value: number) => `${(value / 1e6).toFixed(1)}`}
+            style={{ fontSize: 10, fontWeight: 700, fill: "#475569" }}
+          />
         </Bar>
       </BarChart>
     </ResponsiveContainer>
@@ -82,18 +105,21 @@ export function CostByCommuneChart({ summary, selectedProvince }: ChartsProps) {
 export function ProjectsByCommuneChart({ summary, selectedProvince }: ChartsProps) {
   const data = Object.entries(summary)
     .filter(([, d]) => !selectedProvince || d.province === selectedProvince)
-    .map(([name, d]) => ({
+    .map(([name, d], idx) => ({
       name: name.length > 12 ? name.substring(0, 12) + "…" : name,
       fullName: name,
       projets: d.nb_projets,
       province: d.province,
+      color: COMMUNE_PALETTE[idx % COMMUNE_PALETTE.length],
     }))
     .sort((a, b) => b.projets - a.projets);
 
+  const coloredData = data.map((d, idx) => ({ ...d, color: COMMUNE_PALETTE[idx % COMMUNE_PALETTE.length] }));
+
   return (
     <ResponsiveContainer width="100%" height={280}>
-      <BarChart data={data} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+      <BarChart data={coloredData} layout="vertical" margin={{ left: 10, right: 40, top: 5, bottom: 5 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis type="number" fontSize={11} tick={{ fill: "#666" }} />
         <YAxis
           type="category"
@@ -105,7 +131,7 @@ export function ProjectsByCommuneChart({ summary, selectedProvince }: ChartsProp
         <Tooltip
           formatter={(value: number) => [value, "Nombre de projets"]}
           labelFormatter={(label) => {
-            const item = data.find((d) => d.name === label);
+            const item = coloredData.find((d) => d.name === label);
             return item?.fullName || label;
           }}
           contentStyle={{
@@ -115,13 +141,18 @@ export function ProjectsByCommuneChart({ summary, selectedProvince }: ChartsProp
           }}
         />
         <Bar dataKey="projets" radius={[0, 4, 4, 0]} maxBarSize={24}>
-          {data.map((entry, index) => (
+          {coloredData.map((entry, index) => (
             <Cell
               key={`cell-${index}`}
-              fill={PROVINCE_COLORS[entry.province] || "#999"}
-              fillOpacity={0.8}
+              fill={entry.color}
+              fillOpacity={0.85}
             />
           ))}
+          <LabelList
+            dataKey="projets"
+            position="right"
+            style={{ fontSize: 10, fontWeight: 700, fill: "#475569" }}
+          />
         </Bar>
       </BarChart>
     </ResponsiveContainer>
@@ -188,17 +219,20 @@ export function ProvinceBarChart({
 }: {
   byProvince: Record<string, { nb_projets: number; cout_total: number; communes: number }>;
 }) {
-  const data = Object.entries(byProvince).map(([name, d]) => ({
+  const PROVINCE_BAR_COLORS = ["#3b82f6", "#ef4444", "#10b981"];
+
+  const data = Object.entries(byProvince).map(([name, d], idx) => ({
     name,
     cout: d.cout_total,
     projets: d.nb_projets,
     communes: d.communes,
+    barColor: PROVINCE_BAR_COLORS[idx % PROVINCE_BAR_COLORS.length],
   }));
 
   return (
-    <ResponsiveContainer width="100%" height={200}>
-      <BarChart data={data} margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+    <ResponsiveContainer width="100%" height={220}>
+      <BarChart data={data} margin={{ left: 10, right: 30, top: 10, bottom: 5 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis dataKey="name" fontSize={11} tick={{ fill: "#333" }} />
         <YAxis
           yAxisId="left"
@@ -219,8 +253,27 @@ export function ProvinceBarChart({
           }}
         />
         <Legend />
-        <Bar yAxisId="left" dataKey="cout" fill="#e74c3c" radius={[4, 4, 0, 0]} maxBarSize={40} name="Coût" />
-        <Bar yAxisId="right" dataKey="projets" fill="#3498db" radius={[4, 4, 0, 0]} maxBarSize={40} name="Projets" />
+        <Bar yAxisId="left" dataKey="cout" radius={[4, 4, 0, 0]} maxBarSize={40} name="Coût">
+          {data.map((entry, index) => (
+            <Cell key={`cout-${index}`} fill={entry.barColor} fillOpacity={0.8} />
+          ))}
+          <LabelList
+            dataKey="cout"
+            position="top"
+            formatter={(value: number) => formatCost(value)}
+            style={{ fontSize: 10, fontWeight: 700, fill: "#475569" }}
+          />
+        </Bar>
+        <Bar yAxisId="right" dataKey="projets" fill="#8b5cf6" radius={[4, 4, 0, 0]} maxBarSize={40} name="Projets">
+          {data.map((_, index) => (
+            <Cell key={`proj-${index}`} fill="#8b5cf6" fillOpacity={0.7} />
+          ))}
+          <LabelList
+            dataKey="projets"
+            position="top"
+            style={{ fontSize: 10, fontWeight: 700, fill: "#6d28d9" }}
+          />
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   );
