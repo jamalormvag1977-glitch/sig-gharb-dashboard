@@ -180,7 +180,7 @@ export default function Home() {
       {/* MAIN CONTENT */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* KPI Cards */}
-        <div className="p-4 pb-2">
+        <div className="p-4 pb-2 shrink-0">
           <KPICards
             totalCost={
               selectedProvince
@@ -203,9 +203,9 @@ export default function Home() {
         </div>
 
         {/* Map + Charts Area */}
-        <div className="flex-1 flex overflow-hidden px-4 pb-4 gap-4">
+        <div className="flex-1 flex overflow-hidden px-4 pb-4 gap-4 min-h-0">
           {/* Map */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 min-h-0">
             <Card className="h-full shadow-sm">
               <CardHeader className="py-2 px-4">
                 <div className="flex items-center justify-between">
@@ -241,7 +241,7 @@ export default function Home() {
         </div>
 
         {/* Bottom Charts Row */}
-        <div className="px-4 pb-4">
+        <div className="px-4 pb-4 shrink-0" style={{ maxHeight: '260px' }}>
           <Card className="shadow-sm">
             <CardHeader className="py-2 px-4">
               <div className="flex items-center justify-between">

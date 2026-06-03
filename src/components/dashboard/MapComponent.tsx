@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { PROVINCE_COLORS } from "@/data/types";
 
 interface MapProps {
@@ -186,7 +187,6 @@ export default function MapComponent({
     <div
       id="map-container"
       className="w-full h-full rounded-lg overflow-hidden"
-      style={{ minHeight: "500px" }}
     />
   );
 }
