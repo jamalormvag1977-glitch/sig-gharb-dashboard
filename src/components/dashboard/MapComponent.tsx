@@ -26,6 +26,7 @@ export default function MapComponent({
 }: MapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const geoLayerRef = useRef<L.GeoJSON | null>(null);
+  const maskLayerRef = useRef<L.Layer | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const currentProvinceRef = useRef<string | null>(null);
 
@@ -96,6 +97,10 @@ export default function MapComponent({
     if (geoLayerRef.current) {
       map.removeLayer(geoLayerRef.current);
       geoLayerRef.current = null;
+    }
+    if (maskLayerRef.current) {
+      map.removeLayer(maskLayerRef.current);
+      maskLayerRef.current = null;
     }
 
     const filteredFeatures = geojsonData.features.filter((feature) => {
@@ -243,20 +248,51 @@ export default function MapComponent({
 
     geoLayerRef.current = layer;
 
+    // Add dark mask around the province when one is selected
+    if (selectedProvince) {
+      // Build a mask: huge polygon covering the world with a hole for the province
+      const allCoords: L.LatLng[] = [];
+      layer.eachLayer((lyr: any) => {
+        const ll = (lyr as L.Polygon).getLatLngs();
+        if (ll && ll[0]) {
+          (ll[0] as L.LatLng[]).forEach((latlng: L.LatLng) => allCoords.push(latlng));
+        }
+      });
+
+      if (allCoords.length > 0) {
+        // Outer ring: world bounds (big rectangle)
+        const outerRing: L.LatLngExpression[] = [
+          [85, -180], [85, 180], [-85, 180], [-85, -180],
+        ];
+
+        // Inner ring: the province boundary (hole) - coordinates in reverse for hole
+        const innerRing = allCoords.map((ll) => [ll.lat, ll.lng] as L.LatLngExpression).reverse();
+
+        const maskPolygon = L.polygon([outerRing, innerRing] as any, {
+          stroke: false,
+          fillColor: "#0a1628",
+          fillOpacity: 0.75,
+          interactive: false,
+        });
+
+        maskPolygon.addTo(map);
+        maskLayerRef.current = maskPolygon;
+      }
+    }
+
     // Auto-zoom to fit the province properly
     const bounds = layer.getBounds();
     if (bounds.isValid()) {
       map.setMaxBounds(null);
 
       if (selectedProvince) {
-        // Adapt zoom per province: lower zoom = wider view = full province visible
+        // Adapt zoom per province
         let MIN_ZOOM = 10;
         if (selectedProvince === "Kénitra") MIN_ZOOM = 9;
         if (selectedProvince === "Sidi Kacem") MIN_ZOOM = 10;
         if (selectedProvince === "Sidi Slimane") MIN_ZOOM = 11;
         const center = bounds.getCenter();
 
-        // First fly to bounds
         map.flyToBounds(bounds, {
           padding: [30, 30],
           maxZoom: 14,
@@ -264,7 +300,6 @@ export default function MapComponent({
           duration: 1,
         });
 
-        // After animation, check zoom and force minimum if needed
         const ensureMinZoom = () => {
           map.off("zoomend", ensureMinZoom);
           map.off("moveend", ensureMinZoom);
@@ -274,11 +309,9 @@ export default function MapComponent({
           }
         };
 
-        // Listen for both events as backup
         map.on("zoomend", ensureMinZoom);
         map.on("moveend", ensureMinZoom);
 
-        // Safety timeout in case events don't fire
         setTimeout(() => {
           map.off("zoomend", ensureMinZoom);
           map.off("moveend", ensureMinZoom);
@@ -288,7 +321,7 @@ export default function MapComponent({
           }
         }, 1500);
       } else {
-        // Overview: show entire Gharb region with minimum zoom for labels
+        // Overview: show entire Gharb region
         const OVERVIEW_MIN_ZOOM = 10;
         const center = bounds.getCenter();
 
@@ -299,7 +332,6 @@ export default function MapComponent({
           duration: 1,
         });
 
-        // After animation, ensure minimum zoom so labels are readable
         const ensureOverviewZoom = () => {
           map.off("zoomend", ensureOverviewZoom);
           map.off("moveend", ensureOverviewZoom);
@@ -312,7 +344,6 @@ export default function MapComponent({
         map.on("zoomend", ensureOverviewZoom);
         map.on("moveend", ensureOverviewZoom);
 
-        // Safety timeout
         setTimeout(() => {
           map.off("zoomend", ensureOverviewZoom);
           map.off("moveend", ensureOverviewZoom);
