@@ -615,6 +615,15 @@
     {
       "province": "Sidi Slimane",
       "commune": "OULED HCEINE",
+      "rubrique": "50-23",
+      "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
+      "intitule_projet": "Travaux de curage des canaux en terre",
+      "consistance": "Curage du canal d'assainissement Tihli central.",
+      "cout": 2587200.0000000005
+    },
+    {
+      "province": "Sidi Slimane",
+      "commune": "OULED HCEINE",
       "rubrique": "40-21",
       "intitule_rubrique": "Travaux de pistes",
       "intitule_projet": "Travaux de réhabilitation des pistes agricoles",
@@ -816,11 +825,11 @@
       }
     },
     "OULED HCEINE": {
-      "nb_projets": 4,
-      "cout_total": 6675475,
+      "nb_projets": 5,
+      "cout_total": 9262675.0,
       "province": "Sidi Slimane",
       "rubriques": {
-        "Entretien et réparation du réseau d'assainissement et de drainage": 2305475.0,
+        "Entretien et réparation du réseau d'assainissement et de drainage": 4892675.0,
         "Travaux de pistes": 3500000.0,
         "Entretien et réparation des stations de pompage": 870000.0
       }
@@ -838,16 +847,16 @@
       "communes": 8
     },
     "Sidi Slimane": {
-      "nb_projets": 4,
-      "cout_total": 6675475,
+      "nb_projets": 5,
+      "cout_total": 9262675.0,
       "communes": 1
     }
   },
   "bySecteur": {
     "Entretien et réparation du réseau d'assainissement et de drainage": {
-      "nb_projets": 25,
-      "cout_total": 63039472,
-      "communes": 25
+      "nb_projets": 26,
+      "cout_total": 65626672.0,
+      "communes": 26
     },
     "Travaux de pistes": {
       "nb_projets": 13,
@@ -865,6 +874,6 @@
       "communes": 12
     }
   },
-  "totalCost": 127675475,
-  "totalProjects": 71
+  "totalCost": 130262675.0,
+  "totalProjects": 72
 }
