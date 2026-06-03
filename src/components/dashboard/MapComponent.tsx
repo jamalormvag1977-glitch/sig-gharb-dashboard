@@ -246,24 +246,33 @@ export default function MapComponent({
     // Auto-zoom to fit the province properly
     const bounds = layer.getBounds();
     if (bounds.isValid()) {
-      // Remove any previous maxBounds restriction
       map.setMaxBounds(null);
 
       if (selectedProvince) {
-        // Zoom tight on the province so labels are visible
-        map.fitBounds(bounds, {
-          padding: [30, 30],
-          maxZoom: 12,
+        // Fly to province bounds first
+        map.flyToBounds(bounds, {
+          padding: [40, 40],
+          maxZoom: 14,
           animate: true,
-          duration: 0.8,
+          duration: 1,
         });
+
+        // After fly finishes, ensure minimum zoom so labels are readable
+        const onZoomEnd = () => {
+          map.off("zoomend", onZoomEnd);
+          const currentZoom = map.getZoom();
+          if (currentZoom < 10) {
+            map.flyTo(bounds.getCenter(), 10, { duration: 0.5 });
+          }
+        };
+        map.on("zoomend", onZoomEnd);
       } else {
         // Overview: show entire Gharb region
-        map.fitBounds(bounds, {
+        map.flyToBounds(bounds, {
           padding: [20, 20],
           maxZoom: 10,
           animate: true,
-          duration: 0.8,
+          duration: 1,
         });
       }
     }
