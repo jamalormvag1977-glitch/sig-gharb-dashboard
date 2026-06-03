@@ -40,6 +40,10 @@ export default function MapComponent({
   const geoLayerRef = useRef<L.GeoJSON | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const currentProvinceRef = useRef<string | null>(null);
+  const projectsRef = useRef<Record<string, Project[]> | undefined>(undefined);
+
+  // Keep ref in sync without triggering re-renders
+  projectsRef.current = projectsByCommune;
 
   // Initialize map once
   useEffect(() => {
@@ -209,7 +213,7 @@ export default function MapComponent({
           );
 
           // Build detailed popup with all projects
-          const communeProjects = projectsByCommune?.[name] || [];
+          const communeProjects = projectsRef.current?.[name] || [];
           let popupHTML = `<div style="font-size:13px; max-width:420px; max-height:350px; overflow-y:auto;">
             <div style="font-weight:bold; font-size:16px; margin-bottom:2px; color:#1e293b;">${name}</div>
             <div style="color:#64748b; font-size:11px; margin-bottom:8px;">${props.province_project} — ${props.nb_projets} projet${props.nb_projets > 1 ? "s" : ""} — <strong style="color:#16a34a;">${costMDH} MDH</strong></div>`;
@@ -358,7 +362,7 @@ export default function MapComponent({
         }, 1500);
       }
     }
-  }, [geojsonData, selectedCommune, selectedProvince, onCommuneClick, projectsByCommune]);
+  }, [geojsonData, selectedCommune, selectedProvince, onCommuneClick]);
 
   return (
     <div className="relative w-full h-full">
