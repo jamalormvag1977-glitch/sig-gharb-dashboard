@@ -37,6 +37,8 @@ import {
   MapPin,
   Maximize,
   Minimize,
+  Download,
+  FileDown,
 } from "lucide-react";
 
 const MapComponent = dynamic(
@@ -66,6 +68,14 @@ const SECTEUR_DOT_COLORS: Record<string, string> = {
   "Stations de pompage": "#f59e0b",
   "Réhabilitation équipements": "#10b981",
   "Génie civil": "#8b5cf6",
+};
+
+// Convention PDF mapping per view
+const CONVENTION_PDF: Record<ViewType, { label: string; file: string }> = {
+  overview: { label: "Convention Gharb", file: "/conventions/convention-gharb.pdf" },
+  kenitra: { label: "Convention Kénitra", file: "/conventions/convention-kenitra.pdf" },
+  "sidi-kacem": { label: "Convention Sidi Kacem", file: "/conventions/convention-sidi-kacem.pdf" },
+  "sidi-slimane": { label: "Convention Sidi Slimane", file: "/conventions/convention-sidi-slimane.pdf" },
 };
 
 // Province-matched KPI colors
@@ -341,6 +351,26 @@ export default function Home() {
               icon={Layers}
               {...getKpiColors(3)}
             />
+          </div>
+
+          {/* Convention PDF Download */}
+          <div className="flex items-center gap-3">
+            <a
+              href={CONVENTION_PDF[activeView].file}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md border"
+              style={{
+                backgroundColor: (PROVINCE_COLORS[selectedProvince || ""] || "#6366f1") + "10",
+                color: PROVINCE_COLORS[selectedProvince || ""] || "#6366f1",
+                borderColor: (PROVINCE_COLORS[selectedProvince || ""] || "#6366f1") + "25",
+              }}
+            >
+              <FileDown className="h-4 w-4" />
+              {CONVENTION_PDF[activeView].label}
+              <Download className="h-3.5 w-3.5 opacity-60" />
+            </a>
           </div>
 
           {/* MAP - full width (no pie chart) */}
