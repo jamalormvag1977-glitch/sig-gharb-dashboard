@@ -20,10 +20,14 @@ export default function MapComponent({
 }: MapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const geoLayerRef = useRef<L.GeoJSON | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Initialize map once
   useEffect(() => {
-    const newMap = L.map("map-container", {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const newMap = L.map(container, {
       center: [34.5, -5.8],
       zoom: 9,
       zoomControl: true,
@@ -45,15 +49,32 @@ export default function MapComponent({
       maxZoom: 18,
     });
 
-    const baseLayers = {
-      Plan: osmBase,
-      Satellite: satellite,
-    };
-
-    L.control.layers(baseLayers, {}).addTo(newMap);
+    L.control.layers({ Plan: osmBase, Satellite: satellite }, {}).addTo(newMap);
     mapRef.current = newMap;
 
+    // Force invalidateSize after layout settles
+    const timeouts = [
+      setTimeout(() => newMap.invalidateSize(), 50),
+      setTimeout(() => newMap.invalidateSize(), 200),
+      setTimeout(() => newMap.invalidateSize(), 500),
+    ];
+
+    const handleResize = () => newMap.invalidateSize();
+    window.addEventListener("resize", handleResize);
+
+    // Use ResizeObserver for container size changes
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        newMap.invalidateSize();
+      });
+      resizeObserver.observe(container);
+    }
+
     return () => {
+      timeouts.forEach(clearTimeout);
+      window.removeEventListener("resize", handleResize);
+      resizeObserver?.disconnect();
       newMap.remove();
       mapRef.current = null;
     };
@@ -148,19 +169,17 @@ export default function MapComponent({
               }
             },
             mouseover: (e) => {
-              const l = e.target;
-              l.setStyle({
+              e.target.setStyle({
                 weight: 2.5,
                 color: "#1a1a1a",
                 fillOpacity: 0.9,
               });
-              l.bringToFront();
+              e.target.bringToFront();
             },
             mouseout: (e) => {
-              const l = e.target;
               const isSelected =
                 selectedCommune && props.commune_orig === selectedCommune;
-              l.setStyle({
+              e.target.setStyle({
                 weight: isSelected ? 3 : 1,
                 color: isSelected ? "#1a1a1a" : "#555",
                 fillOpacity: isSelected ? 0.85 : 0.7,
@@ -179,14 +198,15 @@ export default function MapComponent({
     geoLayerRef.current = layer;
 
     if (geojsonData.features.length > 0) {
-      map.fitBounds(layer.getBounds(), { padding: [20, 20] });
+      map.fitBounds(layer.getBounds(), { padding: [30, 30] });
     }
   }, [geojsonData, selectedCommune, selectedProvince, onCommuneClick]);
 
   return (
     <div
-      id="map-container"
-      className="w-full h-full rounded-lg overflow-hidden"
+      ref={containerRef}
+      className="w-full h-full"
+      style={{ paddingTop: "36px" }}
     />
   );
 }
