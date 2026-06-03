@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -15,7 +14,6 @@ import {
 } from "@/components/ui/table";
 import {
   CostByCommuneChart,
-  ProjectsByCommuneChart,
   SecteurPieChart,
   ProvinceBarChart,
 } from "@/components/dashboard/Charts";
@@ -32,6 +30,7 @@ import {
   DollarSign,
   TableIcon,
   PieChart,
+  ChevronRight,
 } from "lucide-react";
 
 const MapComponent = dynamic(
@@ -108,61 +107,8 @@ export default function Home() {
     : Object.keys(data.summary).length;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-100">
-      {/* DARK SIDEBAR */}
-      <aside className="w-64 bg-[#1a1a2e] text-white flex flex-col shrink-0">
-        {/* Header */}
-        <div className="p-5 border-b border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="bg-blue-600 p-2 rounded-lg">
-              <Droplets className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-base font-bold">SIG Gharb</h1>
-              <p className="text-xs text-gray-400">Projets Inondations</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 p-3 space-y-1">
-          {NAV_ITEMS.map((item) => {
-            const isActive = activeView === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveView(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                  isActive
-                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/20"
-                    : "text-gray-300 hover:bg-white/10 hover:text-white"
-                }`}
-              >
-                <item.icon className="h-4 w-4 shrink-0" />
-                {item.label}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Bottom Stats */}
-        <div className="p-4 border-t border-white/10 space-y-2">
-          <div className="flex justify-between text-xs">
-            <span className="text-gray-400">Coût total</span>
-            <span className="text-emerald-400 font-bold">{(totalCost / 1e6).toFixed(1)} MDH</span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-gray-400">Projets</span>
-            <span className="text-white font-bold">{totalProjects}</span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-gray-400">Communes</span>
-            <span className="text-white font-bold">{totalCommunes}</span>
-          </div>
-        </div>
-      </aside>
-
-      {/* MAIN CONTENT */}
+    <div className="flex h-screen overflow-hidden bg-gray-50">
+      {/* MAIN CONTENT - Left side */}
       <main className="flex-1 overflow-y-auto">
         {/* Page Header */}
         <div className="bg-white border-b border-gray-200 px-6 py-4">
@@ -195,7 +141,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-5 space-y-5">
           {/* KPI Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <KPICard
@@ -235,10 +181,10 @@ export default function Home() {
           </div>
 
           {/* MAP + PIE side by side */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Map */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            {/* Map - takes 2/3 width */}
             <div className="lg:col-span-2">
-              <Card className="h-[450px] !py-0 !gap-0 overflow-hidden">
+              <Card className="h-[480px] !py-0 !gap-0 overflow-hidden">
                 <CardHeader className="py-2 px-4 border-b bg-gray-50 shrink-0">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
                     <Map className="h-4 w-4 text-blue-500" />
@@ -259,7 +205,7 @@ export default function Home() {
             </div>
 
             {/* Pie Chart */}
-            <Card className="h-[450px] !py-0 !gap-0 overflow-hidden">
+            <Card className="h-[480px] !py-0 !gap-0 overflow-hidden">
               <CardHeader className="py-2 px-4 border-b bg-gray-50 shrink-0">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
                   <PieChart className="h-4 w-4 text-rose-500" />
@@ -277,7 +223,7 @@ export default function Home() {
           </div>
 
           {/* TABLE + BAR CHART */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Table */}
             <Card className="overflow-hidden">
               <CardHeader className="py-2 px-4 border-b bg-gray-50">
@@ -379,8 +325,140 @@ export default function Home() {
               </CardContent>
             </Card>
           )}
+
+          {/* Projects detail table */}
+          <Card className="overflow-hidden">
+            <CardHeader className="py-2 px-4 border-b bg-gray-50">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <TableIcon className="h-4 w-4 text-blue-500" />
+                Liste des projets
+                {selectedProvince && ` - ${selectedProvince}`}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="max-h-[400px] overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="text-xs font-semibold">Commune</TableHead>
+                      <TableHead className="text-xs font-semibold">Rubrique</TableHead>
+                      <TableHead className="text-xs font-semibold">Intitulé</TableHead>
+                      <TableHead className="text-xs font-semibold text-right">Coût (DH)</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredProjects
+                      .sort((a, b) => b.cout - a.cout)
+                      .map((p, i) => (
+                        <TableRow key={i} className="hover:bg-gray-50">
+                          <TableCell className="text-xs font-medium py-1.5">{p.commune}</TableCell>
+                          <TableCell className="text-xs py-1.5 max-w-[200px] truncate">
+                            {SECTEUR_SHORT[p.rubrique] || p.rubrique}
+                          </TableCell>
+                          <TableCell className="text-xs py-1.5 max-w-[250px] truncate">
+                            {p.intitule_projet || p.consistance}
+                          </TableCell>
+                          <TableCell className="text-xs text-right font-bold text-red-600 py-1.5">
+                            {p.cout.toLocaleString("fr-FR")}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </main>
+
+      {/* DARK SIDEBAR ON THE RIGHT */}
+      <aside className="w-72 bg-[#0f0f1a] text-white flex flex-col shrink-0 border-l border-white/10">
+        {/* Header */}
+        <div className="p-5 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="bg-emerald-600 p-2.5 rounded-xl">
+              <Droplets className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-base font-bold tracking-tight">SIG Gharb</h1>
+              <p className="text-[11px] text-gray-400 mt-0.5">Projets Inondations 2026</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 p-3 space-y-1">
+          {NAV_ITEMS.map((item) => {
+            const isActive = activeView === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveView(item.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  isActive
+                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/30"
+                    : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                }`}
+              >
+                <item.icon className="h-4 w-4 shrink-0" />
+                <span className="flex-1 text-left">{item.label}</span>
+                {isActive && <ChevronRight className="h-4 w-4 shrink-0" />}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Province Stats */}
+        <div className="p-4 border-t border-white/10 space-y-3">
+          <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Résumé par province</p>
+          {Object.entries(PROVINCE_COLORS).map(([name, color]) => {
+            const provData = data.byProvince[name];
+            const isActive = selectedProvince === name;
+            return (
+              <div
+                key={name}
+                className={`p-3 rounded-lg border transition-all cursor-pointer ${
+                  isActive
+                    ? "border-emerald-500/50 bg-emerald-500/10"
+                    : "border-white/5 bg-white/[0.03] hover:bg-white/[0.06]"
+                }`}
+                onClick={() => {
+                  const viewId = name === "Kénitra" ? "kenitra" : name === "Sidi Kacem" ? "sidi-kacem" : "sidi-slimane";
+                  setActiveView(viewId);
+                }}
+              >
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+                  <span className="text-xs font-semibold text-gray-200">{name}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-1 text-[10px]">
+                  <div>
+                    <span className="text-gray-500">Coût: </span>
+                    <span className="text-emerald-400 font-bold">{((provData?.cout_total ?? 0) / 1e6).toFixed(1)} MDH</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Projets: </span>
+                    <span className="text-white font-bold">{provData?.nb_projets ?? 0}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Communes: </span>
+                    <span className="text-white font-bold">{provData?.communes ?? 0}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Bottom total */}
+        <div className="p-4 border-t border-white/10">
+          <div className="bg-emerald-600/20 rounded-xl p-3 text-center">
+            <p className="text-[10px] text-emerald-300 uppercase tracking-wider font-semibold">Total Gharb</p>
+            <p className="text-xl font-bold text-emerald-400 mt-1">{(totalCost / 1e6).toFixed(1)} MDH</p>
+            <p className="text-[11px] text-gray-400 mt-0.5">{totalProjects} projets / {totalCommunes} communes</p>
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }

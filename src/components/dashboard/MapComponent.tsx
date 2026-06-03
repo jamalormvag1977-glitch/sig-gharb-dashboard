@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { PROVINCE_COLORS } from "@/data/types";
 
 interface MapProps {
   geojsonData: GeoJSON.FeatureCollection | null;
@@ -12,13 +11,18 @@ interface MapProps {
   onCommuneClick: (commune: string) => void;
 }
 
-// Map GADM province names to our province names
-const GADM_PROVINCE_MAP: Record<string, string> = {
-  "Kénitra": "Kénitra",
-  "SidiKacem": "Sidi Kacem",
+// Province center coordinates and zoom levels for tight focus
+const PROVINCE_BOUNDS: Record<string, { center: [number, number]; zoom: number }> = {
+  "Kénitra": { center: [34.55, -5.95], zoom: 10 },
+  "Sidi Kacem": { center: [34.85, -5.95], zoom: 10 },
+  "Sidi Slimane": { center: [34.35, -5.95], zoom: 11 },
 };
 
-// For Sidi Slimane, the communes are under NAME_3 === "SidiSliman" in GADM (which is under Kénitra)
+const GAD_PROVINCE_MAP: Record<string, string> = {
+  "Kénitra": "Kénitra",
+  "Sidi Kacem": "SidiKacem",
+};
+
 const SIDI_SLIMANE_CERCLE = "SidiSliman";
 
 export default function MapComponent({
@@ -30,22 +34,21 @@ export default function MapComponent({
   const mapRef = useRef<L.Map | null>(null);
   const geoLayerRef = useRef<L.GeoJSON | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const provinceRef = useRef<string | null>(null);
 
+  // Initialize map once
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     const newMap = L.map(container, {
-      center: [34.5, -5.8],
+      center: [34.6, -5.9],
       zoom: 9,
       zoomControl: true,
       scrollWheelZoom: true,
+      minZoom: 7,
+      maxZoom: 16,
     });
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap",
-      maxZoom: 18,
-    }).addTo(newMap);
 
     const satellite = L.tileLayer(
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
@@ -56,6 +59,9 @@ export default function MapComponent({
       attribution: "&copy; OpenStreetMap",
       maxZoom: 18,
     });
+
+    // Start with OSM as default
+    osmBase.addTo(newMap);
 
     L.control.layers({ Plan: osmBase, Satellite: satellite }, {}).addTo(newMap);
     mapRef.current = newMap;
@@ -84,12 +90,15 @@ export default function MapComponent({
     };
   }, []);
 
+  // Update GeoJSON layer and zoom when province changes
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !geojsonData) return;
 
+    // Remove existing layer
     if (geoLayerRef.current) {
       map.removeLayer(geoLayerRef.current);
+      geoLayerRef.current = null;
     }
 
     // Filter features by province
@@ -98,21 +107,32 @@ export default function MapComponent({
       if (!props) return false;
 
       if (!selectedProvince) {
-        // Overview: show all Gharb communes
-        return true;
+        // Overview: show only communes with projects in the Gharb region
+        return props.has_project;
       }
 
       if (selectedProvince === "Sidi Slimane") {
-        // Sidi Slimane communes are under cercle SidiSliman in GADM
-        return props.NAME_3 === SIDI_SLIMANE_CERCLE && props.has_project;
+        return props.NAME_3 === SIDI_SLIMANE_CERCLE;
       }
 
-      // For other provinces, filter by GADM NAME_2
-      const gadmProvince = selectedProvince === "Sidi Kacem" ? "SidiKacem" : selectedProvince;
+      if (selectedProvince === "Kénitra") {
+        // Kénitra province: show communes under Kénitra but EXCLUDE Sidi Slimane cercle
+        return props.NAME_2 === "Kénitra" && props.NAME_3 !== SIDI_SLIMANE_CERCLE;
+      }
+
+      // Sidi Kacem
+      const gadmProvince = GAD_PROVINCE_MAP[selectedProvince] || selectedProvince;
       return props.NAME_2 === gadmProvince;
     });
 
-    if (filteredFeatures.length === 0) return;
+    if (filteredFeatures.length === 0) {
+      // If no features, set a default view for the province
+      if (selectedProvince && PROVINCE_BOUNDS[selectedProvince]) {
+        const { center, zoom } = PROVINCE_BOUNDS[selectedProvince];
+        map.setView(center, zoom, { animate: true });
+      }
+      return;
+    }
 
     const maxCost = Math.max(
       ...filteredFeatures
@@ -144,9 +164,9 @@ export default function MapComponent({
           return {
             fillColor: "#e8e8e8",
             weight: 0.5,
-            opacity: 0.4,
-            color: "#bbb",
-            fillOpacity: 0.3,
+            opacity: 0.3,
+            color: "#ccc",
+            fillOpacity: 0.2,
           };
         }
 
@@ -168,7 +188,7 @@ export default function MapComponent({
           fillOpacity: 0.7,
         };
       },
-      onEachFeature: (feature, layer) => {
+      onEachFeature: (feature, lyr) => {
         const props = feature.properties;
         if (!props) return;
 
@@ -176,14 +196,14 @@ export default function MapComponent({
 
         if (props.has_project) {
           const costMDH = (props.cout_total / 1e6).toFixed(2);
-          layer.bindTooltip(
+          lyr.bindTooltip(
             `<div style="font-weight:bold;font-size:13px;">${name}</div>
              <div style="font-size:11px;">${props.province_project}</div>
              <div style="font-size:12px;">${props.nb_projets} projets | ${costMDH} MDH</div>`,
             { sticky: true, className: "custom-tooltip" }
           );
 
-          layer.on({
+          lyr.on({
             click: () => {
               if (props.commune_orig) {
                 onCommuneClick(props.commune_orig);
@@ -203,7 +223,7 @@ export default function MapComponent({
             },
           });
         } else {
-          layer.bindTooltip(
+          lyr.bindTooltip(
             `<div style="font-size:12px;color:#888;">${name}</div>`,
             { sticky: true }
           );
@@ -213,8 +233,19 @@ export default function MapComponent({
 
     geoLayerRef.current = layer;
 
-    // Fit bounds to the filtered province only
-    map.fitBounds(layer.getBounds(), { padding: [30, 30], maxZoom: 11 });
+    // CRITICAL: Fit bounds ONLY to the filtered province features
+    // Use a short delay to ensure the map container is properly sized
+    const bounds = layer.getBounds();
+    if (bounds.isValid()) {
+      setTimeout(() => {
+        map.fitBounds(bounds, {
+          padding: [30, 30],
+          maxZoom: selectedProvince ? 11 : 9,
+          animate: true,
+          duration: 0.5,
+        });
+      }, 100);
+    }
   }, [geojsonData, selectedCommune, selectedProvince, onCommuneClick]);
 
   return <div ref={containerRef} className="w-full h-full" />;
