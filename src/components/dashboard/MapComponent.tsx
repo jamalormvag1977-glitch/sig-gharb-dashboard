@@ -289,7 +289,7 @@ export default function MapComponent({
         }, 1500);
       } else {
         // Overview: show entire Gharb region with minimum zoom for labels
-        const OVERVIEW_MIN_ZOOM = 9;
+        const OVERVIEW_MIN_ZOOM = 10;
         const center = bounds.getCenter();
 
         map.flyToBounds(bounds, {
