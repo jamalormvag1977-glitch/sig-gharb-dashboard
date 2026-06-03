@@ -18,7 +18,7 @@ import {
   ProvinceBarChart,
 } from "@/components/dashboard/Charts";
 import { PROVINCE_COLORS, SECTEUR_SHORT } from "@/data/types";
-import type { DashboardData, CommuneSummary } from "@/data/types";
+import type { DashboardData, CommuneSummary, Project } from "@/data/types";
 
 import {
   LayoutDashboard,
@@ -31,6 +31,7 @@ import {
   TableIcon,
   PieChart,
   ChevronRight,
+  FileText,
 } from "lucide-react";
 
 const MapComponent = dynamic(
@@ -106,9 +107,106 @@ export default function Home() {
     ? data.byProvince[selectedProvince]?.communes ?? Object.keys(data.summary).length
     : Object.keys(data.summary).length;
 
+  // Group projects by commune for the detail table
+  const projectsByCommune = filteredProjects.reduce<Record<string, Project[]>>((acc, p) => {
+    const key = p.commune;
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(p);
+    return acc;
+  }, {});
+
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
-      {/* MAIN CONTENT - Left side */}
+      {/* DARK SIDEBAR ON THE LEFT */}
+      <aside className="w-72 bg-[#0f0f1a] text-white flex flex-col shrink-0 border-r border-white/10">
+        {/* Header */}
+        <div className="p-5 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="bg-emerald-600 p-2.5 rounded-xl">
+              <Droplets className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-base font-bold tracking-tight">SIG Gharb</h1>
+              <p className="text-[11px] text-gray-400 mt-0.5">Projets Inondations 2026</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 p-3 space-y-1">
+          {NAV_ITEMS.map((item) => {
+            const isActive = activeView === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveView(item.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  isActive
+                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/30"
+                    : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                }`}
+              >
+                <item.icon className="h-4 w-4 shrink-0" />
+                <span className="flex-1 text-left">{item.label}</span>
+                {isActive && <ChevronRight className="h-4 w-4 shrink-0" />}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Province Stats */}
+        <div className="p-4 border-t border-white/10 space-y-3">
+          <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Résumé par province</p>
+          {Object.entries(PROVINCE_COLORS).map(([name, color]) => {
+            const provData = data.byProvince[name];
+            const isActive = selectedProvince === name;
+            return (
+              <div
+                key={name}
+                className={`p-3 rounded-lg border transition-all cursor-pointer ${
+                  isActive
+                    ? "border-emerald-500/50 bg-emerald-500/10"
+                    : "border-white/5 bg-white/[0.03] hover:bg-white/[0.06]"
+                }`}
+                onClick={() => {
+                  const viewId = name === "Kénitra" ? "kenitra" : name === "Sidi Kacem" ? "sidi-kacem" : "sidi-slimane";
+                  setActiveView(viewId);
+                }}
+              >
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+                  <span className="text-xs font-semibold text-gray-200">{name}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-1 text-[10px]">
+                  <div>
+                    <span className="text-gray-500">Coût: </span>
+                    <span className="text-emerald-400 font-bold">{((provData?.cout_total ?? 0) / 1e6).toFixed(1)} MDH</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Projets: </span>
+                    <span className="text-white font-bold">{provData?.nb_projets ?? 0}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Communes: </span>
+                    <span className="text-white font-bold">{provData?.communes ?? 0}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Bottom total */}
+        <div className="p-4 border-t border-white/10">
+          <div className="bg-emerald-600/20 rounded-xl p-3 text-center">
+            <p className="text-[10px] text-emerald-300 uppercase tracking-wider font-semibold">Total Gharb</p>
+            <p className="text-xl font-bold text-emerald-400 mt-1">{(totalCost / 1e6).toFixed(1)} MDH</p>
+            <p className="text-[11px] text-gray-400 mt-0.5">{totalProjects} projets / {totalCommunes} communes</p>
+          </div>
+        </div>
+      </aside>
+
+      {/* MAIN CONTENT - Right side */}
       <main className="flex-1 overflow-y-auto">
         {/* Page Header */}
         <div className="bg-white border-b border-gray-200 px-6 py-4">
@@ -182,7 +280,7 @@ export default function Home() {
 
           {/* MAP + PIE side by side */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            {/* Map - takes 2/3 width */}
+            {/* Map */}
             <div className="lg:col-span-2">
               <Card className="h-[480px] !py-0 !gap-0 overflow-hidden">
                 <CardHeader className="py-2 px-4 border-b bg-gray-50 shrink-0">
@@ -224,12 +322,12 @@ export default function Home() {
 
           {/* TABLE + BAR CHART */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {/* Table */}
+            {/* Summary Table */}
             <Card className="overflow-hidden">
               <CardHeader className="py-2 px-4 border-b bg-gray-50">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
                   <TableIcon className="h-4 w-4 text-amber-500" />
-                  Détail par commune
+                  Résumé par commune
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
@@ -326,139 +424,104 @@ export default function Home() {
             </Card>
           )}
 
-          {/* Projects detail table */}
+          {/* DETAILED PROJECT TABLE BY COMMUNE */}
           <Card className="overflow-hidden">
             <CardHeader className="py-2 px-4 border-b bg-gray-50">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <TableIcon className="h-4 w-4 text-blue-500" />
-                Liste des projets
-                {selectedProvince && ` - ${selectedProvince}`}
+                <FileText className="h-4 w-4 text-blue-600" />
+                Détail des projets par commune
+                {selectedProvince && ` - Province ${selectedProvince}`}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="max-h-[400px] overflow-y-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50">
-                      <TableHead className="text-xs font-semibold">Commune</TableHead>
-                      <TableHead className="text-xs font-semibold">Rubrique</TableHead>
-                      <TableHead className="text-xs font-semibold">Intitulé</TableHead>
-                      <TableHead className="text-xs font-semibold text-right">Coût (DH)</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredProjects
-                      .sort((a, b) => b.cout - a.cout)
-                      .map((p, i) => (
-                        <TableRow key={i} className="hover:bg-gray-50">
-                          <TableCell className="text-xs font-medium py-1.5">{p.commune}</TableCell>
-                          <TableCell className="text-xs py-1.5 max-w-[200px] truncate">
-                            {SECTEUR_SHORT[p.rubrique] || p.rubrique}
-                          </TableCell>
-                          <TableCell className="text-xs py-1.5 max-w-[250px] truncate">
-                            {p.intitule_projet || p.consistance}
-                          </TableCell>
-                          <TableCell className="text-xs text-right font-bold text-red-600 py-1.5">
-                            {p.cout.toLocaleString("fr-FR")}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
+              <div className="max-h-[600px] overflow-y-auto">
+                {Object.entries(projectsByCommune)
+                  .sort(([, a], [, b]) => {
+                    const totalA = a.reduce((s, p) => s + p.cout, 0);
+                    const totalB = b.reduce((s, p) => s + p.cout, 0);
+                    return totalB - totalA;
+                  })
+                  .map(([commune, projects]) => {
+                    const communeTotal = projects.reduce((s, p) => s + p.cout, 0);
+                    const communeData = filteredSummary[commune];
+                    return (
+                      <div key={commune}>
+                        {/* Commune header */}
+                        <div className="bg-gray-100 px-4 py-2.5 flex items-center justify-between border-b border-gray-200 sticky top-0 z-10">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{
+                                backgroundColor: communeData
+                                  ? PROVINCE_COLORS[communeData.province] || "#999"
+                                  : "#999",
+                              }}
+                            />
+                            <span className="text-sm font-bold text-gray-800">{commune}</span>
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                              {communeData?.province}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-4 text-xs">
+                            <span className="text-gray-500">{projects.length} projets</span>
+                            <span className="font-bold text-red-600">
+                              {(communeTotal / 1e6).toFixed(2)} MDH
+                            </span>
+                          </div>
+                        </div>
+                        {/* Projects rows */}
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="bg-gray-50/80">
+                              <TableHead className="text-[11px] font-semibold text-gray-600 w-[25%]">Intitulé Rubrique</TableHead>
+                              <TableHead className="text-[11px] font-semibold text-gray-600 w-[30%]">Projet</TableHead>
+                              <TableHead className="text-[11px] font-semibold text-gray-600 w-[30%]">Consistance</TableHead>
+                              <TableHead className="text-[11px] font-semibold text-gray-600 text-right w-[15%]">Coût (DH)</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {projects.map((p, i) => (
+                              <TableRow key={i} className="hover:bg-blue-50/30">
+                                <TableCell className="text-[11px] py-2 align-top">
+                                  <span
+                                    className="inline-block w-1.5 h-1.5 rounded-full mr-1.5 mt-1"
+                                    style={{
+                                      backgroundColor: SECTEUR_SHORT[p.intitule_rubrique]
+                                        ? {
+                                            "Assainissement & Drainage": "#e74c3c",
+                                            "Pistes agricoles": "#3498db",
+                                            "Stations de pompage": "#f39c12",
+                                            "Réhabilitation équipements": "#2ecc71",
+                                            "Génie civil": "#9b59b6",
+                                          }[
+                                            SECTEUR_SHORT[p.intitule_rubrique] as string
+                                          ] || "#999"
+                                        : "#999",
+                                    }}
+                                  />
+                                  {SECTEUR_SHORT[p.intitule_rubrique] || p.intitule_rubrique}
+                                </TableCell>
+                                <TableCell className="text-[11px] py-2 align-top text-gray-700">
+                                  {p.intitule_projet || "—"}
+                                </TableCell>
+                                <TableCell className="text-[11px] py-2 align-top text-gray-600">
+                                  {p.consistance || "—"}
+                                </TableCell>
+                                <TableCell className="text-[11px] py-2 align-top text-right font-bold text-red-600">
+                                  {p.cout.toLocaleString("fr-FR")}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    );
+                  })}
               </div>
             </CardContent>
           </Card>
         </div>
       </main>
-
-      {/* DARK SIDEBAR ON THE RIGHT */}
-      <aside className="w-72 bg-[#0f0f1a] text-white flex flex-col shrink-0 border-l border-white/10">
-        {/* Header */}
-        <div className="p-5 border-b border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="bg-emerald-600 p-2.5 rounded-xl">
-              <Droplets className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-base font-bold tracking-tight">SIG Gharb</h1>
-              <p className="text-[11px] text-gray-400 mt-0.5">Projets Inondations 2026</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 p-3 space-y-1">
-          {NAV_ITEMS.map((item) => {
-            const isActive = activeView === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveView(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  isActive
-                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/30"
-                    : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
-                }`}
-              >
-                <item.icon className="h-4 w-4 shrink-0" />
-                <span className="flex-1 text-left">{item.label}</span>
-                {isActive && <ChevronRight className="h-4 w-4 shrink-0" />}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Province Stats */}
-        <div className="p-4 border-t border-white/10 space-y-3">
-          <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Résumé par province</p>
-          {Object.entries(PROVINCE_COLORS).map(([name, color]) => {
-            const provData = data.byProvince[name];
-            const isActive = selectedProvince === name;
-            return (
-              <div
-                key={name}
-                className={`p-3 rounded-lg border transition-all cursor-pointer ${
-                  isActive
-                    ? "border-emerald-500/50 bg-emerald-500/10"
-                    : "border-white/5 bg-white/[0.03] hover:bg-white/[0.06]"
-                }`}
-                onClick={() => {
-                  const viewId = name === "Kénitra" ? "kenitra" : name === "Sidi Kacem" ? "sidi-kacem" : "sidi-slimane";
-                  setActiveView(viewId);
-                }}
-              >
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-                  <span className="text-xs font-semibold text-gray-200">{name}</span>
-                </div>
-                <div className="grid grid-cols-2 gap-1 text-[10px]">
-                  <div>
-                    <span className="text-gray-500">Coût: </span>
-                    <span className="text-emerald-400 font-bold">{((provData?.cout_total ?? 0) / 1e6).toFixed(1)} MDH</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Projets: </span>
-                    <span className="text-white font-bold">{provData?.nb_projets ?? 0}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Communes: </span>
-                    <span className="text-white font-bold">{provData?.communes ?? 0}</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Bottom total */}
-        <div className="p-4 border-t border-white/10">
-          <div className="bg-emerald-600/20 rounded-xl p-3 text-center">
-            <p className="text-[10px] text-emerald-300 uppercase tracking-wider font-semibold">Total Gharb</p>
-            <p className="text-xl font-bold text-emerald-400 mt-1">{(totalCost / 1e6).toFixed(1)} MDH</p>
-            <p className="text-[11px] text-gray-400 mt-0.5">{totalProjects} projets / {totalCommunes} communes</p>
-          </div>
-        </div>
-      </aside>
     </div>
   );
 }

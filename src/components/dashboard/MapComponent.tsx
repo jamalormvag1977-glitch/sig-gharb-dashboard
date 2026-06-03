@@ -11,19 +11,18 @@ interface MapProps {
   onCommuneClick: (commune: string) => void;
 }
 
-// Province center coordinates and zoom levels for tight focus
-const PROVINCE_BOUNDS: Record<string, { center: [number, number]; zoom: number }> = {
-  "Kénitra": { center: [34.55, -5.95], zoom: 10 },
-  "Sidi Kacem": { center: [34.85, -5.95], zoom: 10 },
-  "Sidi Slimane": { center: [34.35, -5.95], zoom: 11 },
-};
-
 const GAD_PROVINCE_MAP: Record<string, string> = {
   "Kénitra": "Kénitra",
   "Sidi Kacem": "SidiKacem",
 };
 
 const SIDI_SLIMANE_CERCLE = "SidiSliman";
+
+// Gharb region bounds - restrict the map so we never see full Morocco
+const GHARB_BOUNDS: L.LatLngBoundsExpression = [
+  [33.8, -6.8],  // SW corner
+  [35.3, -5.0],  // NE corner
+];
 
 export default function MapComponent({
   geojsonData,
@@ -34,7 +33,7 @@ export default function MapComponent({
   const mapRef = useRef<L.Map | null>(null);
   const geoLayerRef = useRef<L.GeoJSON | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const provinceRef = useRef<string | null>(null);
+  const currentProvinceRef = useRef<string | null>(null);
 
   // Initialize map once
   useEffect(() => {
@@ -46,8 +45,10 @@ export default function MapComponent({
       zoom: 9,
       zoomControl: true,
       scrollWheelZoom: true,
-      minZoom: 7,
-      maxZoom: 16,
+      minZoom: 8,
+      maxZoom: 15,
+      maxBounds: GHARB_BOUNDS,
+      maxBoundsViscosity: 1.0,  // Prevents dragging outside bounds
     });
 
     const satellite = L.tileLayer(
@@ -60,9 +61,7 @@ export default function MapComponent({
       maxZoom: 18,
     });
 
-    // Start with OSM as default
     osmBase.addTo(newMap);
-
     L.control.layers({ Plan: osmBase, Satellite: satellite }, {}).addTo(newMap);
     mapRef.current = newMap;
 
@@ -95,6 +94,10 @@ export default function MapComponent({
     const map = mapRef.current;
     if (!map || !geojsonData) return;
 
+    // Skip if province hasn't actually changed and we already have a layer
+    if (currentProvinceRef.current === selectedProvince && geoLayerRef.current) return;
+    currentProvinceRef.current = selectedProvince;
+
     // Remove existing layer
     if (geoLayerRef.current) {
       map.removeLayer(geoLayerRef.current);
@@ -107,7 +110,7 @@ export default function MapComponent({
       if (!props) return false;
 
       if (!selectedProvince) {
-        // Overview: show only communes with projects in the Gharb region
+        // Overview: show all Gharb communes with projects
         return props.has_project;
       }
 
@@ -116,23 +119,14 @@ export default function MapComponent({
       }
 
       if (selectedProvince === "Kénitra") {
-        // Kénitra province: show communes under Kénitra but EXCLUDE Sidi Slimane cercle
         return props.NAME_2 === "Kénitra" && props.NAME_3 !== SIDI_SLIMANE_CERCLE;
       }
 
-      // Sidi Kacem
       const gadmProvince = GAD_PROVINCE_MAP[selectedProvince] || selectedProvince;
       return props.NAME_2 === gadmProvince;
     });
 
-    if (filteredFeatures.length === 0) {
-      // If no features, set a default view for the province
-      if (selectedProvince && PROVINCE_BOUNDS[selectedProvince]) {
-        const { center, zoom } = PROVINCE_BOUNDS[selectedProvince];
-        map.setView(center, zoom, { animate: true });
-      }
-      return;
-    }
+    if (filteredFeatures.length === 0) return;
 
     const maxCost = Math.max(
       ...filteredFeatures
@@ -162,11 +156,11 @@ export default function MapComponent({
         const props = feature?.properties;
         if (!props?.has_project) {
           return {
-            fillColor: "#e8e8e8",
+            fillColor: "#f0f0f0",
             weight: 0.5,
             opacity: 0.3,
             color: "#ccc",
-            fillOpacity: 0.2,
+            fillOpacity: 0.15,
           };
         }
 
@@ -233,18 +227,16 @@ export default function MapComponent({
 
     geoLayerRef.current = layer;
 
-    // CRITICAL: Fit bounds ONLY to the filtered province features
-    // Use a short delay to ensure the map container is properly sized
+    // Fit bounds tightly to the filtered province
     const bounds = layer.getBounds();
     if (bounds.isValid()) {
-      setTimeout(() => {
-        map.fitBounds(bounds, {
-          padding: [30, 30],
-          maxZoom: selectedProvince ? 11 : 9,
-          animate: true,
-          duration: 0.5,
-        });
-      }, 100);
+      // Set maxBounds to province bounds so user can't scroll to see all Morocco
+      map.setMaxBounds(bounds.pad(0.3));
+      map.fitBounds(bounds, {
+        padding: [20, 20],
+        maxZoom: selectedProvince ? 11 : 9,
+        animate: true,
+      });
     }
   }, [geojsonData, selectedCommune, selectedProvince, onCommuneClick]);
 
