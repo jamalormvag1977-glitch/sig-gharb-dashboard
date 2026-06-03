@@ -297,7 +297,7 @@ export default function MapComponent({
 
       if (selectedProvince) {
         let MIN_ZOOM = 10;
-        if (selectedProvince === "Kénitra") MIN_ZOOM = 9;
+        if (selectedProvince === "Kénitra") MIN_ZOOM = 8;
         if (selectedProvince === "Sidi Kacem") MIN_ZOOM = 10;
         if (selectedProvince === "Sidi Slimane") MIN_ZOOM = 11;
         const center = bounds.getCenter();

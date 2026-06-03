@@ -26,15 +26,21 @@ const formatCost = (value: number) => {
   return `${(value / 1e6).toFixed(1)} MDH`;
 };
 
-// Distinct colors for each commune - vibrant and distinguishable
+// Distinct colors for each commune - vibrant and distinguishable (30 colors)
 const COMMUNE_PALETTE = [
   "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6",
   "#ec4899", "#06b6d4", "#84cc16", "#f97316", "#6366f1",
   "#14b8a6", "#e11d48", "#a855f7", "#0ea5e9", "#d946ef",
   "#22c55e", "#eab308", "#64748b", "#fb923c", "#2dd4bf",
+  "#7c3aed", "#059669", "#dc2626", "#0891b2", "#d97706",
+  "#4f46e5", "#be185d", "#15803d", "#9333ea", "#0d9488",
 ];
 
 export function CostByCommuneChart({ summary, selectedProvince }: ChartsProps) {
+  const totalCost = Object.entries(summary)
+    .filter(([, d]) => !selectedProvince || d.province === selectedProvince)
+    .reduce((sum, [, d]) => sum + d.cout_total, 0);
+
   const data = Object.entries(summary)
     .filter(([, d]) => !selectedProvince || d.province === selectedProvince)
     .map(([name, d], idx) => ({
@@ -43,6 +49,7 @@ export function CostByCommuneChart({ summary, selectedProvince }: ChartsProps) {
       cout: d.cout_total,
       province: d.province,
       color: COMMUNE_PALETTE[idx % COMMUNE_PALETTE.length],
+      pct: totalCost > 0 ? (d.cout_total / totalCost) * 100 : 0,
     }))
     .sort((a, b) => b.cout - a.cout);
 
@@ -51,7 +58,13 @@ export function CostByCommuneChart({ summary, selectedProvince }: ChartsProps) {
 
   return (
     <ResponsiveContainer width="100%" height={350}>
-      <BarChart data={coloredData} layout="vertical" margin={{ left: 10, right: 50, top: 5, bottom: 5 }}>
+      <BarChart
+        data={coloredData}
+        layout="vertical"
+        margin={{ left: 10, right: 70, top: 5, bottom: 5 }}
+        barCategoryGap={8}
+        barGap={4}
+      >
         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" horizontal={false} />
         <XAxis
           type="number"
@@ -82,7 +95,7 @@ export function CostByCommuneChart({ summary, selectedProvince }: ChartsProps) {
             fontSize: "12px",
           }}
         />
-        <Bar dataKey="cout" radius={[0, 6, 6, 0]} maxBarSize={22}>
+        <Bar dataKey="cout" radius={[0, 6, 6, 0]} maxBarSize={28}>
           {coloredData.map((entry, index) => (
             <Cell
               key={`cell-${index}`}
@@ -93,8 +106,14 @@ export function CostByCommuneChart({ summary, selectedProvince }: ChartsProps) {
           <LabelList
             dataKey="cout"
             position="right"
-            formatter={(value: number) => `${(value / 1e6).toFixed(1)}`}
-            style={{ fontSize: 10, fontWeight: 700, fill: "#475569" }}
+            formatter={(value: number, _props: any, idx: number) => {
+              const item = coloredData[idx];
+              if (!item) return `${(value / 1e6).toFixed(1)}`;
+              const mdh = (value / 1e6).toFixed(1);
+              const pct = item.pct.toFixed(1);
+              return `${mdh} (${pct}%)`;
+            }}
+            style={{ fontSize: 9, fontWeight: 700, fill: "#475569" }}
           />
         </Bar>
       </BarChart>
@@ -219,6 +238,7 @@ export function ProvinceBarChart({
 }: {
   byProvince: Record<string, { nb_projets: number; cout_total: number; communes: number }>;
 }) {
+  const totalCost = Object.values(byProvince).reduce((s, d) => s + d.cout_total, 0);
   const PROVINCE_BAR_COLORS = ["#3b82f6", "#ef4444", "#10b981"];
 
   const data = Object.entries(byProvince).map(([name, d], idx) => ({
@@ -227,6 +247,7 @@ export function ProvinceBarChart({
     projets: d.nb_projets,
     communes: d.communes,
     barColor: PROVINCE_BAR_COLORS[idx % PROVINCE_BAR_COLORS.length],
+    pct: totalCost > 0 ? (d.cout_total / totalCost) * 100 : 0,
   }));
 
   return (
@@ -260,8 +281,12 @@ export function ProvinceBarChart({
           <LabelList
             dataKey="cout"
             position="top"
-            formatter={(value: number) => formatCost(value)}
-            style={{ fontSize: 10, fontWeight: 700, fill: "#475569" }}
+            formatter={(value: number, _props: any, idx: number) => {
+              const item = data[idx];
+              if (!item) return formatCost(value);
+              return `${formatCost(value)} (${item.pct.toFixed(1)}%)`;
+            }}
+            style={{ fontSize: 9, fontWeight: 700, fill: "#475569" }}
           />
         </Bar>
         <Bar yAxisId="right" dataKey="projets" fill="#8b5cf6" radius={[4, 4, 0, 0]} maxBarSize={40} name="Projets">
