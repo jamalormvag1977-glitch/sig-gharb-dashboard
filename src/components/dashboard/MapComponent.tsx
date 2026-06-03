@@ -12,6 +12,15 @@ interface MapProps {
   onCommuneClick: (commune: string) => void;
 }
 
+// Map GADM province names to our province names
+const GADM_PROVINCE_MAP: Record<string, string> = {
+  "Kénitra": "Kénitra",
+  "SidiKacem": "Sidi Kacem",
+};
+
+// For Sidi Slimane, the communes are under NAME_3 === "SidiSliman" in GADM (which is under Kénitra)
+const SIDI_SLIMANE_CERCLE = "SidiSliman";
+
 export default function MapComponent({
   geojsonData,
   selectedCommune,
@@ -22,7 +31,6 @@ export default function MapComponent({
   const geoLayerRef = useRef<L.GeoJSON | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Initialize map once
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -35,7 +43,7 @@ export default function MapComponent({
     });
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap contributors",
+      attribution: "&copy; OpenStreetMap",
       maxZoom: 18,
     }).addTo(newMap);
 
@@ -52,7 +60,6 @@ export default function MapComponent({
     L.control.layers({ Plan: osmBase, Satellite: satellite }, {}).addTo(newMap);
     mapRef.current = newMap;
 
-    // Force invalidateSize after layout settles
     const timeouts = [
       setTimeout(() => newMap.invalidateSize(), 50),
       setTimeout(() => newMap.invalidateSize(), 200),
@@ -62,12 +69,9 @@ export default function MapComponent({
     const handleResize = () => newMap.invalidateSize();
     window.addEventListener("resize", handleResize);
 
-    // Use ResizeObserver for container size changes
     let resizeObserver: ResizeObserver | null = null;
     if (typeof ResizeObserver !== "undefined") {
-      resizeObserver = new ResizeObserver(() => {
-        newMap.invalidateSize();
-      });
+      resizeObserver = new ResizeObserver(() => newMap.invalidateSize());
       resizeObserver.observe(container);
     }
 
@@ -80,7 +84,6 @@ export default function MapComponent({
     };
   }, []);
 
-  // Update geo layer when data or selections change
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !geojsonData) return;
@@ -89,10 +92,33 @@ export default function MapComponent({
       map.removeLayer(geoLayerRef.current);
     }
 
+    // Filter features by province
+    const filteredFeatures = geojsonData.features.filter((feature) => {
+      const props = feature.properties;
+      if (!props) return false;
+
+      if (!selectedProvince) {
+        // Overview: show all Gharb communes
+        return true;
+      }
+
+      if (selectedProvince === "Sidi Slimane") {
+        // Sidi Slimane communes are under cercle SidiSliman in GADM
+        return props.NAME_3 === SIDI_SLIMANE_CERCLE && props.has_project;
+      }
+
+      // For other provinces, filter by GADM NAME_2
+      const gadmProvince = selectedProvince === "Sidi Kacem" ? "SidiKacem" : selectedProvince;
+      return props.NAME_2 === gadmProvince;
+    });
+
+    if (filteredFeatures.length === 0) return;
+
     const maxCost = Math.max(
-      ...geojsonData.features
+      ...filteredFeatures
         .filter((f) => f.properties?.has_project)
-        .map((f) => f.properties?.cout_total || 0)
+        .map((f) => f.properties?.cout_total || 0),
+      1
     );
 
     const getColor = (cost: number) => {
@@ -106,26 +132,21 @@ export default function MapComponent({
       return "#ffffcc";
     };
 
-    const layer = L.geoJSON(geojsonData as any, {
+    const filteredCollection: GeoJSON.FeatureCollection = {
+      type: "FeatureCollection",
+      features: filteredFeatures,
+    };
+
+    const layer = L.geoJSON(filteredCollection as any, {
       style: (feature) => {
         const props = feature?.properties;
         if (!props?.has_project) {
           return {
-            fillColor: "#f0f0f0",
+            fillColor: "#e8e8e8",
             weight: 0.5,
-            opacity: 0.5,
-            color: "#ccc",
+            opacity: 0.4,
+            color: "#bbb",
             fillOpacity: 0.3,
-          };
-        }
-
-        if (selectedProvince && props.province_project !== selectedProvince) {
-          return {
-            fillColor: "#f0f0f0",
-            weight: 0.5,
-            opacity: 0.3,
-            color: "#ddd",
-            fillOpacity: 0.15,
           };
         }
 
@@ -141,7 +162,7 @@ export default function MapComponent({
 
         return {
           fillColor: getColor(props.cout_total),
-          weight: 1,
+          weight: 1.5,
           opacity: 0.8,
           color: "#555",
           fillOpacity: 0.7,
@@ -169,18 +190,13 @@ export default function MapComponent({
               }
             },
             mouseover: (e) => {
-              e.target.setStyle({
-                weight: 2.5,
-                color: "#1a1a1a",
-                fillOpacity: 0.9,
-              });
+              e.target.setStyle({ weight: 3, color: "#1a1a1a", fillOpacity: 0.9 });
               e.target.bringToFront();
             },
             mouseout: (e) => {
-              const isSelected =
-                selectedCommune && props.commune_orig === selectedCommune;
+              const isSelected = selectedCommune && props.commune_orig === selectedCommune;
               e.target.setStyle({
-                weight: isSelected ? 3 : 1,
+                weight: isSelected ? 3 : 1.5,
                 color: isSelected ? "#1a1a1a" : "#555",
                 fillOpacity: isSelected ? 0.85 : 0.7,
               });
@@ -197,16 +213,9 @@ export default function MapComponent({
 
     geoLayerRef.current = layer;
 
-    if (geojsonData.features.length > 0) {
-      map.fitBounds(layer.getBounds(), { padding: [30, 30] });
-    }
+    // Fit bounds to the filtered province only
+    map.fitBounds(layer.getBounds(), { padding: [30, 30], maxZoom: 11 });
   }, [geojsonData, selectedCommune, selectedProvince, onCommuneClick]);
 
-  return (
-    <div
-      ref={containerRef}
-      className="w-full h-full"
-      style={{ paddingTop: "36px" }}
-    />
-  );
+  return <div ref={containerRef} className="w-full h-full" />;
 }
