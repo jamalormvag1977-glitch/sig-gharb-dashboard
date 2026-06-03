@@ -3,12 +3,15 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { SECTEUR_SHORT } from "@/data/types";
+import type { Project } from "@/data/types";
 
 interface MapProps {
   geojsonData: GeoJSON.FeatureCollection | null;
   selectedCommune: string | null;
   selectedProvince: string | null;
   onCommuneClick: (commune: string) => void;
+  projectsByCommune?: Record<string, Project[]>;
 }
 
 const GAD_PROVINCE_MAP: Record<string, string> = {
@@ -18,11 +21,20 @@ const GAD_PROVINCE_MAP: Record<string, string> = {
 
 const SIDI_SLIMANE_CERCLE = "SidiSliman";
 
+const SECTEUR_DOT_COLORS: Record<string, string> = {
+  "Assainissement & Drainage": "#ef4444",
+  "Pistes agricoles": "#3b82f6",
+  "Stations de pompage": "#f59e0b",
+  "Réhabilitation équipements": "#10b981",
+  "Génie civil": "#8b5cf6",
+};
+
 export default function MapComponent({
   geojsonData,
   selectedCommune,
   selectedProvince,
   onCommuneClick,
+  projectsByCommune,
 }: MapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const geoLayerRef = useRef<L.GeoJSON | null>(null);
@@ -44,13 +56,11 @@ export default function MapComponent({
       maxZoom: 16,
     });
 
-    // Satellite only
     const satellite = L.tileLayer(
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
       { attribution: "&copy; Esri", maxZoom: 18 }
     );
 
-    // Labels overlay for context
     const labels = L.tileLayer(
       "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",
       { attribution: "&copy; CARTO", maxZoom: 18, pane: "overlayPane" }
@@ -203,20 +213,53 @@ export default function MapComponent({
             }
           );
 
-          // Click popup with more detail
-          lyr.bindPopup(
-            `<div style="font-size:13px; min-width:160px;">
-              <div style="font-weight:bold; font-size:15px; margin-bottom:4px;">${name}</div>
-              <div style="color:#666; font-size:11px; margin-bottom:6px;">${props.province_project}</div>
-              <div style="display:flex; justify-content:space-between; padding:3px 0; border-top:1px solid #eee;">
-                <span>Projets</span><strong>${props.nb_projets}</strong>
-              </div>
-              <div style="display:flex; justify-content:space-between; padding:3px 0; border-top:1px solid #eee;">
-                <span>Coût</span><strong style="color:#16a34a;">${costMDH} MDH</strong>
-              </div>
-            </div>`,
-            { className: "commune-popup" }
-          );
+          // Build detailed popup with all projects
+          const communeProjects = projectsByCommune?.[name] || [];
+          let popupHTML = `<div style="font-size:13px; max-width:420px; max-height:350px; overflow-y:auto;">
+            <div style="font-weight:bold; font-size:16px; margin-bottom:2px; color:#1e293b;">${name}</div>
+            <div style="color:#64748b; font-size:11px; margin-bottom:8px;">${props.province_project} — ${props.nb_projets} projet${props.nb_projets > 1 ? "s" : ""} — <strong style="color:#16a34a;">${costMDH} MDH</strong></div>`;
+
+          if (communeProjects.length > 0) {
+            popupHTML += `<table style="width:100%; border-collapse:collapse; font-size:11px;">
+              <thead>
+                <tr style="background:#f1f5f9; border-bottom:2px solid #e2e8f0;">
+                  <th style="text-align:left; padding:4px 6px; color:#475569; font-size:10px;">Rubrique</th>
+                  <th style="text-align:left; padding:4px 6px; color:#475569; font-size:10px;">Projet</th>
+                  <th style="text-align:left; padding:4px 6px; color:#475569; font-size:10px;">Consistance</th>
+                  <th style="text-align:right; padding:4px 6px; color:#475569; font-size:10px;">Coût</th>
+                </tr>
+              </thead>
+              <tbody>`;
+
+            communeProjects.forEach((p, i) => {
+              const shortRub = SECTEUR_SHORT[p.intitule_rubrique] || p.intitule_rubrique;
+              const dotColor = SECTEUR_DOT_COLORS[shortRub] || "#94a3b8";
+              const bgColor = i % 2 === 0 ? "#fff" : "#f8fafc";
+              popupHTML += `<tr style="background:${bgColor}; border-bottom:1px solid #f1f5f9;">
+                <td style="padding:4px 6px; vertical-align:top;">
+                  <span style="display:inline-flex; align-items:center; gap:3px; font-size:10px; color:${dotColor}; font-weight:600;">
+                    <span style="width:6px; height:6px; border-radius:50%; background:${dotColor}; display:inline-block;"></span>
+                    ${shortRub}
+                  </span>
+                </td>
+                <td style="padding:4px 6px; vertical-align:top; color:#334155; font-weight:500;">${p.intitule_projet || "—"}</td>
+                <td style="padding:4px 6px; vertical-align:top; color:#64748b; font-size:10px;">${p.consistance || "—"}</td>
+                <td style="padding:4px 6px; text-align:right; font-weight:700; color:#16a34a; white-space:nowrap;">${p.cout.toLocaleString("fr-FR")} DH</td>
+              </tr>`;
+            });
+
+            popupHTML += `</tbody></table>`;
+          } else {
+            popupHTML += `<div style="color:#94a3b8; font-size:11px; padding:8px 0;">Aucun détail disponible</div>`;
+          }
+
+          popupHTML += `</div>`;
+
+          lyr.bindPopup(popupHTML, {
+            className: "commune-detail-popup",
+            maxWidth: 450,
+            minWidth: 300,
+          });
 
           lyr.on({
             click: () => {
@@ -250,7 +293,6 @@ export default function MapComponent({
 
     // Add dark mask around the province when one is selected
     if (selectedProvince) {
-      // Build a mask: huge polygon covering the world with a hole for the province
       const allCoords: L.LatLng[] = [];
       layer.eachLayer((lyr: any) => {
         const ll = (lyr as L.Polygon).getLatLngs();
@@ -260,12 +302,9 @@ export default function MapComponent({
       });
 
       if (allCoords.length > 0) {
-        // Outer ring: world bounds (big rectangle)
         const outerRing: L.LatLngExpression[] = [
           [85, -180], [85, 180], [-85, 180], [-85, -180],
         ];
-
-        // Inner ring: the province boundary (hole) - coordinates in reverse for hole
         const innerRing = allCoords.map((ll) => [ll.lat, ll.lng] as L.LatLngExpression).reverse();
 
         const maskPolygon = L.polygon([outerRing, innerRing] as any, {
@@ -280,13 +319,12 @@ export default function MapComponent({
       }
     }
 
-    // Auto-zoom to fit the province properly
+    // Auto-zoom
     const bounds = layer.getBounds();
     if (bounds.isValid()) {
       map.setMaxBounds(null);
 
       if (selectedProvince) {
-        // Adapt zoom per province
         let MIN_ZOOM = 10;
         if (selectedProvince === "Kénitra") MIN_ZOOM = 9;
         if (selectedProvince === "Sidi Kacem") MIN_ZOOM = 10;
@@ -321,7 +359,6 @@ export default function MapComponent({
           }
         }, 1500);
       } else {
-        // Overview: show entire Gharb region
         const OVERVIEW_MIN_ZOOM = 10;
         const center = bounds.getCenter();
 
@@ -354,7 +391,7 @@ export default function MapComponent({
         }, 1500);
       }
     }
-  }, [geojsonData, selectedCommune, selectedProvince, onCommuneClick]);
+  }, [geojsonData, selectedCommune, selectedProvince, onCommuneClick, projectsByCommune]);
 
   return (
     <>
@@ -371,12 +408,18 @@ export default function MapComponent({
         .commune-label-tooltip::before {
           display: none !important;
         }
-        .commune-popup .leaflet-popup-content-wrapper {
-          border-radius: 10px;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        .commune-detail-popup .leaflet-popup-content-wrapper {
+          border-radius: 12px;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+          padding: 0;
         }
-        .commune-popup .leaflet-popup-content {
-          margin: 10px 14px;
+        .commune-detail-popup .leaflet-popup-content {
+          margin: 0;
+          padding: 12px 14px;
+          line-height: 1.4;
+        }
+        .commune-detail-popup .leaflet-popup-tip {
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
       `}</style>
       <div ref={containerRef} className="w-full h-full" />

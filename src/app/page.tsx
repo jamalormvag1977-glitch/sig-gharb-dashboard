@@ -350,6 +350,7 @@ export default function Home() {
                 selectedCommune={null}
                 selectedProvince={selectedProvince}
                 onCommuneClick={() => {}}
+                projectsByCommune={projectsByCommune}
               />
             </CardContent>
           </Card>
