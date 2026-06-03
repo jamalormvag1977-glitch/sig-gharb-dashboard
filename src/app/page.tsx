@@ -32,6 +32,12 @@ import {
   PieChart,
   ChevronRight,
   FileText,
+  PanelLeftClose,
+  PanelLeftOpen,
+  TrendingUp,
+  Hash,
+  LandPlot,
+  Layers,
 } from "lucide-react";
 
 const MapComponent = dynamic(
@@ -43,9 +49,9 @@ type ViewType = "overview" | "kenitra" | "sidi-kacem" | "sidi-slimane";
 
 const NAV_ITEMS: { id: ViewType; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Vue d'ensemble", icon: LayoutDashboard },
-  { id: "kenitra", label: "Province Kénitra", icon: Building2 },
-  { id: "sidi-kacem", label: "Province Sidi Kacem", icon: Building2 },
-  { id: "sidi-slimane", label: "Province Sidi Slimane", icon: Building2 },
+  { id: "kenitra", label: "Kénitra", icon: Building2 },
+  { id: "sidi-kacem", label: "Sidi Kacem", icon: Building2 },
+  { id: "sidi-slimane", label: "Sidi Slimane", icon: Building2 },
 ];
 
 const PROVINCE_MAP: Record<ViewType, string | null> = {
@@ -55,10 +61,19 @@ const PROVINCE_MAP: Record<ViewType, string | null> = {
   "sidi-slimane": "Sidi Slimane",
 };
 
+const SECTEUR_DOT_COLORS: Record<string, string> = {
+  "Assainissement & Drainage": "#ef4444",
+  "Pistes agricoles": "#3b82f6",
+  "Stations de pompage": "#f59e0b",
+  "Réhabilitation équipements": "#10b981",
+  "Génie civil": "#8b5cf6",
+};
+
 export default function Home() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [geojsonData, setGeojsonData] = useState<GeoJSON.FeatureCollection | null>(null);
   const [activeView, setActiveView] = useState<ViewType>("overview");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     fetch("/api/dashboard")
@@ -75,12 +90,16 @@ export default function Home() {
 
   if (!data) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-100">
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="text-center">
-          <Droplets className="h-12 w-12 text-blue-500 mx-auto animate-pulse" />
-          <p className="mt-4 text-lg font-medium text-gray-600">
+          <div className="relative">
+            <Droplets className="h-14 w-14 text-blue-500 mx-auto animate-pulse" />
+            <div className="absolute -inset-4 bg-blue-400/20 rounded-full blur-xl animate-pulse" />
+          </div>
+          <p className="mt-6 text-lg font-semibold text-gray-700">
             Chargement du dashboard...
           </p>
+          <p className="mt-1 text-sm text-gray-400">SIG Gharb - Projets Inondations</p>
         </div>
       </div>
     );
@@ -116,108 +135,175 @@ export default function Home() {
   }, {});
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
-      {/* DARK SIDEBAR ON THE LEFT */}
-      <aside className="w-72 bg-[#0f0f1a] text-white flex flex-col shrink-0 border-r border-white/10">
-        {/* Header */}
-        <div className="p-5 border-b border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="bg-emerald-600 p-2.5 rounded-xl">
-              <Droplets className="h-5 w-5 text-white" />
+    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
+      {/* SIDEBAR */}
+      <aside
+        className={`${
+          sidebarOpen ? "w-72" : "w-[68px]"
+        } bg-gradient-to-b from-[#0c1222] via-[#111a2e] to-[#0c1222] text-white flex flex-col shrink-0 border-r border-white/[0.06] transition-all duration-300 ease-in-out relative`}
+      >
+        {/* Toggle button at top */}
+        <div className="p-3 flex items-center justify-between border-b border-white/[0.06]">
+          {sidebarOpen && (
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-2 rounded-lg shadow-lg shadow-emerald-500/20 shrink-0">
+                <Droplets className="h-4 w-4 text-white" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-sm font-bold tracking-tight truncate">SIG Gharb</h1>
+                <p className="text-[10px] text-slate-400 mt-0.5 truncate">Inondations 2026</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-base font-bold tracking-tight">SIG Gharb</h1>
-              <p className="text-[11px] text-gray-400 mt-0.5">Projets Inondations 2026</p>
-            </div>
-          </div>
+          )}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className={`${
+              sidebarOpen ? "ml-auto" : "mx-auto"
+            } p-1.5 rounded-lg hover:bg-white/10 transition-colors text-slate-400 hover:text-white shrink-0`}
+            title={sidebarOpen ? "Fermer la barre latérale" : "Ouvrir la barre latérale"}
+          >
+            {sidebarOpen ? (
+              <PanelLeftClose className="h-4 w-4" />
+            ) : (
+              <PanelLeftOpen className="h-4 w-4" />
+            )}
+          </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-3 space-y-1">
+        <nav className="flex-1 p-2 space-y-0.5">
           {NAV_ITEMS.map((item) => {
             const isActive = activeView === item.id;
             return (
               <button
                 key={item.id}
                 onClick={() => setActiveView(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                title={!sidebarOpen ? item.label : undefined}
+                className={`w-full flex items-center gap-2.5 ${
+                  sidebarOpen ? "px-3" : "px-0 justify-center"
+                } py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200 ${
                   isActive
-                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/30"
-                    : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+                    ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/25"
+                    : "text-slate-400 hover:bg-white/[0.06] hover:text-slate-200"
                 }`}
               >
                 <item.icon className="h-4 w-4 shrink-0" />
-                <span className="flex-1 text-left">{item.label}</span>
-                {isActive && <ChevronRight className="h-4 w-4 shrink-0" />}
+                {sidebarOpen && (
+                  <>
+                    <span className="flex-1 text-left truncate">{item.label}</span>
+                    {isActive && <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-70" />}
+                  </>
+                )}
               </button>
             );
           })}
         </nav>
 
-        {/* Province Stats */}
-        <div className="p-4 border-t border-white/10 space-y-3">
-          <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Résumé par province</p>
-          {Object.entries(PROVINCE_COLORS).map(([name, color]) => {
-            const provData = data.byProvince[name];
-            const isActive = selectedProvince === name;
-            return (
-              <div
-                key={name}
-                className={`p-3 rounded-lg border transition-all cursor-pointer ${
-                  isActive
-                    ? "border-emerald-500/50 bg-emerald-500/10"
-                    : "border-white/5 bg-white/[0.03] hover:bg-white/[0.06]"
-                }`}
-                onClick={() => {
-                  const viewId = name === "Kénitra" ? "kenitra" : name === "Sidi Kacem" ? "sidi-kacem" : "sidi-slimane";
-                  setActiveView(viewId);
-                }}
-              >
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-                  <span className="text-xs font-semibold text-gray-200">{name}</span>
+        {/* Province Stats - only when sidebar open */}
+        {sidebarOpen && (
+          <div className="p-3 border-t border-white/[0.06] space-y-2">
+            <p className="text-[9px] text-slate-500 uppercase tracking-widest font-bold px-1">
+              Par province
+            </p>
+            {Object.entries(PROVINCE_COLORS).map(([name, color]) => {
+              const provData = data.byProvince[name];
+              const isActive = selectedProvince === name;
+              return (
+                <div
+                  key={name}
+                  className={`p-2.5 rounded-lg border transition-all cursor-pointer ${
+                    isActive
+                      ? "border-emerald-500/40 bg-emerald-500/[0.08]"
+                      : "border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.05]"
+                  }`}
+                  onClick={() => {
+                    const viewId =
+                      name === "Kénitra"
+                        ? "kenitra"
+                        : name === "Sidi Kacem"
+                        ? "sidi-kacem"
+                        : "sidi-slimane";
+                    setActiveView(viewId);
+                  }}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <div
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: color }}
+                    />
+                    <span className="text-[11px] font-semibold text-slate-200">{name}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1 text-[9px]">
+                    <div>
+                      <span className="text-slate-500">Coût </span>
+                      <span className="text-emerald-400 font-bold">
+                        {((provData?.cout_total ?? 0) / 1e6).toFixed(0)}M
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">Proj </span>
+                      <span className="text-white font-bold">{provData?.nb_projets ?? 0}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">Comm </span>
+                      <span className="text-white font-bold">{provData?.communes ?? 0}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-1 text-[10px]">
-                  <div>
-                    <span className="text-gray-500">Coût: </span>
-                    <span className="text-emerald-400 font-bold">{((provData?.cout_total ?? 0) / 1e6).toFixed(1)} MDH</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Projets: </span>
-                    <span className="text-white font-bold">{provData?.nb_projets ?? 0}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Communes: </span>
-                    <span className="text-white font-bold">{provData?.communes ?? 0}</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Bottom total */}
-        <div className="p-4 border-t border-white/10">
-          <div className="bg-emerald-600/20 rounded-xl p-3 text-center">
-            <p className="text-[10px] text-emerald-300 uppercase tracking-wider font-semibold">Total Gharb</p>
-            <p className="text-xl font-bold text-emerald-400 mt-1">{(totalCost / 1e6).toFixed(1)} MDH</p>
-            <p className="text-[11px] text-gray-400 mt-0.5">{totalProjects} projets / {totalCommunes} communes</p>
-          </div>
+        <div className="p-3 border-t border-white/[0.06]">
+          {sidebarOpen ? (
+            <div className="bg-gradient-to-r from-emerald-600/20 to-teal-600/10 rounded-xl p-3 text-center border border-emerald-500/10">
+              <p className="text-[9px] text-emerald-400/80 uppercase tracking-widest font-bold">
+                Total Gharb
+              </p>
+              <p className="text-2xl font-black text-emerald-400 mt-1">
+                {(totalCost / 1e6).toFixed(1)}
+                <span className="text-sm font-bold ml-0.5">MDH</span>
+              </p>
+              <p className="text-[10px] text-slate-400 mt-0.5">
+                {totalProjects} projets / {totalCommunes} communes
+              </p>
+            </div>
+          ) : (
+            <div className="text-center">
+              <p className="text-[9px] text-emerald-400/60 font-bold">Total</p>
+              <p className="text-xs font-black text-emerald-400 mt-0.5">
+                {(totalCost / 1e6).toFixed(0)}M
+              </p>
+            </div>
+          )}
         </div>
       </aside>
 
-      {/* MAIN CONTENT - Right side */}
+      {/* MAIN CONTENT */}
       <main className="flex-1 overflow-y-auto">
         {/* Page Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 px-6 py-4 sticky top-0 z-20">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-gray-800">
-                {activeView === "overview"
-                  ? "ORMVAG - Tableau de bord"
-                  : `Province de ${selectedProvince}`}
+              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                {activeView === "overview" ? (
+                  <>
+                    <LayoutDashboard className="h-5 w-5 text-blue-600" />
+                    ORMVAG - Tableau de bord
+                  </>
+                ) : (
+                  <>
+                    <Building2
+                      className="h-5 w-5"
+                      style={{ color: PROVINCE_COLORS[selectedProvince!] || "#6366f1" }}
+                    />
+                    Province de {selectedProvince}
+                  </>
+                )}
               </h2>
-              <p className="text-sm text-gray-500">
+              <p className="text-xs text-slate-400 mt-0.5">
                 Projets d&apos;inondations - Région du Gharb - 2026
               </p>
             </div>
@@ -228,10 +314,14 @@ export default function Home() {
                   return (
                     <Badge
                       key={name}
-                      style={{ backgroundColor: color, color: "white" }}
-                      className="text-xs px-3 py-1"
+                      style={{
+                        backgroundColor: color + "18",
+                        color: color,
+                        borderColor: color + "30",
+                      }}
+                      className="text-xs px-3 py-1 border font-semibold"
                     >
-                      {name}: {(provData?.cout_total ?? 0) / 1e6} MDH
+                      {name}: {((provData?.cout_total ?? 0) / 1e6).toFixed(1)} MDH
                     </Badge>
                   );
                 })}
@@ -245,20 +335,32 @@ export default function Home() {
             <KPICard
               title="Coût Global"
               value={`${(totalCost / 1e6).toFixed(1)} MDH`}
-              icon={DollarSign}
-              color="emerald"
+              icon={TrendingUp}
+              gradient="from-emerald-500 to-teal-600"
+              bgGradient="from-emerald-50 to-teal-50"
+              textColor="text-emerald-700"
+              iconBg="bg-emerald-100"
+              iconColor="text-emerald-600"
             />
             <KPICard
               title="Projets"
               value={totalProjects.toString()}
-              icon={BarChart3}
-              color="blue"
+              icon={Hash}
+              gradient="from-blue-500 to-indigo-600"
+              bgGradient="from-blue-50 to-indigo-50"
+              textColor="text-blue-700"
+              iconBg="bg-blue-100"
+              iconColor="text-blue-600"
             />
             <KPICard
               title="Communes"
               value={totalCommunes.toString()}
-              icon={MapPin}
-              color="amber"
+              icon={LandPlot}
+              gradient="from-amber-500 to-orange-600"
+              bgGradient="from-amber-50 to-orange-50"
+              textColor="text-amber-700"
+              iconBg="bg-amber-100"
+              iconColor="text-amber-600"
             />
             <KPICard
               title="Secteurs"
@@ -273,8 +375,12 @@ export default function Home() {
                     ).size.toString()
                   : "0"
               }
-              icon={PieChart}
-              color="rose"
+              icon={Layers}
+              gradient="from-rose-500 to-pink-600"
+              bgGradient="from-rose-50 to-pink-50"
+              textColor="text-rose-700"
+              iconBg="bg-rose-100"
+              iconColor="text-rose-600"
             />
           </div>
 
@@ -282,16 +388,16 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             {/* Map */}
             <div className="lg:col-span-2">
-              <Card className="h-[480px] !py-0 !gap-0 overflow-hidden">
-                <CardHeader className="py-2 px-4 border-b bg-gray-50 shrink-0">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Card className="h-[480px] !py-0 !gap-0 overflow-hidden shadow-md border-slate-200/60">
+                <CardHeader className="py-2.5 px-4 border-b bg-gradient-to-r from-slate-50 to-white shrink-0">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-700">
                     <Map className="h-4 w-4 text-blue-500" />
                     {activeView === "overview"
                       ? "Carte - Région du Gharb"
                       : `Carte - Province ${selectedProvince}`}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-0 flex-1 min-h-0" style={{ height: "calc(100% - 40px)" }}>
+                <CardContent className="p-0 flex-1 min-h-0" style={{ height: "calc(100% - 44px)" }}>
                   <MapComponent
                     geojsonData={geojsonData}
                     selectedCommune={null}
@@ -303,9 +409,9 @@ export default function Home() {
             </div>
 
             {/* Pie Chart */}
-            <Card className="h-[480px] !py-0 !gap-0 overflow-hidden">
-              <CardHeader className="py-2 px-4 border-b bg-gray-50 shrink-0">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Card className="h-[480px] !py-0 !gap-0 overflow-hidden shadow-md border-slate-200/60">
+              <CardHeader className="py-2.5 px-4 border-b bg-gradient-to-r from-slate-50 to-white shrink-0">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-700">
                   <PieChart className="h-4 w-4 text-rose-500" />
                   Répartition par secteur
                 </CardTitle>
@@ -323,9 +429,9 @@ export default function Home() {
           {/* TABLE + BAR CHART */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Summary Table */}
-            <Card className="overflow-hidden">
-              <CardHeader className="py-2 px-4 border-b bg-gray-50">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Card className="overflow-hidden shadow-md border-slate-200/60">
+              <CardHeader className="py-2.5 px-4 border-b bg-gradient-to-r from-slate-50 to-white">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-700">
                   <TableIcon className="h-4 w-4 text-amber-500" />
                   Résumé par commune
                 </CardTitle>
@@ -334,53 +440,74 @@ export default function Home() {
                 <div className="max-h-[350px] overflow-y-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-gray-50">
-                        <TableHead className="text-xs font-semibold">Commune</TableHead>
-                        <TableHead className="text-xs font-semibold text-right">Projets</TableHead>
-                        <TableHead className="text-xs font-semibold text-right">Coût (MDH)</TableHead>
-                        <TableHead className="text-xs font-semibold">Secteur principal</TableHead>
+                      <TableRow className="bg-slate-50/80 border-b border-slate-200">
+                        <TableHead className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                          Commune
+                        </TableHead>
+                        <TableHead className="text-[11px] font-bold text-slate-600 uppercase tracking-wider text-right">
+                          Projets
+                        </TableHead>
+                        <TableHead className="text-[11px] font-bold text-slate-600 uppercase tracking-wider text-right">
+                          Coût (MDH)
+                        </TableHead>
+                        <TableHead className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                          Secteur principal
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {Object.entries(filteredSummary)
                         .sort(([, a], [, b]) => b.cout_total - a.cout_total)
-                        .map(([name, d]) => {
+                        .map(([name, d], idx) => {
                           const topSecteur =
                             Object.entries(d.rubriques).sort(
                               ([, a], [, b]) => b - a
                             )[0]?.[0] || "";
+                          const shortSecteur = SECTEUR_SHORT[topSecteur] || topSecteur.substring(0, 20);
                           return (
-                            <TableRow key={name} className="hover:bg-gray-50">
-                              <TableCell className="text-xs font-medium py-2">
-                                {name}
+                            <TableRow
+                              key={name}
+                              className={`border-b border-slate-100 transition-colors ${
+                                idx % 2 === 0 ? "bg-white" : "bg-slate-50/40"
+                              } hover:bg-blue-50/50`}
+                            >
+                              <TableCell className="text-xs font-semibold py-2.5 text-slate-800">
+                                <div className="flex items-center gap-1.5">
+                                  <div
+                                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                                    style={{ backgroundColor: PROVINCE_COLORS[d.province] || "#999" }}
+                                  />
+                                  {name}
+                                </div>
                               </TableCell>
-                              <TableCell className="text-xs text-right py-2">
-                                <Badge variant="secondary" className="text-xs">
+                              <TableCell className="text-xs text-right py-2.5">
+                                <Badge
+                                  className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-bold px-1.5"
+                                  variant="outline"
+                                >
                                   {d.nb_projets}
                                 </Badge>
                               </TableCell>
-                              <TableCell className="text-xs text-right font-bold text-red-600 py-2">
+                              <TableCell className="text-xs text-right py-2.5 font-bold text-emerald-600">
                                 {(d.cout_total / 1e6).toFixed(2)}
                               </TableCell>
-                              <TableCell className="text-xs py-2">
+                              <TableCell className="text-xs py-2.5">
                                 <span
-                                  className="inline-block w-2 h-2 rounded-full mr-1"
+                                  className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full"
                                   style={{
                                     backgroundColor:
-                                      SECTEUR_SHORT[topSecteur]
-                                        ? {
-                                            "Assainissement & Drainage": "#e74c3c",
-                                            "Pistes agricoles": "#3498db",
-                                            "Stations de pompage": "#f39c12",
-                                            "Réhabilitation équipements": "#2ecc71",
-                                            "Génie civil": "#9b59b6",
-                                          }[
-                                            SECTEUR_SHORT[topSecteur] as string
-                                          ] || "#999"
-                                        : "#999",
+                                      (SECTEUR_DOT_COLORS[shortSecteur] || "#999") + "15",
+                                    color: SECTEUR_DOT_COLORS[shortSecteur] || "#999",
                                   }}
-                                />
-                                {SECTEUR_SHORT[topSecteur] || topSecteur.substring(0, 20)}
+                                >
+                                  <span
+                                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                                    style={{
+                                      backgroundColor: SECTEUR_DOT_COLORS[shortSecteur] || "#999",
+                                    }}
+                                  />
+                                  {shortSecteur}
+                                </span>
                               </TableCell>
                             </TableRow>
                           );
@@ -392,9 +519,9 @@ export default function Home() {
             </Card>
 
             {/* Bar Chart */}
-            <Card className="overflow-hidden">
-              <CardHeader className="py-2 px-4 border-b bg-gray-50">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Card className="overflow-hidden shadow-md border-slate-200/60">
+              <CardHeader className="py-2.5 px-4 border-b bg-gradient-to-r from-slate-50 to-white">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-700">
                   <BarChart3 className="h-4 w-4 text-emerald-500" />
                   Coût par commune (MDH)
                 </CardTitle>
@@ -411,9 +538,9 @@ export default function Home() {
 
           {/* Province comparison (only in overview) */}
           {activeView === "overview" && (
-            <Card className="overflow-hidden">
-              <CardHeader className="py-2 px-4 border-b bg-gray-50">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Card className="overflow-hidden shadow-md border-slate-200/60">
+              <CardHeader className="py-2.5 px-4 border-b bg-gradient-to-r from-slate-50 to-white">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-700">
                   <Building2 className="h-4 w-4 text-blue-500" />
                   Comparaison par province
                 </CardTitle>
@@ -425,12 +552,24 @@ export default function Home() {
           )}
 
           {/* DETAILED PROJECT TABLE BY COMMUNE */}
-          <Card className="overflow-hidden">
-            <CardHeader className="py-2 px-4 border-b bg-gray-50">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <FileText className="h-4 w-4 text-blue-600" />
+          <Card className="overflow-hidden shadow-md border-slate-200/60">
+            <CardHeader className="py-2.5 px-4 border-b bg-gradient-to-r from-slate-50 to-white">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-700">
+                <FileText className="h-4 w-4 text-indigo-500" />
                 Détail des projets par commune
-                {selectedProvince && ` - Province ${selectedProvince}`}
+                {selectedProvince && (
+                  <Badge
+                    className="text-[10px] font-semibold ml-1"
+                    style={{
+                      backgroundColor: (PROVINCE_COLORS[selectedProvince] || "#6366f1") + "15",
+                      color: PROVINCE_COLORS[selectedProvince] || "#6366f1",
+                      borderColor: (PROVINCE_COLORS[selectedProvince] || "#6366f1") + "30",
+                    }}
+                    variant="outline"
+                  >
+                    {selectedProvince}
+                  </Badge>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -444,27 +583,48 @@ export default function Home() {
                   .map(([commune, projects]) => {
                     const communeTotal = projects.reduce((s, p) => s + p.cout, 0);
                     const communeData = filteredSummary[commune];
+                    const provColor = communeData
+                      ? PROVINCE_COLORS[communeData.province] || "#6366f1"
+                      : "#6366f1";
                     return (
                       <div key={commune}>
                         {/* Commune header */}
-                        <div className="bg-gray-100 px-4 py-2.5 flex items-center justify-between border-b border-gray-200 sticky top-0 z-10">
+                        <div
+                          className="px-4 py-2.5 flex items-center justify-between border-b sticky top-0 z-10"
+                          style={{
+                            background: `linear-gradient(135deg, ${provColor}08, ${provColor}15)`,
+                            borderBottomColor: provColor + "20",
+                          }}
+                        >
                           <div className="flex items-center gap-2">
                             <div
-                              className="w-3 h-3 rounded-full"
-                              style={{
-                                backgroundColor: communeData
-                                  ? PROVINCE_COLORS[communeData.province] || "#999"
-                                  : "#999",
-                              }}
+                              className="w-2.5 h-2.5 rounded-full shadow-sm"
+                              style={{ backgroundColor: provColor }}
                             />
-                            <span className="text-sm font-bold text-gray-800">{commune}</span>
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                            <span className="text-sm font-bold text-slate-800">{commune}</span>
+                            <Badge
+                              className="text-[9px] font-semibold px-1.5 py-0"
+                              style={{
+                                backgroundColor: provColor + "15",
+                                color: provColor,
+                                borderColor: provColor + "25",
+                              }}
+                              variant="outline"
+                            >
                               {communeData?.province}
                             </Badge>
                           </div>
-                          <div className="flex items-center gap-4 text-xs">
-                            <span className="text-gray-500">{projects.length} projets</span>
-                            <span className="font-bold text-red-600">
+                          <div className="flex items-center gap-3 text-xs">
+                            <span className="text-slate-400 font-medium">
+                              {projects.length} projets
+                            </span>
+                            <span
+                              className="font-bold px-2 py-0.5 rounded-full text-[11px]"
+                              style={{
+                                backgroundColor: "#05966915",
+                                color: "#059669",
+                              }}
+                            >
                               {(communeTotal / 1e6).toFixed(2)} MDH
                             </span>
                           </div>
@@ -472,46 +632,65 @@ export default function Home() {
                         {/* Projects rows */}
                         <Table>
                           <TableHeader>
-                            <TableRow className="bg-gray-50/80">
-                              <TableHead className="text-[11px] font-semibold text-gray-600 w-[25%]">Intitulé Rubrique</TableHead>
-                              <TableHead className="text-[11px] font-semibold text-gray-600 w-[30%]">Projet</TableHead>
-                              <TableHead className="text-[11px] font-semibold text-gray-600 w-[30%]">Consistance</TableHead>
-                              <TableHead className="text-[11px] font-semibold text-gray-600 text-right w-[15%]">Coût (DH)</TableHead>
+                            <TableRow className="bg-slate-50/60 border-b border-slate-200">
+                              <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider w-[22%]">
+                                Rubrique
+                              </TableHead>
+                              <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider w-[28%]">
+                                Projet
+                              </TableHead>
+                              <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider w-[30%]">
+                                Consistance
+                              </TableHead>
+                              <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right w-[12%]">
+                                Coût (DH)
+                              </TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {projects.map((p, i) => (
-                              <TableRow key={i} className="hover:bg-blue-50/30">
-                                <TableCell className="text-[11px] py-2 align-top">
-                                  <span
-                                    className="inline-block w-1.5 h-1.5 rounded-full mr-1.5 mt-1"
-                                    style={{
-                                      backgroundColor: SECTEUR_SHORT[p.intitule_rubrique]
-                                        ? {
-                                            "Assainissement & Drainage": "#e74c3c",
-                                            "Pistes agricoles": "#3498db",
-                                            "Stations de pompage": "#f39c12",
-                                            "Réhabilitation équipements": "#2ecc71",
-                                            "Génie civil": "#9b59b6",
-                                          }[
-                                            SECTEUR_SHORT[p.intitule_rubrique] as string
-                                          ] || "#999"
-                                        : "#999",
-                                    }}
-                                  />
-                                  {SECTEUR_SHORT[p.intitule_rubrique] || p.intitule_rubrique}
-                                </TableCell>
-                                <TableCell className="text-[11px] py-2 align-top text-gray-700">
-                                  {p.intitule_projet || "—"}
-                                </TableCell>
-                                <TableCell className="text-[11px] py-2 align-top text-gray-600">
-                                  {p.consistance || "—"}
-                                </TableCell>
-                                <TableCell className="text-[11px] py-2 align-top text-right font-bold text-red-600">
-                                  {p.cout.toLocaleString("fr-FR")}
-                                </TableCell>
-                              </TableRow>
-                            ))}
+                            {projects.map((p, i) => {
+                              const shortRub = SECTEUR_SHORT[p.intitule_rubrique] || p.intitule_rubrique;
+                              const dotColor = SECTEUR_DOT_COLORS[shortRub] || "#94a3b8";
+                              return (
+                                <TableRow
+                                  key={i}
+                                  className={`border-b border-slate-100 transition-colors ${
+                                    i % 2 === 0 ? "bg-white" : "bg-slate-50/30"
+                                  } hover:bg-indigo-50/30`}
+                                >
+                                  <TableCell className="text-[11px] py-2.5 align-top">
+                                    <span
+                                      className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full"
+                                      style={{
+                                        backgroundColor: dotColor + "12",
+                                        color: dotColor,
+                                      }}
+                                    >
+                                      <span
+                                        className="w-1.5 h-1.5 rounded-full shrink-0"
+                                        style={{ backgroundColor: dotColor }}
+                                      />
+                                      {shortRub}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell className="text-[11px] py-2.5 align-top text-slate-700 font-medium">
+                                    {p.intitule_projet || (
+                                      <span className="text-slate-300">—</span>
+                                    )}
+                                  </TableCell>
+                                  <TableCell className="text-[11px] py-2.5 align-top text-slate-500 leading-relaxed">
+                                    {p.consistance || (
+                                      <span className="text-slate-300">—</span>
+                                    )}
+                                  </TableCell>
+                                  <TableCell className="text-[11px] py-2.5 align-top text-right">
+                                    <span className="font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                                      {p.cout.toLocaleString("fr-FR")}
+                                    </span>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
                           </TableBody>
                         </Table>
                       </div>
@@ -530,42 +709,41 @@ function KPICard({
   title,
   value,
   icon: Icon,
-  color,
+  gradient,
+  bgGradient,
+  textColor,
+  iconBg,
+  iconColor,
 }: {
   title: string;
   value: string;
   icon: React.ElementType;
-  color: "emerald" | "blue" | "amber" | "rose";
+  gradient: string;
+  bgGradient: string;
+  textColor: string;
+  iconBg: string;
+  iconColor: string;
 }) {
-  const colors = {
-    emerald: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    blue: "bg-blue-50 text-blue-700 border-blue-200",
-    amber: "bg-amber-50 text-amber-700 border-amber-200",
-    rose: "bg-rose-50 text-rose-700 border-rose-200",
-  };
-  const iconColors = {
-    emerald: "text-emerald-600 bg-emerald-100",
-    blue: "text-blue-600 bg-blue-100",
-    amber: "text-amber-600 bg-amber-100",
-    rose: "text-rose-600 bg-rose-100",
-  };
-
   return (
-    <Card className={`border ${colors[color]} shadow-sm`}>
+    <Card
+      className={`border-0 shadow-md overflow-hidden bg-gradient-to-br ${bgGradient}`}
+    >
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               {title}
             </p>
-            <p className={`text-2xl font-bold mt-1 ${colors[color].split(" ")[1]}`}>
-              {value}
-            </p>
+            <p className={`text-2xl font-black mt-1 ${textColor}`}>{value}</p>
           </div>
-          <div className={`p-2 rounded-lg ${iconColors[color]}`}>
-            <Icon className="h-5 w-5" />
+          <div
+            className={`p-2.5 rounded-xl ${iconBg} shadow-sm`}
+          >
+            <Icon className={`h-5 w-5 ${iconColor}`} />
           </div>
         </div>
+        {/* Decorative gradient bar */}
+        <div className={`h-1 w-12 rounded-full bg-gradient-to-r ${gradient} mt-3 opacity-60`} />
       </CardContent>
     </Card>
   );
