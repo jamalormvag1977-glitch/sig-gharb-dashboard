@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/table";
 import {
   CostByCommuneChart,
-  SecteurPieChart,
   ProvinceBarChart,
 } from "@/components/dashboard/Charts";
 import { PROVINCE_COLORS, SECTEUR_SHORT } from "@/data/types";
@@ -27,7 +26,6 @@ import {
   Droplets,
   Building2,
   TableIcon,
-  PieChart,
   ChevronRight,
   FileText,
   PanelLeftClose,
@@ -67,6 +65,12 @@ const SECTEUR_DOT_COLORS: Record<string, string> = {
   "Réhabilitation équipements": "#10b981",
   "Génie civil": "#8b5cf6",
 };
+
+// Province-matched KPI colors
+const KENITRA_COLOR = { gradient: "from-blue-500 to-cyan-600", bgGradient: "from-blue-50 to-cyan-50", textColor: "text-blue-700", iconBg: "bg-blue-100", iconColor: "text-blue-600" };
+const SIDI_KACEM_COLOR = { gradient: "from-red-500 to-rose-600", bgGradient: "from-red-50 to-rose-50", textColor: "text-red-700", iconBg: "bg-red-100", iconColor: "text-red-600" };
+const SIDI_SLIMANE_COLOR = { gradient: "from-emerald-500 to-green-600", bgGradient: "from-emerald-50 to-green-50", textColor: "text-emerald-700", iconBg: "bg-emerald-100", iconColor: "text-emerald-600" };
+const DEFAULT_KPI = { gradient: "from-violet-500 to-purple-600", bgGradient: "from-violet-50 to-purple-50", textColor: "text-violet-700", iconBg: "bg-violet-100", iconColor: "text-violet-600" };
 
 export default function Home() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -133,6 +137,18 @@ export default function Home() {
     return acc;
   }, {});
 
+  // Get KPI color scheme based on selected province
+  const getKpiColors = (index: number) => {
+    if (selectedProvince) {
+      // When a province is selected, use its color for all KPIs with variation
+      if (selectedProvince === "Kénitra") return [KENITRA_COLOR, KENITRA_COLOR, KENITRA_COLOR, KENITRA_COLOR][index];
+      if (selectedProvince === "Sidi Kacem") return [SIDI_KACEM_COLOR, SIDI_KACEM_COLOR, SIDI_KACEM_COLOR, SIDI_KACEM_COLOR][index];
+      if (selectedProvince === "Sidi Slimane") return [SIDI_SLIMANE_COLOR, SIDI_SLIMANE_COLOR, SIDI_SLIMANE_COLOR, SIDI_SLIMANE_COLOR][index];
+    }
+    // Overview: each KPI uses a different province color
+    return [KENITRA_COLOR, SIDI_KACEM_COLOR, SIDI_SLIMANE_COLOR, DEFAULT_KPI][index];
+  };
+
   return (
     <div className="flex h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
       {/* SIDEBAR */}
@@ -173,6 +189,13 @@ export default function Home() {
         <nav className="flex-1 p-2 space-y-0.5">
           {NAV_ITEMS.map((item) => {
             const isActive = activeView === item.id;
+            // Color the active nav item with province color
+            let activeBg = "from-emerald-600 to-teal-600";
+            let activeShadow = "shadow-emerald-600/25";
+            if (item.id === "kenitra") { activeBg = "from-blue-600 to-cyan-600"; activeShadow = "shadow-blue-600/25"; }
+            if (item.id === "sidi-kacem") { activeBg = "from-red-600 to-rose-600"; activeShadow = "shadow-red-600/25"; }
+            if (item.id === "sidi-slimane") { activeBg = "from-emerald-600 to-green-600"; activeShadow = "shadow-emerald-600/25"; }
+
             return (
               <button
                 key={item.id}
@@ -182,7 +205,7 @@ export default function Home() {
                   sidebarOpen ? "px-3" : "px-0 justify-center"
                 } py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200 ${
                   isActive
-                    ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/25"
+                    ? `bg-gradient-to-r ${activeBg} text-white shadow-lg ${activeShadow}`
                     : "text-slate-400 hover:bg-white/[0.06] hover:text-slate-200"
                 }`}
               >
@@ -198,63 +221,7 @@ export default function Home() {
           })}
         </nav>
 
-        {/* Province Stats - only when sidebar open */}
-        {sidebarOpen && (
-          <div className="p-3 border-t border-white/[0.06] space-y-2">
-            <p className="text-[9px] text-slate-500 uppercase tracking-widest font-bold px-1">
-              Par province
-            </p>
-            {Object.entries(PROVINCE_COLORS).map(([name, color]) => {
-              const provData = data.byProvince[name];
-              const isActive = selectedProvince === name;
-              return (
-                <div
-                  key={name}
-                  className={`p-2.5 rounded-lg border transition-all cursor-pointer ${
-                    isActive
-                      ? "border-emerald-500/40 bg-emerald-500/[0.08]"
-                      : "border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.05]"
-                  }`}
-                  onClick={() => {
-                    const viewId =
-                      name === "Kénitra"
-                        ? "kenitra"
-                        : name === "Sidi Kacem"
-                        ? "sidi-kacem"
-                        : "sidi-slimane";
-                    setActiveView(viewId);
-                  }}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <div
-                      className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: color }}
-                    />
-                    <span className="text-[11px] font-semibold text-slate-200">{name}</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-1 text-[9px]">
-                    <div>
-                      <span className="text-slate-500">Coût </span>
-                      <span className="text-emerald-400 font-bold">
-                        {((provData?.cout_total ?? 0) / 1e6).toFixed(0)}M
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500">Proj </span>
-                      <span className="text-white font-bold">{provData?.nb_projets ?? 0}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500">Comm </span>
-                      <span className="text-white font-bold">{provData?.communes ?? 0}</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Bottom total */}
+        {/* Bottom total - removed province stats section */}
         <div className="p-3 border-t border-white/[0.06]">
           {sidebarOpen ? (
             <div className="bg-gradient-to-r from-emerald-600/20 to-teal-600/10 rounded-xl p-3 text-center border border-emerald-500/10">
@@ -329,37 +296,25 @@ export default function Home() {
         </div>
 
         <div className="p-5 space-y-5">
-          {/* KPI Cards */}
+          {/* KPI Cards - colors match provinces */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <KPICard
               title="Coût Global"
               value={`${(totalCost / 1e6).toFixed(1)} MDH`}
               icon={TrendingUp}
-              gradient="from-emerald-500 to-teal-600"
-              bgGradient="from-emerald-50 to-teal-50"
-              textColor="text-emerald-700"
-              iconBg="bg-emerald-100"
-              iconColor="text-emerald-600"
+              {...getKpiColors(0)}
             />
             <KPICard
               title="Projets"
               value={totalProjects.toString()}
               icon={Hash}
-              gradient="from-blue-500 to-indigo-600"
-              bgGradient="from-blue-50 to-indigo-50"
-              textColor="text-blue-700"
-              iconBg="bg-blue-100"
-              iconColor="text-blue-600"
+              {...getKpiColors(1)}
             />
             <KPICard
               title="Communes"
               value={totalCommunes.toString()}
               icon={LandPlot}
-              gradient="from-amber-500 to-orange-600"
-              bgGradient="from-amber-50 to-orange-50"
-              textColor="text-amber-700"
-              iconBg="bg-amber-100"
-              iconColor="text-amber-600"
+              {...getKpiColors(2)}
             />
             <KPICard
               title="Secteurs"
@@ -375,59 +330,33 @@ export default function Home() {
                   : "0"
               }
               icon={Layers}
-              gradient="from-rose-500 to-pink-600"
-              bgGradient="from-rose-50 to-pink-50"
-              textColor="text-rose-700"
-              iconBg="bg-rose-100"
-              iconColor="text-rose-600"
+              {...getKpiColors(3)}
             />
           </div>
 
-          {/* MAP + PIE side by side */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            {/* Map */}
-            <div className="lg:col-span-2">
-              <Card className="h-[480px] !py-0 !gap-0 overflow-hidden shadow-md border-slate-200/60">
-                <CardHeader className="py-2.5 px-4 border-b bg-gradient-to-r from-slate-50 to-white shrink-0">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-700">
-                    <Map className="h-4 w-4 text-blue-500" />
-                    {activeView === "overview"
-                      ? "Carte - Région du Gharb"
-                      : `Carte - Province ${selectedProvince}`}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-0 flex-1 min-h-0" style={{ height: "calc(100% - 44px)" }}>
-                  <MapComponent
-                    geojsonData={geojsonData}
-                    selectedCommune={null}
-                    selectedProvince={selectedProvince}
-                    onCommuneClick={() => {}}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Pie Chart */}
-            <Card className="h-[480px] !py-0 !gap-0 overflow-hidden shadow-md border-slate-200/60">
-              <CardHeader className="py-2.5 px-4 border-b bg-gradient-to-r from-slate-50 to-white shrink-0">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-700">
-                  <PieChart className="h-4 w-4 text-rose-500" />
-                  Répartition par secteur
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 flex-1 min-h-0 overflow-hidden">
-                <SecteurPieChart
-                  summary={filteredSummary}
-                  selectedProvince={selectedProvince}
-                  selectedCommune={null}
-                />
-              </CardContent>
-            </Card>
-          </div>
+          {/* MAP - full width (no pie chart) */}
+          <Card className="h-[560px] !py-0 !gap-0 overflow-hidden shadow-md border-slate-200/60">
+            <CardHeader className="py-2.5 px-4 border-b bg-gradient-to-r from-slate-50 to-white shrink-0">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-700">
+                <Map className="h-4 w-4 text-blue-500" />
+                {activeView === "overview"
+                  ? "Carte - Région du Gharb"
+                  : `Carte - Province ${selectedProvince}`}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 flex-1 min-h-0" style={{ height: "calc(100% - 44px)" }}>
+              <MapComponent
+                geojsonData={geojsonData}
+                selectedCommune={null}
+                selectedProvince={selectedProvince}
+                onCommuneClick={() => {}}
+              />
+            </CardContent>
+          </Card>
 
           {/* TABLE + BAR CHART */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {/* Summary Table - NO SCROLL, full display */}
+            {/* Summary Table */}
             <Card className="overflow-hidden shadow-md border-slate-200/60">
               <CardHeader className="py-2.5 px-4 border-b bg-gradient-to-r from-slate-50 to-white">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-700">
