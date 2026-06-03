@@ -38,7 +38,6 @@ export default function MapComponent({
 }: MapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const geoLayerRef = useRef<L.GeoJSON | null>(null);
-  const maskLayerRef = useRef<L.Layer | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const currentProvinceRef = useRef<string | null>(null);
 
@@ -107,10 +106,6 @@ export default function MapComponent({
     if (geoLayerRef.current) {
       map.removeLayer(geoLayerRef.current);
       geoLayerRef.current = null;
-    }
-    if (maskLayerRef.current) {
-      map.removeLayer(maskLayerRef.current);
-      maskLayerRef.current = null;
     }
 
     const filteredFeatures = geojsonData.features.filter((feature) => {
@@ -291,34 +286,6 @@ export default function MapComponent({
 
     geoLayerRef.current = layer;
 
-    // Add dark mask around the province when one is selected
-    if (selectedProvince) {
-      const allCoords: L.LatLng[] = [];
-      layer.eachLayer((lyr: any) => {
-        const ll = (lyr as L.Polygon).getLatLngs();
-        if (ll && ll[0]) {
-          (ll[0] as L.LatLng[]).forEach((latlng: L.LatLng) => allCoords.push(latlng));
-        }
-      });
-
-      if (allCoords.length > 0) {
-        const outerRing: L.LatLngExpression[] = [
-          [85, -180], [85, 180], [-85, 180], [-85, -180],
-        ];
-        const innerRing = allCoords.map((ll) => [ll.lat, ll.lng] as L.LatLngExpression).reverse();
-
-        const maskPolygon = L.polygon([outerRing, innerRing] as any, {
-          stroke: false,
-          fillColor: "#0a1628",
-          fillOpacity: 0.75,
-          interactive: false,
-        });
-
-        maskPolygon.addTo(map);
-        maskLayerRef.current = maskPolygon;
-      }
-    }
-
     // Auto-zoom
     const bounds = layer.getBounds();
     if (bounds.isValid()) {
@@ -394,7 +361,7 @@ export default function MapComponent({
   }, [geojsonData, selectedCommune, selectedProvince, onCommuneClick, projectsByCommune]);
 
   return (
-    <>
+    <div className="relative w-full h-full">
       <style>{`
         .commune-label-tooltip {
           background: rgba(0,0,0,0.55) !important;
@@ -422,7 +389,16 @@ export default function MapComponent({
           box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
       `}</style>
+      {/* Dark overlay outside province when selected */}
+      {selectedProvince && (
+        <div
+          className="absolute inset-0 z-[400] pointer-events-none"
+          style={{
+            boxShadow: "inset 0 0 80px 60px rgba(10,22,40,0.7)",
+          }}
+        />
+      )}
       <div ref={containerRef} className="w-full h-full" />
-    </>
+    </div>
   );
 }
