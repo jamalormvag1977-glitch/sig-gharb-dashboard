@@ -24,13 +24,6 @@ const GHARB_BOUNDS: L.LatLngBoundsExpression = [
   [35.3, -5.0],
 ];
 
-// Image overlay bounds - approximate bounds for the Arabic map
-// The map covers the entire Gharb region (3 provinces)
-const MAP_IMAGE_BOUNDS: L.LatLngBoundsExpression = [
-  [34.05, -6.8],  // SW corner
-  [35.05, -5.1],  // NE corner
-];
-
 export default function MapComponent({
   geojsonData,
   selectedCommune,
@@ -39,9 +32,9 @@ export default function MapComponent({
 }: MapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const geoLayerRef = useRef<L.GeoJSON | null>(null);
+  const labelLayerRef = useRef<L.LayerGroup | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const currentProvinceRef = useRef<string | null>(null);
-  const imageOverlayRef = useRef<L.ImageOverlay | null>(null);
 
   // Initialize map once
   useEffect(() => {
@@ -59,33 +52,20 @@ export default function MapComponent({
       maxBoundsViscosity: 1.0,
     });
 
+    // Satellite only
     const satellite = L.tileLayer(
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
       { attribution: "&copy; Esri", maxZoom: 18 }
     );
 
-    const osmBase = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap",
-      maxZoom: 18,
-    });
+    // Labels overlay for context (place names on top of satellite)
+    const labels = L.tileLayer(
+      "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",
+      { attribution: "&copy; CARTO", maxZoom: 18, pane: "overlayPane" }
+    );
 
-    // Arabic map image overlay
-    const arabicMap = L.imageOverlay("/carte-provinces-arabe.jpg", MAP_IMAGE_BOUNDS, {
-      opacity: 0.7,
-      interactive: false,
-    });
-
-    osmBase.addTo(newMap);
-
-    // Layer control with all options including the Arabic map overlay
-    const baseMaps = {
-      Plan: osmBase,
-      Satellite: satellite,
-    };
-    const overlayMaps = {
-      "Carte administrative (AR)": arabicMap,
-    };
-    L.control.layers(baseMaps, overlayMaps, { collapsed: false }).addTo(newMap);
+    satellite.addTo(newMap);
+    labels.addTo(newMap);
 
     mapRef.current = newMap;
 
@@ -121,9 +101,14 @@ export default function MapComponent({
     if (currentProvinceRef.current === selectedProvince && geoLayerRef.current) return;
     currentProvinceRef.current = selectedProvince;
 
+    // Remove previous layers
     if (geoLayerRef.current) {
       map.removeLayer(geoLayerRef.current);
       geoLayerRef.current = null;
+    }
+    if (labelLayerRef.current) {
+      map.removeLayer(labelLayerRef.current);
+      labelLayerRef.current = null;
     }
 
     const filteredFeatures = geojsonData.features.filter((feature) => {
@@ -171,6 +156,9 @@ export default function MapComponent({
       features: filteredFeatures,
     };
 
+    // Layer group for permanent labels
+    const labelLayer = L.layerGroup();
+
     const layer = L.geoJSON(filteredCollection as any, {
       style: (feature) => {
         const props = feature?.properties;
@@ -210,11 +198,35 @@ export default function MapComponent({
 
         if (props.has_project) {
           const costMDH = (props.cout_total / 1e6).toFixed(2);
+
+          // Permanent label showing data directly on the map
           lyr.bindTooltip(
-            `<div style="font-weight:bold;font-size:13px;">${name}</div>
-             <div style="font-size:11px;">${props.province_project}</div>
-             <div style="font-size:12px;">${props.nb_projets} projets | ${costMDH} MDH</div>`,
-            { sticky: true, className: "custom-tooltip" }
+            `<div style="text-align:center; line-height:1.4;">
+              <div style="font-weight:bold; font-size:12px; color:#fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${name}</div>
+              <div style="font-size:11px; color:#ffe066; font-weight:600; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${costMDH} MDH</div>
+              <div style="font-size:10px; color:#ccc; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${props.nb_projets} projet${props.nb_projets > 1 ? "s" : ""}</div>
+            </div>`,
+            {
+              permanent: true,
+              direction: "center",
+              className: "commune-label-tooltip",
+              offset: [0, 0],
+            }
+          );
+
+          // Hover tooltip with more detail
+          lyr.bindPopup(
+            `<div style="font-size:13px; min-width:160px;">
+              <div style="font-weight:bold; font-size:15px; margin-bottom:4px;">${name}</div>
+              <div style="color:#666; font-size:11px; margin-bottom:6px;">${props.province_project}</div>
+              <div style="display:flex; justify-content:space-between; padding:3px 0; border-top:1px solid #eee;">
+                <span>Projets</span><strong>${props.nb_projets}</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding:3px 0; border-top:1px solid #eee;">
+                <span>Coût</span><strong style="color:#16a34a;">${costMDH} MDH</strong>
+              </div>
+            </div>`,
+            { className: "commune-popup" }
           );
 
           lyr.on({
@@ -238,7 +250,7 @@ export default function MapComponent({
           });
         } else {
           lyr.bindTooltip(
-            `<div style="font-size:12px;color:#888;">${name}</div>`,
+            `<div style="font-size:12px; color:#888;">${name}</div>`,
             { sticky: true }
           );
         }
@@ -246,6 +258,7 @@ export default function MapComponent({
     }).addTo(map);
 
     geoLayerRef.current = layer;
+    labelLayerRef.current = labelLayer;
 
     const bounds = layer.getBounds();
     if (bounds.isValid()) {
@@ -258,5 +271,28 @@ export default function MapComponent({
     }
   }, [geojsonData, selectedCommune, selectedProvince, onCommuneClick]);
 
-  return <div ref={containerRef} className="w-full h-full" />;
+  return (
+    <>
+      <style>{`
+        .commune-label-tooltip {
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+        .commune-label-tooltip::before {
+          display: none !important;
+        }
+        .commune-popup .leaflet-popup-content-wrapper {
+          border-radius: 10px;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+        .commune-popup .leaflet-popup-content {
+          margin: 10px 14px;
+        }
+      `}</style>
+      <div ref={containerRef} className="w-full h-full" />
+    </>
+  );
 }
