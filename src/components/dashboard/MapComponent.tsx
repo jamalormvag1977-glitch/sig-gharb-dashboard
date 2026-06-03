@@ -249,23 +249,42 @@ export default function MapComponent({
       map.setMaxBounds(null);
 
       if (selectedProvince) {
-        // Fly to province bounds first
+        // Calculate the ideal zoom to fit the province, but enforce a minimum
+        const MIN_ZOOM = 11;
+        const center = bounds.getCenter();
+
+        // First fly to bounds
         map.flyToBounds(bounds, {
-          padding: [40, 40],
+          padding: [30, 30],
           maxZoom: 14,
           animate: true,
           duration: 1,
         });
 
-        // After fly finishes, ensure minimum zoom so labels are readable
-        const onZoomEnd = () => {
-          map.off("zoomend", onZoomEnd);
+        // After animation, check zoom and force minimum if needed
+        const ensureMinZoom = () => {
+          map.off("zoomend", ensureMinZoom);
+          map.off("moveend", ensureMinZoom);
           const currentZoom = map.getZoom();
-          if (currentZoom < 10) {
-            map.flyTo(bounds.getCenter(), 10, { duration: 0.5 });
+          if (currentZoom < MIN_ZOOM) {
+            // Zoom is too low - force to minimum zoom level
+            map.flyTo(center, MIN_ZOOM, { duration: 0.6 });
           }
         };
-        map.on("zoomend", onZoomEnd);
+
+        // Listen for both events as backup
+        map.on("zoomend", ensureMinZoom);
+        map.on("moveend", ensureMinZoom);
+
+        // Safety timeout in case events don't fire
+        setTimeout(() => {
+          map.off("zoomend", ensureMinZoom);
+          map.off("moveend", ensureMinZoom);
+          const currentZoom = map.getZoom();
+          if (currentZoom < MIN_ZOOM) {
+            map.flyTo(center, MIN_ZOOM, { duration: 0.6 });
+          }
+        }, 1500);
       } else {
         // Overview: show entire Gharb region
         map.flyToBounds(bounds, {
