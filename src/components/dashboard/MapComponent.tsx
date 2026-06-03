@@ -18,10 +18,17 @@ const GAD_PROVINCE_MAP: Record<string, string> = {
 
 const SIDI_SLIMANE_CERCLE = "SidiSliman";
 
-// Gharb region bounds - restrict the map so we never see full Morocco
+// Gharb region bounds
 const GHARB_BOUNDS: L.LatLngBoundsExpression = [
-  [33.8, -6.8],  // SW corner
-  [35.3, -5.0],  // NE corner
+  [33.8, -6.8],
+  [35.3, -5.0],
+];
+
+// Image overlay bounds - approximate bounds for the Arabic map
+// The map covers the entire Gharb region (3 provinces)
+const MAP_IMAGE_BOUNDS: L.LatLngBoundsExpression = [
+  [34.05, -6.8],  // SW corner
+  [35.05, -5.1],  // NE corner
 ];
 
 export default function MapComponent({
@@ -34,6 +41,7 @@ export default function MapComponent({
   const geoLayerRef = useRef<L.GeoJSON | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const currentProvinceRef = useRef<string | null>(null);
+  const imageOverlayRef = useRef<L.ImageOverlay | null>(null);
 
   // Initialize map once
   useEffect(() => {
@@ -48,7 +56,7 @@ export default function MapComponent({
       minZoom: 8,
       maxZoom: 15,
       maxBounds: GHARB_BOUNDS,
-      maxBoundsViscosity: 1.0,  // Prevents dragging outside bounds
+      maxBoundsViscosity: 1.0,
     });
 
     const satellite = L.tileLayer(
@@ -61,8 +69,24 @@ export default function MapComponent({
       maxZoom: 18,
     });
 
+    // Arabic map image overlay
+    const arabicMap = L.imageOverlay("/carte-provinces-arabe.jpg", MAP_IMAGE_BOUNDS, {
+      opacity: 0.7,
+      interactive: false,
+    });
+
     osmBase.addTo(newMap);
-    L.control.layers({ Plan: osmBase, Satellite: satellite }, {}).addTo(newMap);
+
+    // Layer control with all options including the Arabic map overlay
+    const baseMaps = {
+      Plan: osmBase,
+      Satellite: satellite,
+    };
+    const overlayMaps = {
+      "Carte administrative (AR)": arabicMap,
+    };
+    L.control.layers(baseMaps, overlayMaps, { collapsed: false }).addTo(newMap);
+
     mapRef.current = newMap;
 
     const timeouts = [
@@ -94,23 +118,19 @@ export default function MapComponent({
     const map = mapRef.current;
     if (!map || !geojsonData) return;
 
-    // Skip if province hasn't actually changed and we already have a layer
     if (currentProvinceRef.current === selectedProvince && geoLayerRef.current) return;
     currentProvinceRef.current = selectedProvince;
 
-    // Remove existing layer
     if (geoLayerRef.current) {
       map.removeLayer(geoLayerRef.current);
       geoLayerRef.current = null;
     }
 
-    // Filter features by province
     const filteredFeatures = geojsonData.features.filter((feature) => {
       const props = feature.properties;
       if (!props) return false;
 
       if (!selectedProvince) {
-        // Overview: show all Gharb communes with projects
         return props.has_project;
       }
 
@@ -227,10 +247,8 @@ export default function MapComponent({
 
     geoLayerRef.current = layer;
 
-    // Fit bounds tightly to the filtered province
     const bounds = layer.getBounds();
     if (bounds.isValid()) {
-      // Set maxBounds to province bounds so user can't scroll to see all Morocco
       map.setMaxBounds(bounds.pad(0.3));
       map.fitBounds(bounds, {
         padding: [20, 20],
