@@ -335,7 +335,7 @@ export default function Home() {
           </div>
 
           {/* MAP - full width (no pie chart) */}
-          <Card className="h-[560px] !py-0 !gap-0 overflow-hidden shadow-md border-slate-200/60">
+          <Card className="h-[700px] !py-0 !gap-0 overflow-hidden shadow-md border-slate-200/60">
             <CardHeader className="py-2.5 px-4 border-b bg-gradient-to-r from-slate-50 to-white shrink-0">
               <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-700">
                 <Map className="h-4 w-4 text-blue-500" />
