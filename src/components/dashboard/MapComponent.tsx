@@ -18,12 +18,6 @@ const GAD_PROVINCE_MAP: Record<string, string> = {
 
 const SIDI_SLIMANE_CERCLE = "SidiSliman";
 
-// Gharb region bounds
-const GHARB_BOUNDS: L.LatLngBoundsExpression = [
-  [33.8, -6.8],
-  [35.3, -5.0],
-];
-
 export default function MapComponent({
   geojsonData,
   selectedCommune,
@@ -32,7 +26,6 @@ export default function MapComponent({
 }: MapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const geoLayerRef = useRef<L.GeoJSON | null>(null);
-  const labelLayerRef = useRef<L.LayerGroup | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const currentProvinceRef = useRef<string | null>(null);
 
@@ -46,10 +39,8 @@ export default function MapComponent({
       zoom: 9,
       zoomControl: true,
       scrollWheelZoom: true,
-      minZoom: 8,
-      maxZoom: 15,
-      maxBounds: GHARB_BOUNDS,
-      maxBoundsViscosity: 1.0,
+      minZoom: 7,
+      maxZoom: 16,
     });
 
     // Satellite only
@@ -58,7 +49,7 @@ export default function MapComponent({
       { attribution: "&copy; Esri", maxZoom: 18 }
     );
 
-    // Labels overlay for context (place names on top of satellite)
+    // Labels overlay for context
     const labels = L.tileLayer(
       "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",
       { attribution: "&copy; CARTO", maxZoom: 18, pane: "overlayPane" }
@@ -106,10 +97,6 @@ export default function MapComponent({
       map.removeLayer(geoLayerRef.current);
       geoLayerRef.current = null;
     }
-    if (labelLayerRef.current) {
-      map.removeLayer(labelLayerRef.current);
-      labelLayerRef.current = null;
-    }
 
     const filteredFeatures = geojsonData.features.filter((feature) => {
       const props = feature.properties;
@@ -156,9 +143,6 @@ export default function MapComponent({
       features: filteredFeatures,
     };
 
-    // Layer group for permanent labels
-    const labelLayer = L.layerGroup();
-
     const layer = L.geoJSON(filteredCollection as any, {
       style: (feature) => {
         const props = feature?.properties;
@@ -201,10 +185,10 @@ export default function MapComponent({
 
           // Permanent label showing data directly on the map
           lyr.bindTooltip(
-            `<div style="text-align:center; line-height:1.4;">
-              <div style="font-weight:bold; font-size:12px; color:#fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${name}</div>
-              <div style="font-size:11px; color:#ffe066; font-weight:600; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${costMDH} MDH</div>
-              <div style="font-size:10px; color:#ccc; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${props.nb_projets} projet${props.nb_projets > 1 ? "s" : ""}</div>
+            `<div style="text-align:center; line-height:1.3;">
+              <div style="font-weight:bold; font-size:11px; color:#fff; text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5);">${name}</div>
+              <div style="font-size:10px; color:#ffe066; font-weight:700; text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5);">${costMDH} MDH</div>
+              <div style="font-size:9px; color:#ddd; text-shadow: 0 1px 4px rgba(0,0,0,0.9);">${props.nb_projets} projet${props.nb_projets > 1 ? "s" : ""}</div>
             </div>`,
             {
               permanent: true,
@@ -214,7 +198,7 @@ export default function MapComponent({
             }
           );
 
-          // Hover tooltip with more detail
+          // Click popup with more detail
           lyr.bindPopup(
             `<div style="font-size:13px; min-width:160px;">
               <div style="font-weight:bold; font-size:15px; margin-bottom:4px;">${name}</div>
@@ -258,16 +242,30 @@ export default function MapComponent({
     }).addTo(map);
 
     geoLayerRef.current = layer;
-    labelLayerRef.current = labelLayer;
 
+    // Auto-zoom to fit the province properly
     const bounds = layer.getBounds();
     if (bounds.isValid()) {
-      map.setMaxBounds(bounds.pad(0.3));
-      map.fitBounds(bounds, {
-        padding: [20, 20],
-        maxZoom: selectedProvince ? 11 : 9,
-        animate: true,
-      });
+      // Remove any previous maxBounds restriction
+      map.setMaxBounds(null);
+
+      if (selectedProvince) {
+        // Zoom tight on the province so labels are visible
+        map.fitBounds(bounds, {
+          padding: [30, 30],
+          maxZoom: 12,
+          animate: true,
+          duration: 0.8,
+        });
+      } else {
+        // Overview: show entire Gharb region
+        map.fitBounds(bounds, {
+          padding: [20, 20],
+          maxZoom: 10,
+          animate: true,
+          duration: 0.8,
+        });
+      }
     }
   }, [geojsonData, selectedCommune, selectedProvince, onCommuneClick]);
 
@@ -275,11 +273,13 @@ export default function MapComponent({
     <>
       <style>{`
         .commune-label-tooltip {
-          background: transparent !important;
-          border: none !important;
-          box-shadow: none !important;
-          padding: 0 !important;
+          background: rgba(0,0,0,0.55) !important;
+          border: 1px solid rgba(255,255,255,0.15) !important;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+          padding: 3px 6px !important;
           margin: 0 !important;
+          border-radius: 4px !important;
+          backdrop-filter: blur(2px);
         }
         .commune-label-tooltip::before {
           display: none !important;
