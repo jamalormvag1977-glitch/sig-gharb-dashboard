@@ -923,7 +923,7 @@ export default function Home() {
                   Analyse par rubrique
                 </h3>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {Object.entries(PROVINCE_COLORS).map(([provinceName, provColor]) => {
                   const provProjects = data.projects.filter(p => p.province === provinceName);
                   const provTotal = provProjects.reduce((s, p) => s + p.cout, 0);
@@ -939,6 +939,7 @@ export default function Home() {
                   }, {});
 
                   const sortedRubriques = Object.entries(rubriquesInProvince).sort(([, a], [, b]) => b.cout - a.cout);
+                  const nbCommunes = new Set(provProjects.map(p => p.commune)).size;
 
                   return (
                     <Card
@@ -955,9 +956,14 @@ export default function Home() {
                               {provProjects.length} projets
                             </Badge>
                           </div>
-                          <span className="font-bold px-2.5 py-1 rounded-lg text-[11px]" style={{ backgroundColor: provColor + "12", color: provColor }}>
-                            {(provTotal / 1e6).toFixed(2)} MDH
-                          </span>
+                          <div className="flex items-center gap-3">
+                            <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-bold px-2" variant="outline">
+                              {nbCommunes} communes
+                            </Badge>
+                            <span className="font-bold px-2.5 py-1 rounded-lg text-[11px] border" style={{ backgroundColor: provColor + "12", color: provColor, borderColor: provColor + "30" }}>
+                              {(provTotal / 1e6).toFixed(2)} MDH
+                            </span>
+                          </div>
                         </div>
                       </CardHeader>
                       <CardContent className="p-4">
@@ -965,71 +971,162 @@ export default function Home() {
                           const shortRub = SECTEUR_SHORT[rubrique] || rubrique;
                           const dotColor = SECTEUR_DOT_COLORS[shortRub] || "#94a3b8";
                           const pct = provTotal > 0 ? (d.cout / provTotal) * 100 : 0;
+                          const avgCost = d.count > 0 ? d.cout / d.count : 0;
+
+                          // Group by commune within this rubrique
+                          const communesInRubrique = d.projects.reduce<Record<string, { cout: number; count: number }>>((acc, p) => {
+                            if (!acc[p.commune]) acc[p.commune] = { cout: 0, count: 0 };
+                            acc[p.commune].cout += p.cout;
+                            acc[p.commune].count += 1;
+                            return acc;
+                          }, {});
+                          const sortedCommunes = Object.entries(communesInRubrique).sort(([, a], [, b]) => b.cout - a.cout);
+                          const topCommune = sortedCommunes[0];
+                          const topCommunePct = topCommune ? (topCommune[1].cout / d.cout) * 100 : 0;
+
                           return (
-                            <div key={rubrique} className={rIdx > 0 ? "mt-4 pt-4 border-t border-slate-100" : ""}>
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
-                                <span className="text-[11px] font-bold text-slate-800">{shortRub}</span>
-                                <span className="font-bold px-2 py-0.5 rounded text-[10px] border" style={{ backgroundColor: dotColor + "12", color: dotColor, borderColor: dotColor + "30" }}>
-                                  {(d.cout / 1e6).toFixed(2)} MDH
-                                </span>
-                                <span className="text-[10px] font-bold text-slate-500">{pct.toFixed(1)}%</span>
-                                <Badge className="bg-blue-50 text-blue-600 border-blue-200 text-[9px] font-bold px-1.5 py-0 shrink-0" variant="outline">
-                                  {d.count}P
-                                </Badge>
-                              </div>
-                              {/* Progress bar */}
-                              <div className="relative mb-3" style={{ height: "14px" }}>
-                                <div className="absolute inset-0 bg-slate-100 rounded-full overflow-hidden">
-                                  <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: dotColor + (rIdx === 0 ? "" : "99") }} />
+                            <div key={rubrique} className={rIdx > 0 ? "mt-5 pt-5 border-t-2 border-slate-200/60" : ""}>
+                              {/* Rubrique header */}
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                  <span className="w-3 h-3 rounded-full shadow-sm shrink-0" style={{ backgroundColor: dotColor }} />
+                                  <span className="text-sm font-bold text-slate-800">{shortRub}</span>
                                 </div>
-                                {pct > 20 ? (
-                                  <span className="absolute inset-0 flex items-center pl-2 text-[9px] font-bold text-white pointer-events-none" style={{ maxWidth: `${pct}%` }}>
+                                <div className="flex items-center gap-3">
+                                  <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-bold px-2" variant="outline">
+                                    {d.count} projets
+                                  </Badge>
+                                  <span className="font-bold px-2.5 py-1 rounded-lg text-[11px] border" style={{ backgroundColor: dotColor + "12", color: dotColor, borderColor: dotColor + "30" }}>
                                     {(d.cout / 1e6).toFixed(2)} MDH
                                   </span>
-                                ) : (
-                                  <span className="absolute top-0 flex items-center h-full text-[9px] font-bold pointer-events-none whitespace-nowrap" style={{ left: `calc(${pct}% + 6px)`, color: dotColor }}>
-                                    {(d.cout / 1e6).toFixed(2)} MDH
+                                  <span className="font-bold px-2.5 py-1 rounded-lg text-[11px] bg-slate-100 text-slate-700 border border-slate-200">
+                                    {pct.toFixed(1)}%
                                   </span>
-                                )}
+                                </div>
                               </div>
-                              {/* Projects with consistance */}
-                              <Table>
-                                <TableHeader>
-                                  <TableRow className="bg-slate-50/40 border-b border-slate-200">
-                                    <TableHead className="text-[9px] font-bold text-slate-400 uppercase tracking-wider w-[16%]">Commune</TableHead>
-                                    <TableHead className="text-[9px] font-bold text-slate-400 uppercase tracking-wider w-[24%]">Projet</TableHead>
-                                    <TableHead className="text-[9px] font-bold text-slate-400 uppercase tracking-wider w-[38%]">Consistance</TableHead>
-                                    <TableHead className="text-[9px] font-bold text-slate-400 uppercase tracking-wider text-right w-[12%]">Coût (DH)</TableHead>
-                                    <TableHead className="text-[9px] font-bold text-slate-400 uppercase tracking-wider text-right w-[10%]">% Rub.</TableHead>
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {d.projects
-                                    .sort((a, b) => b.cout - a.cout)
-                                    .map((p, i) => {
-                                    const projPct = d.cout > 0 ? (p.cout / d.cout) * 100 : 0;
+
+                              {/* Progress bar */}
+                              <div className="mb-4">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-[10px] text-slate-500 font-medium">Part dans le budget provincial</span>
+                                  <span className="text-[10px] font-bold" style={{ color: dotColor }}>{pct.toFixed(1)}%</span>
+                                </div>
+                                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                  <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: dotColor }} />
+                                </div>
+                              </div>
+
+                              {/* Analysis KPIs */}
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                                <div className="bg-white rounded-lg border border-slate-200 p-3">
+                                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Coût moyen / projet</p>
+                                  <p className="text-sm font-black text-slate-800">{(avgCost / 1e6).toFixed(2)} <span className="text-[10px] font-semibold text-slate-400">MDH</span></p>
+                                </div>
+                                <div className="bg-white rounded-lg border border-slate-200 p-3">
+                                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Communes concernées</p>
+                                  <p className="text-sm font-black text-slate-800">{sortedCommunes.length}</p>
+                                </div>
+                                <div className="bg-white rounded-lg border border-slate-200 p-3">
+                                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Commune dominante</p>
+                                  <p className="text-sm font-black" style={{ color: dotColor }}>{topCommune ? topCommune[0] : "—"}</p>
+                                  {topCommune && (
+                                    <p className="text-[10px] text-slate-400 mt-0.5">{(topCommune[1].cout / 1e6).toFixed(2)} MDH ({topCommunePct.toFixed(1)}%)</p>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Communes breakdown bars */}
+                              <div className="mb-4">
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Répartition par commune</p>
+                                <div className="space-y-2">
+                                  {sortedCommunes.map(([commune, cData], cIdx) => {
+                                    const cPct = (cData.cout / d.cout) * 100;
                                     return (
-                                      <TableRow key={i} className={`border-b border-slate-100 ${i % 2 === 0 ? "bg-white" : "bg-slate-50/20"} hover:bg-indigo-50/20`}>
-                                        <TableCell className="text-[10px] py-1.5 align-top font-semibold text-slate-700">{p.commune}</TableCell>
-                                        <TableCell className="text-[10px] py-1.5 align-top text-slate-600 font-medium">{p.intitule_projet || <span className="text-slate-300">—</span>}</TableCell>
-                                        <TableCell className="text-[10px] py-1.5 align-top text-slate-400 leading-relaxed">{p.consistance || <span className="text-slate-300">—</span>}</TableCell>
-                                        <TableCell className="text-[10px] py-1.5 align-top text-right">
-                                          <span className="font-bold text-emerald-600 bg-emerald-50 px-1 py-0.5 rounded text-[9px]">{p.cout.toLocaleString("fr-FR")}</span>
-                                        </TableCell>
-                                        <TableCell className="text-[10px] py-1.5 align-top text-right">
-                                          <div className="flex items-center justify-end gap-1">
-                                            <div className="w-8 h-1.5 rounded-full bg-slate-200 overflow-hidden">
-                                              <div className="h-full rounded-full" style={{ width: `${projPct}%`, backgroundColor: dotColor }} />
-                                            </div>
-                                            <span className="text-[8px] font-bold text-slate-500">{projPct.toFixed(1)}%</span>
+                                      <div key={commune} className="flex items-center gap-2">
+                                        <span className="text-[11px] font-semibold text-slate-700 w-[140px] shrink-0 truncate">{commune}</span>
+                                        <div className="flex-1 relative" style={{ height: "16px" }}>
+                                          <div className="absolute inset-0 bg-slate-100 rounded-full overflow-hidden">
+                                            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${cPct}%`, backgroundColor: dotColor + (cIdx === 0 ? "" : "99") }} />
                                           </div>
-                                        </TableCell>
-                                      </TableRow>
+                                          {cPct > 20 ? (
+                                            <span className="absolute inset-0 flex items-center pl-2 text-[9px] font-bold text-white pointer-events-none" style={{ maxWidth: `${cPct}%` }}>
+                                              {(cData.cout / 1e6).toFixed(2)} MDH
+                                            </span>
+                                          ) : (
+                                            <span className="absolute top-0 flex items-center h-full text-[9px] font-bold pointer-events-none whitespace-nowrap" style={{ left: `calc(${cPct}% + 6px)`, color: dotColor }}>
+                                              {(cData.cout / 1e6).toFixed(2)} MDH
+                                            </span>
+                                          )}
+                                        </div>
+                                        <span className="text-[10px] font-bold text-slate-600 w-[45px] text-right">{cPct.toFixed(1)}%</span>
+                                        <Badge className="bg-blue-50 text-blue-600 border-blue-200 text-[9px] font-bold px-1.5 py-0 shrink-0" variant="outline">
+                                          {cData.count}P
+                                        </Badge>
+                                      </div>
                                     );
                                   })}
-                                </TableBody>
-                              </Table>
+                                </div>
+                              </div>
+
+                              {/* Détail des projets avec consistance */}
+                              <div>
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Détail des projets</p>
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow className="bg-slate-50/60 border-b border-slate-200">
+                                      <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider w-[18%]">Commune</TableHead>
+                                      <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider w-[25%]">Projet</TableHead>
+                                      <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider w-[35%]">Consistance</TableHead>
+                                      <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right w-[12%]">Coût (DH)</TableHead>
+                                      <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right w-[10%]">% Rub.</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {d.projects
+                                      .sort((a, b) => b.cout - a.cout)
+                                      .map((p, i) => {
+                                      const projPct = d.cout > 0 ? (p.cout / d.cout) * 100 : 0;
+                                      return (
+                                        <TableRow
+                                          key={i}
+                                          className={`border-b border-slate-100 transition-colors ${i % 2 === 0 ? "bg-white" : "bg-slate-50/30"} hover:bg-indigo-50/30`}
+                                        >
+                                          <TableCell className="text-[11px] py-2 align-top font-semibold text-slate-700">
+                                            {p.commune}
+                                          </TableCell>
+                                          <TableCell className="text-[11px] py-2 align-top text-slate-700 font-medium">
+                                            {p.intitule_projet || <span className="text-slate-300">—</span>}
+                                          </TableCell>
+                                          <TableCell className="text-[11px] py-2 align-top text-slate-500 leading-relaxed">
+                                            {p.consistance || <span className="text-slate-300">—</span>}
+                                          </TableCell>
+                                          <TableCell className="text-[11px] py-2 align-top text-right">
+                                            <span className="font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                                              {p.cout.toLocaleString("fr-FR")}
+                                            </span>
+                                          </TableCell>
+                                          <TableCell className="text-[11px] py-2 align-top text-right">
+                                            <div className="flex items-center justify-end gap-1">
+                                              <div className="w-10 h-1.5 rounded-full bg-slate-200 overflow-hidden">
+                                                <div className="h-full rounded-full" style={{ width: `${projPct}%`, backgroundColor: dotColor }} />
+                                              </div>
+                                              <span className="text-[9px] font-bold text-slate-500">{projPct.toFixed(1)}%</span>
+                                            </div>
+                                          </TableCell>
+                                        </TableRow>
+                                      );
+                                    })}
+                                    {/* Total row */}
+                                    <TableRow className="bg-gradient-to-r from-slate-100 to-slate-50 font-bold border-t-2 border-slate-300">
+                                      <TableCell className="text-[11px] font-bold py-2 text-slate-700" colSpan={3}>Total {shortRub}</TableCell>
+                                      <TableCell className="text-[11px] text-right font-bold text-emerald-700 py-2">
+                                        {(d.cout / 1e6).toFixed(2)} MDH
+                                      </TableCell>
+                                      <TableCell className="text-[11px] text-right font-bold py-2 text-slate-600">100%</TableCell>
+                                    </TableRow>
+                                  </TableBody>
+                                </Table>
+                              </div>
                             </div>
                           );
                         })}
