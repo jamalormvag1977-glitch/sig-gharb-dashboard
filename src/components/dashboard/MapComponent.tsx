@@ -286,13 +286,39 @@ export default function MapComponent({
           }
         }, 1500);
       } else {
-        // Overview: show entire Gharb region
+        // Overview: show entire Gharb region with minimum zoom for labels
+        const OVERVIEW_MIN_ZOOM = 9;
+        const center = bounds.getCenter();
+
         map.flyToBounds(bounds, {
           padding: [20, 20],
-          maxZoom: 10,
+          maxZoom: 14,
           animate: true,
           duration: 1,
         });
+
+        // After animation, ensure minimum zoom so labels are readable
+        const ensureOverviewZoom = () => {
+          map.off("zoomend", ensureOverviewZoom);
+          map.off("moveend", ensureOverviewZoom);
+          const currentZoom = map.getZoom();
+          if (currentZoom < OVERVIEW_MIN_ZOOM) {
+            map.flyTo(center, OVERVIEW_MIN_ZOOM, { duration: 0.6 });
+          }
+        };
+
+        map.on("zoomend", ensureOverviewZoom);
+        map.on("moveend", ensureOverviewZoom);
+
+        // Safety timeout
+        setTimeout(() => {
+          map.off("zoomend", ensureOverviewZoom);
+          map.off("moveend", ensureOverviewZoom);
+          const currentZoom = map.getZoom();
+          if (currentZoom < OVERVIEW_MIN_ZOOM) {
+            map.flyTo(center, OVERVIEW_MIN_ZOOM, { duration: 0.6 });
+          }
+        }, 1500);
       }
     }
   }, [geojsonData, selectedCommune, selectedProvince, onCommuneClick]);
