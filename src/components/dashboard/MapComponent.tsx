@@ -249,8 +249,11 @@ export default function MapComponent({
       map.setMaxBounds(null);
 
       if (selectedProvince) {
-        // Calculate the ideal zoom to fit the province, but enforce a minimum
-        const MIN_ZOOM = 11;
+        // Adapt zoom per province: Kénitra is large, Sidi Kacem/Sidi Slimane are smaller
+        let MIN_ZOOM = 11;
+        if (selectedProvince === "Kénitra") MIN_ZOOM = 10;
+        if (selectedProvince === "Sidi Kacem") MIN_ZOOM = 11;
+        if (selectedProvince === "Sidi Slimane") MIN_ZOOM = 12;
         const center = bounds.getCenter();
 
         // First fly to bounds
@@ -267,7 +270,6 @@ export default function MapComponent({
           map.off("moveend", ensureMinZoom);
           const currentZoom = map.getZoom();
           if (currentZoom < MIN_ZOOM) {
-            // Zoom is too low - force to minimum zoom level
             map.flyTo(center, MIN_ZOOM, { duration: 0.6 });
           }
         };
