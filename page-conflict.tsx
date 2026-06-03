@@ -353,7 +353,8 @@ export default function Home() {
             />
           </div>
 
-          {/* Convention PDF Download */}
+          {/* Convention PDF Download - only for provinces */}
+          {activeView !== "overview" && (
           <div className="flex items-center gap-3">
             <a
               href={CONVENTION_PDF[activeView].file}
@@ -372,6 +373,7 @@ export default function Home() {
               <Download className="h-3.5 w-3.5 opacity-60" />
             </a>
           </div>
+          )}
 
           {/* MAP - full width (no pie chart) */}
           <Card className={`${mapFullscreen ? "fixed inset-0 z-50 h-screen rounded-none border-0" : activeView === "overview" ? "h-[900px]" : "h-[700px]"} !py-0 !gap-0 overflow-hidden shadow-md border-slate-200/60 transition-all duration-300`}>
