@@ -37,6 +37,7 @@ import {
   MapPin,
   Maximize,
   Minimize,
+  FileDown,
 } from "lucide-react";
 
 const MapComponent = dynamic(
@@ -66,6 +67,12 @@ const SECTEUR_DOT_COLORS: Record<string, string> = {
   "Stations de pompage": "#f59e0b",
   "Réhabilitation équipements": "#10b981",
   "Génie civil": "#8b5cf6",
+};
+
+const CONVENTION_PDF: Record<string, string> = {
+  "Kénitra": "/conventions/convention-kenitra.pdf",
+  "Sidi Kacem": "/conventions/convention-sidi-kacem.pdf",
+  "Sidi Slimane": "/conventions/convention-sidi-slimane.pdf",
 };
 
 // Province-matched KPI colors
@@ -343,6 +350,27 @@ export default function Home() {
             />
           </div>
 
+          {/* Convention PDF download buttons */}
+          {selectedProvince && CONVENTION_PDF[selectedProvince] && (
+            <div className="flex justify-end">
+              <a
+                href={CONVENTION_PDF[selectedProvince]!}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold border shadow-sm transition-all hover:shadow-md"
+                style={{
+                  backgroundColor: (PROVINCE_COLORS[selectedProvince] || "#6366f1") + "10",
+                  color: PROVINCE_COLORS[selectedProvince] || "#6366f1",
+                  borderColor: (PROVINCE_COLORS[selectedProvince] || "#6366f1") + "30",
+                }}
+              >
+                <FileDown className="h-4 w-4" />
+                Convention {selectedProvince}
+              </a>
+            </div>
+          )}
+
           {/* MAP - full width (no pie chart) */}
           <Card className={`${mapFullscreen ? "fixed inset-0 z-50 h-screen rounded-none border-0" : activeView === "overview" ? "h-[900px]" : "h-[700px]"} !py-0 !gap-0 overflow-hidden shadow-md border-slate-200/60 transition-all duration-300`}>
             <CardHeader className="py-2.5 px-4 border-b bg-gradient-to-r from-slate-50 to-white shrink-0">
@@ -396,68 +424,75 @@ export default function Home() {
                       <TableHead className="text-[11px] font-bold text-slate-600 uppercase tracking-wider text-right">
                         Coût (MDH)
                       </TableHead>
+                      <TableHead className="text-[11px] font-bold text-slate-600 uppercase tracking-wider text-right">
+                        % Coût
+                      </TableHead>
                       <TableHead className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
                         Secteur principal
                       </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {Object.entries(filteredSummary)
-                      .sort(([, a], [, b]) => b.cout_total - a.cout_total)
-                      .map(([name, d], idx) => {
-                        const topSecteur =
-                          Object.entries(d.rubriques).sort(
-                            ([, a], [, b]) => b - a
-                          )[0]?.[0] || "";
-                        const shortSecteur = SECTEUR_SHORT[topSecteur] || topSecteur.substring(0, 20);
-                        return (
-                          <TableRow
-                            key={name}
-                            className={`border-b border-slate-100 transition-colors ${
-                              idx % 2 === 0 ? "bg-white" : "bg-slate-50/40"
-                            } hover:bg-blue-50/50`}
-                          >
-                            <TableCell className="text-xs font-semibold py-2.5 text-slate-800">
-                              <div className="flex items-center gap-1.5">
-                                <div
-                                  className="w-1.5 h-1.5 rounded-full shrink-0"
-                                  style={{ backgroundColor: PROVINCE_COLORS[d.province] || "#999" }}
-                                />
-                                {name}
-                              </div>
-                            </TableCell>
+                    {(() => {
+                      const summaryTotalCost = Object.values(filteredSummary).reduce((s, d) => s + d.cout_total, 0);
+                      const summaryTotalProjects = Object.values(filteredSummary).reduce((s, d) => s + d.nb_projets, 0);
+                      const sorted = Object.entries(filteredSummary).sort(([, a], [, b]) => b.cout_total - a.cout_total);
+                      return (
+                        <>
+                          {sorted.map(([name, d], idx) => {
+                            const topSecteur = Object.entries(d.rubriques).sort(([, a], [, b]) => b - a)[0]?.[0] || "";
+                            const shortSecteur = SECTEUR_SHORT[topSecteur] || topSecteur.substring(0, 20);
+                            const coutPct = summaryTotalCost > 0 ? (d.cout_total / summaryTotalCost) * 100 : 0;
+                            const provColor = PROVINCE_COLORS[d.province] || "#999";
+                            return (
+                              <TableRow
+                                key={name}
+                                className={`border-b border-slate-100 transition-colors ${idx % 2 === 0 ? "bg-white" : "bg-slate-50/40"} hover:bg-blue-50/50`}
+                              >
+                                <TableCell className="text-xs font-semibold py-2.5 text-slate-800">
+                                  <div className="flex items-center gap-1.5">
+                                    <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: provColor }} />
+                                    {name}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-xs text-right py-2.5">
+                                  <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-bold px-1.5" variant="outline">
+                                    {d.nb_projets}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-xs text-right py-2.5 font-bold text-emerald-600">
+                                  {(d.cout_total / 1e6).toFixed(2)}
+                                </TableCell>
+                                <TableCell className="text-xs text-right py-2.5">
+                                  <div className="flex items-center justify-end gap-1.5">
+                                    <div className="w-12 h-2 rounded-full bg-slate-200 overflow-hidden">
+                                      <div className="h-full rounded-full" style={{ width: `${coutPct}%`, backgroundColor: provColor }} />
+                                    </div>
+                                    <span className="font-bold text-[10px] text-slate-600 w-10 text-right">{coutPct.toFixed(1)}%</span>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-xs py-2.5">
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full" style={{ backgroundColor: (SECTEUR_DOT_COLORS[shortSecteur] || "#999") + "15", color: SECTEUR_DOT_COLORS[shortSecteur] || "#999" }}>
+                                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: SECTEUR_DOT_COLORS[shortSecteur] || "#999" }} />
+                                    {shortSecteur}
+                                  </span>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                          {/* Total row */}
+                          <TableRow className="bg-gradient-to-r from-slate-100 to-slate-50 font-bold border-t-2 border-slate-300">
+                            <TableCell className="text-xs font-bold py-2.5 text-slate-700">Total</TableCell>
                             <TableCell className="text-xs text-right py-2.5">
-                              <Badge
-                                className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-bold px-1.5"
-                                variant="outline"
-                              >
-                                {d.nb_projets}
-                              </Badge>
+                              <Badge className="bg-blue-600 text-white text-[10px] font-bold px-1.5">{summaryTotalProjects}</Badge>
                             </TableCell>
-                            <TableCell className="text-xs text-right py-2.5 font-bold text-emerald-600">
-                              {(d.cout_total / 1e6).toFixed(2)}
-                            </TableCell>
-                            <TableCell className="text-xs py-2.5">
-                              <span
-                                className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full"
-                                style={{
-                                  backgroundColor:
-                                    (SECTEUR_DOT_COLORS[shortSecteur] || "#999") + "15",
-                                  color: SECTEUR_DOT_COLORS[shortSecteur] || "#999",
-                                }}
-                              >
-                                <span
-                                  className="w-1.5 h-1.5 rounded-full shrink-0"
-                                  style={{
-                                    backgroundColor: SECTEUR_DOT_COLORS[shortSecteur] || "#999",
-                                  }}
-                                />
-                                {shortSecteur}
-                              </span>
-                            </TableCell>
+                            <TableCell className="text-xs text-right font-bold text-emerald-700 py-2.5">{(summaryTotalCost / 1e6).toFixed(2)}</TableCell>
+                            <TableCell className="text-xs text-right font-bold py-2.5 text-slate-600">100%</TableCell>
+                            <TableCell className="text-xs py-2.5"></TableCell>
                           </TableRow>
-                        );
-                      })}
+                        </>
+                      );
+                    })()}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -560,18 +595,22 @@ export default function Home() {
                             </Badge>
                           </div>
                           <div className="flex items-center gap-3">
-                            <Badge
-                              className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-bold px-2"
-                              variant="outline"
-                            >
+                            <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-bold px-2" variant="outline">
                               <MapPin className="h-3 w-3 mr-1" />
                               {projects.length} projets
                             </Badge>
-                            <span
-                              className="font-bold px-2.5 py-1 rounded-lg text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-200"
-                            >
+                            <span className="font-bold px-2.5 py-1 rounded-lg text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-200">
                               {(communeTotal / 1e6).toFixed(2)} MDH
                             </span>
+                            {(() => {
+                              const provinceTotalForPct = filteredProjects.reduce((s, p) => s + p.cout, 0);
+                              const communePct = provinceTotalForPct > 0 ? (communeTotal / provinceTotalForPct) * 100 : 0;
+                              return (
+                                <span className="font-bold px-2.5 py-1 rounded-lg text-[11px] bg-slate-100 text-slate-700 border border-slate-200">
+                                  {communePct.toFixed(1)}%
+                                </span>
+                              );
+                            })()}
                           </div>
                         </div>
                       </CardHeader>
@@ -579,17 +618,20 @@ export default function Home() {
                         <Table>
                           <TableHeader>
                             <TableRow className="bg-slate-50/60 border-b border-slate-200">
-                              <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider w-[22%]">
+                              <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider w-[20%]">
                                 Rubrique
                               </TableHead>
-                              <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider w-[28%]">
+                              <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider w-[25%]">
                                 Projet
                               </TableHead>
-                              <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider w-[30%]">
+                              <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider w-[28%]">
                                 Consistance
                               </TableHead>
                               <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right w-[12%]">
                                 Coût (DH)
+                              </TableHead>
+                              <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right w-[15%]">
+                                % Coût
                               </TableHead>
                             </TableRow>
                           </TableHeader>
@@ -597,6 +639,7 @@ export default function Home() {
                             {projects.map((p, i) => {
                               const shortRub = SECTEUR_SHORT[p.intitule_rubrique] || p.intitule_rubrique;
                               const dotColor = SECTEUR_DOT_COLORS[shortRub] || "#94a3b8";
+                              const projPct = communeTotal > 0 ? (p.cout / communeTotal) * 100 : 0;
                               return (
                                 <TableRow
                                   key={i}
@@ -634,9 +677,25 @@ export default function Home() {
                                       {p.cout.toLocaleString("fr-FR")}
                                     </span>
                                   </TableCell>
+                                  <TableCell className="text-[11px] py-2.5 align-top text-right">
+                                    <div className="flex items-center justify-end gap-1.5">
+                                      <div className="w-10 h-2 rounded-full bg-slate-200 overflow-hidden">
+                                        <div className="h-full rounded-full" style={{ width: `${projPct}%`, backgroundColor: dotColor }} />
+                                      </div>
+                                      <span className="font-bold text-[9px] text-slate-600 w-9 text-right">{projPct.toFixed(1)}%</span>
+                                    </div>
+                                  </TableCell>
                                 </TableRow>
                               );
                             })}
+                            {/* Total row */}
+                            <TableRow className="bg-gradient-to-r from-slate-100 to-slate-50 font-bold border-t-2 border-slate-300">
+                              <TableCell className="text-[11px] font-bold py-2 text-slate-700" colSpan={3}>Total {commune}</TableCell>
+                              <TableCell className="text-[11px] text-right font-bold text-emerald-700 py-2">
+                                {(communeTotal / 1e6).toFixed(2)} MDH
+                              </TableCell>
+                              <TableCell className="text-[11px] text-right font-bold py-2 text-slate-600">100%</TableCell>
+                            </TableRow>
                           </TableBody>
                         </Table>
                       </CardContent>
