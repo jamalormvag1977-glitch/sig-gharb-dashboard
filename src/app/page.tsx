@@ -35,6 +35,8 @@ import {
   LandPlot,
   Layers,
   MapPin,
+  Maximize,
+  Minimize,
 } from "lucide-react";
 
 const MapComponent = dynamic(
@@ -77,6 +79,13 @@ export default function Home() {
   const [geojsonData, setGeojsonData] = useState<GeoJSON.FeatureCollection | null>(null);
   const [activeView, setActiveView] = useState<ViewType>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mapFullscreen, setMapFullscreen] = useState(false);
+
+  // Trigger map resize when fullscreen toggles
+  useEffect(() => {
+    const t = setTimeout(() => window.dispatchEvent(new Event("resize")), 350);
+    return () => clearTimeout(t);
+  }, [mapFullscreen]);
 
   useEffect(() => {
     fetch("/api/dashboard")
@@ -335,16 +344,25 @@ export default function Home() {
           </div>
 
           {/* MAP - full width (no pie chart) */}
-          <Card className={`${activeView === "overview" ? "h-[900px]" : "h-[700px]"} !py-0 !gap-0 overflow-hidden shadow-md border-slate-200/60`}>
+          <Card className={`${mapFullscreen ? "fixed inset-0 z-50 h-screen rounded-none border-0" : activeView === "overview" ? "h-[900px]" : "h-[700px]"} !py-0 !gap-0 overflow-hidden shadow-md border-slate-200/60 transition-all duration-300`}>
             <CardHeader className="py-2.5 px-4 border-b bg-gradient-to-r from-slate-50 to-white shrink-0">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-700">
-                <Map className="h-4 w-4 text-blue-500" />
-                {activeView === "overview"
-                  ? "Carte - Région du Gharb"
-                  : `Carte - Province ${selectedProvince}`}
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-700">
+                  <Map className="h-4 w-4 text-blue-500" />
+                  {activeView === "overview"
+                    ? "Carte - Région du Gharb"
+                    : `Carte - Province ${selectedProvince}`}
+                </CardTitle>
+                <button
+                  onClick={() => setMapFullscreen(!mapFullscreen)}
+                  className="p-1.5 rounded-lg hover:bg-slate-200/70 transition-colors text-slate-500 hover:text-slate-800"
+                  title={mapFullscreen ? "Quitter le plein écran" : "Plein écran"}
+                >
+                  {mapFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+                </button>
+              </div>
             </CardHeader>
-            <CardContent className="p-0 flex-1 min-h-0" style={{ height: "calc(100% - 44px)" }}>
+            <CardContent className="p-0 flex-1 min-h-0" style={{ height: mapFullscreen ? "calc(100vh - 44px)" : "calc(100% - 44px)" }}>
               <MapComponent
                 geojsonData={geojsonData}
                 selectedCommune={null}
