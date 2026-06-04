@@ -1047,82 +1047,182 @@ export default function Home() {
                     );
                   })()}
 
-                  {/* Detailed project table */}
+                  {/* Detailed project table by province */}
                   <div>
                     <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
                       <TableIcon className="h-4 w-4 text-slate-500" />
                       Détail de l&apos;avancement par projet
                     </h4>
-                    <div className="overflow-x-auto rounded-xl border border-slate-200/80 shadow-sm">
-                      <Table>
-                        <TableHeader>
-                          <TableRow className="bg-slate-50">
-                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3">Province</TableHead>
-                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3">Commune</TableHead>
-                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3">Projet</TableHead>
-                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3 text-right">Budget</TableHead>
-                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3 text-right">Ordonnancé</TableHead>
-                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3 text-right">Payé</TableHead>
-                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3 text-center">Phys.</TableHead>
-                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3 text-center">Fin.</TableHead>
-                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3 text-center">Statut</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {data.projects.map((p, i) => {
-                            const provColor = PROVINCE_COLORS[p.province] || "#6366f1";
-                            const ecart = p.avancement_financier - p.avancement_physique;
-                            const statusConfig: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
-                              "Terminé": { bg: "bg-emerald-100", text: "text-emerald-700", icon: CheckCircle2 },
-                              "En cours": { bg: "bg-amber-100", text: "text-amber-700", icon: Clock },
-                              "Non démarré": { bg: "bg-red-100", text: "text-red-700", icon: CircleDot },
-                            };
-                            const sc = statusConfig[p.statut] || statusConfig["Non démarré"];
-                            const apColor = p.avancement_physique >= 75 ? "#10b981" : p.avancement_physique >= 50 ? "#f59e0b" : p.avancement_physique >= 25 ? "#f97316" : "#ef4444";
-                            const afColor = p.avancement_financier >= 75 ? "#10b981" : p.avancement_financier >= 50 ? "#f59e0b" : p.avancement_financier >= 25 ? "#f97316" : "#ef4444";
-                            return (
-                              <TableRow key={i} className={i % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
-                                <TableCell className="py-1.5 px-3">
-                                  <div className="flex items-center gap-1.5">
-                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: provColor }} />
-                                    <span className="text-[10px] font-bold text-slate-700">{p.province}</span>
-                                  </div>
-                                </TableCell>
-                                <TableCell className="py-1.5 px-3 text-[10px] font-semibold text-slate-600">{p.commune}</TableCell>
-                                <TableCell className="py-1.5 px-3 text-[10px] text-slate-600 max-w-[200px] truncate">{p.consistance}</TableCell>
-                                <TableCell className="py-1.5 px-3 text-[10px] font-bold text-slate-700 text-right">{(p.cout / 1e6).toFixed(2)} M</TableCell>
-                                <TableCell className="py-1.5 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_ordonne > 0 ? "#8b5cf6" : "#94a3b8" }}>{(p.montant_ordonne / 1e6).toFixed(2)} M</TableCell>
-                                <TableCell className="py-1.5 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_paye > 0 ? "#10b981" : "#94a3b8" }}>{(p.montant_paye / 1e6).toFixed(2)} M</TableCell>
-                                <TableCell className="py-1.5 px-3 text-center">
-                                  <div className="flex items-center justify-center gap-1">
-                                    <div className="w-12 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
-                                      <div className="h-full rounded-full" style={{ width: `${p.avancement_physique}%`, backgroundColor: apColor }} />
-                                    </div>
-                                    <span className="text-[10px] font-black" style={{ color: apColor }}>{p.avancement_physique}%</span>
-                                  </div>
-                                </TableCell>
-                                <TableCell className="py-1.5 px-3 text-center">
-                                  <div className="flex items-center justify-center gap-1">
-                                    <div className="w-12 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
-                                      <div className="h-full rounded-full" style={{ width: `${p.avancement_financier}%`, backgroundColor: afColor }} />
-                                    </div>
-                                    <span className="text-[10px] font-black" style={{ color: afColor }}>{p.avancement_financier}%</span>
-                                  </div>
-                                </TableCell>
-                                <TableCell className="py-1.5 px-3 text-center">
-                                  <Badge className={`${sc.bg} ${sc.text} text-[9px] font-bold px-2 py-0.5 border-0`}>
-                                    <sc.icon className="h-2.5 w-2.5 mr-0.5" />
-                                    {p.statut}
+                    <div className="space-y-6">
+                      {(() => {
+                        const statusConfig: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
+                          "Terminé": { bg: "bg-emerald-100", text: "text-emerald-700", icon: CheckCircle2 },
+                          "En cours": { bg: "bg-amber-100", text: "text-amber-700", icon: Clock },
+                          "Non démarré": { bg: "bg-red-100", text: "text-red-700", icon: CircleDot },
+                        };
+                        const getApColor = (v: number) => v >= 75 ? "#10b981" : v >= 50 ? "#f59e0b" : v >= 25 ? "#f97316" : "#ef4444";
+
+                        // Group projects by province, preserving PROVINCE_COLORS order
+                        const provinceOrder = Object.keys(PROVINCE_COLORS);
+                        const projectsByProvince = provinceOrder.reduce<Record<string, Project[]>>((acc, prov) => {
+                          acc[prov] = data.projects.filter(p => p.province === prov);
+                          return acc;
+                        }, {});
+                        // Also add any provinces not in PROVINCE_COLORS
+                        data.projects.forEach(p => {
+                          if (!projectsByProvince[p.province]) projectsByProvince[p.province] = [];
+                        });
+
+                        return provinceOrder.filter(prov => projectsByProvince[prov] && projectsByProvince[prov].length > 0).map((province) => {
+                          const provProjects = projectsByProvince[province];
+                          const provColor = PROVINCE_COLORS[province] || "#6366f1";
+                          const provTotalBudget = provProjects.reduce((s, p) => s + p.cout, 0);
+                          const provTotalOrdonne = provProjects.reduce((s, p) => s + p.montant_ordonne, 0);
+                          const provTotalPaye = provProjects.reduce((s, p) => s + p.montant_paye, 0);
+                          const provAvgPhys = provProjects.length > 0 ? provProjects.reduce((s, p) => s + p.avancement_physique, 0) / provProjects.length : 0;
+                          const provAvgFin = provProjects.length > 0 ? provProjects.reduce((s, p) => s + p.avancement_financier, 0) / provProjects.length : 0;
+                          const termine = provProjects.filter(p => p.statut === "Terminé").length;
+                          const enCours = provProjects.filter(p => p.statut === "En cours").length;
+                          const nonDemarre = provProjects.filter(p => p.statut === "Non démarré").length;
+
+                          return (
+                            <div key={province} className="rounded-2xl border-2 overflow-hidden shadow-lg" style={{ borderColor: provColor + "35" }}>
+                              {/* Province header */}
+                              <div className="px-5 py-3.5 flex items-center justify-between flex-wrap gap-2" style={{ background: `linear-gradient(135deg, ${provColor}18 0%, ${provColor}08 100%)` }}>
+                                <div className="flex items-center gap-2.5">
+                                  <div className="w-4 h-4 rounded-full shadow-md ring-2 ring-white" style={{ backgroundColor: provColor }} />
+                                  <span className="text-sm font-extrabold text-slate-800">Province de {province}</span>
+                                  <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 shadow-sm" style={{ backgroundColor: provColor + "15", color: provColor }}>
+                                    {provProjects.length} projets
                                   </Badge>
-                                  {Math.abs(ecart) > 15 && p.statut === "En cours" && (
-                                    <span className="block text-[8px] font-bold text-red-500 mt-0.5">Écart {ecart > 0 ? "-" : "+"}{Math.abs(ecart)}pts</span>
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        </TableBody>
-                      </Table>
+                                </div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: "#10b98120", color: "#10b981" }}>
+                                    <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />{termine} Terminé
+                                  </Badge>
+                                  <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: "#f59e0b20", color: "#f59e0b" }}>
+                                    <Clock className="h-2.5 w-2.5 mr-0.5" />{enCours} En cours
+                                  </Badge>
+                                  <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: "#ef444420", color: "#ef4444" }}>
+                                    <CircleDot className="h-2.5 w-2.5 mr-0.5" />{nonDemarre} Non démarré
+                                  </Badge>
+                                  <span className="font-extrabold px-3 py-1 rounded-lg text-[11px] shadow-sm" style={{ backgroundColor: provColor + "10", color: provColor, border: `1px solid ${provColor}25` }}>
+                                    {(provTotalBudget / 1e6).toFixed(2)} MDH
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Province progress bars */}
+                              <div className="px-5 py-2.5 grid grid-cols-2 gap-3 bg-white/60 border-b" style={{ borderColor: provColor + "15" }}>
+                                <div>
+                                  <div className="flex justify-between items-center mb-1">
+                                    <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Wrench className="h-3 w-3" /> Avancement Physique</span>
+                                    <span className="text-[11px] font-black" style={{ color: provColor }}>{provAvgPhys.toFixed(0)}%</span>
+                                  </div>
+                                  <div className="w-full bg-slate-200/80 rounded-full h-2.5 overflow-hidden shadow-inner">
+                                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${provAvgPhys}%`, backgroundColor: provColor }} />
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="flex justify-between items-center mb-1">
+                                    <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Wallet className="h-3 w-3" /> Avancement Financier</span>
+                                    <span className="text-[11px] font-black" style={{ color: provColor }}>{provAvgFin.toFixed(0)}%</span>
+                                  </div>
+                                  <div className="w-full bg-slate-200/80 rounded-full h-2.5 overflow-hidden shadow-inner">
+                                    <div className="h-full rounded-full transition-all duration-700 opacity-70" style={{ width: `${provAvgFin}%`, backgroundColor: provColor }} />
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Province project table */}
+                              <div className="overflow-x-auto">
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow style={{ backgroundColor: provColor + "0A", borderBottomColor: provColor + "20" }}>
+                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3" style={{ color: provColor + "BB" }}>Commune</TableHead>
+                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3" style={{ color: provColor + "BB" }}>Projet</TableHead>
+                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-right" style={{ color: provColor + "BB" }}>Budget</TableHead>
+                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-right" style={{ color: provColor + "BB" }}>Ordonnancé</TableHead>
+                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-right" style={{ color: provColor + "BB" }}>Payé</TableHead>
+                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-center" style={{ color: provColor + "BB" }}>Phys.</TableHead>
+                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-center" style={{ color: provColor + "BB" }}>Fin.</TableHead>
+                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-center" style={{ color: provColor + "BB" }}>Statut</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {provProjects.map((p, i) => {
+                                      const ecart = p.avancement_financier - p.avancement_physique;
+                                      const sc = statusConfig[p.statut] || statusConfig["Non démarré"];
+                                      const apColor = getApColor(p.avancement_physique);
+                                      const afColor = getApColor(p.avancement_financier);
+                                      return (
+                                        <TableRow key={i} className={`border-b border-slate-100/80 ${i % 2 === 0 ? "bg-white" : "bg-slate-50/40"}`} style={{ borderLeftWidth: "3px", borderLeftColor: provColor + "30" }}>
+                                          <TableCell className="py-2 px-3">
+                                            <span className="text-[10px] font-bold text-slate-700">{p.commune}</span>
+                                          </TableCell>
+                                          <TableCell className="py-2 px-3 text-[10px] text-slate-600 max-w-[220px] truncate">{p.consistance}</TableCell>
+                                          <TableCell className="py-2 px-3 text-[10px] font-bold text-slate-700 text-right">{(p.cout / 1e6).toFixed(2)} M</TableCell>
+                                          <TableCell className="py-2 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_ordonne > 0 ? "#8b5cf6" : "#94a3b8" }}>{(p.montant_ordonne / 1e6).toFixed(2)} M</TableCell>
+                                          <TableCell className="py-2 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_paye > 0 ? "#10b981" : "#94a3b8" }}>{(p.montant_paye / 1e6).toFixed(2)} M</TableCell>
+                                          <TableCell className="py-2 px-3 text-center">
+                                            <div className="flex items-center justify-center gap-1">
+                                              <div className="w-12 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+                                                <div className="h-full rounded-full" style={{ width: `${p.avancement_physique}%`, backgroundColor: apColor }} />
+                                              </div>
+                                              <span className="text-[10px] font-black" style={{ color: apColor }}>{p.avancement_physique}%</span>
+                                            </div>
+                                          </TableCell>
+                                          <TableCell className="py-2 px-3 text-center">
+                                            <div className="flex items-center justify-center gap-1">
+                                              <div className="w-12 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+                                                <div className="h-full rounded-full" style={{ width: `${p.avancement_financier}%`, backgroundColor: afColor }} />
+                                              </div>
+                                              <span className="text-[10px] font-black" style={{ color: afColor }}>{p.avancement_financier}%</span>
+                                            </div>
+                                          </TableCell>
+                                          <TableCell className="py-2 px-3 text-center">
+                                            <Badge className={`${sc.bg} ${sc.text} text-[9px] font-bold px-2 py-0.5 border-0`}>
+                                              <sc.icon className="h-2.5 w-2.5 mr-0.5" />
+                                              {p.statut}
+                                            </Badge>
+                                            {Math.abs(ecart) > 15 && p.statut === "En cours" && (
+                                              <span className="block text-[8px] font-bold text-red-500 mt-0.5">Écart {ecart > 0 ? "-" : "+"}{Math.abs(ecart)}pts</span>
+                                            )}
+                                          </TableCell>
+                                        </TableRow>
+                                      );
+                                    })}
+                                    {/* Province total row */}
+                                    <TableRow style={{ background: `linear-gradient(135deg, ${provColor}18, ${provColor}08)` }}>
+                                      <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-slate-800" colSpan={2}>
+                                        Total {province}
+                                      </TableCell>
+                                      <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-right" style={{ color: "#059669" }}>
+                                        {(provTotalBudget / 1e6).toFixed(2)} MDH
+                                      </TableCell>
+                                      <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-right" style={{ color: "#8b5cf6" }}>
+                                        {(provTotalOrdonne / 1e6).toFixed(2)} MDH
+                                      </TableCell>
+                                      <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-right" style={{ color: "#10b981" }}>
+                                        {(provTotalPaye / 1e6).toFixed(2)} MDH
+                                      </TableCell>
+                                      <TableCell className="py-2.5 px-3 text-center">
+                                        <span className="text-[10px] font-black" style={{ color: provColor }}>{provAvgPhys.toFixed(0)}%</span>
+                                      </TableCell>
+                                      <TableCell className="py-2.5 px-3 text-center">
+                                        <span className="text-[10px] font-black" style={{ color: provColor }}>{provAvgFin.toFixed(0)}%</span>
+                                      </TableCell>
+                                      <TableCell className="py-2.5 px-3 text-center">
+                                        <span className="text-[9px] font-bold text-slate-500">{provProjects.length} projets</span>
+                                      </TableCell>
+                                    </TableRow>
+                                  </TableBody>
+                                </Table>
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
                     </div>
                   </div>
                 </CardContent>
