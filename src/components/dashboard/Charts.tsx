@@ -53,18 +53,22 @@ export function CostByCommuneChart({ summary, selectedProvince }: ChartsProps) {
     }))
     .sort((a, b) => b.cout - a.cout);
 
-  // Re-assign colors after sort to maintain distinct colors
-  const coloredData = data.map((d, idx) => ({ ...d, color: COMMUNE_PALETTE[idx % COMMUNE_PALETTE.length] }));
+  // Re-assign colors after sort & pre-build label string directly in data
+  const coloredData = data.map((d, idx) => ({
+    ...d,
+    color: COMMUNE_PALETTE[idx % COMMUNE_PALETTE.length],
+    label: `${(d.cout / 1e6).toFixed(1)} MDH (${d.pct.toFixed(1)}%)`,
+  }));
 
-  // Dynamic height: 38px per commune bar, min 200px
-  const chartHeight = Math.max(200, coloredData.length * 38 + 30);
+  // Dynamic height: 40px per commune bar, min 200px
+  const chartHeight = Math.max(200, coloredData.length * 40 + 30);
 
   return (
     <ResponsiveContainer width="100%" height={chartHeight}>
       <BarChart
         data={coloredData}
         layout="vertical"
-        margin={{ left: 5, right: 100, top: 5, bottom: 5 }}
+        margin={{ left: 5, right: 110, top: 5, bottom: 5 }}
         barCategoryGap="20%"
         barGap={4}
       >
@@ -107,16 +111,9 @@ export function CostByCommuneChart({ summary, selectedProvince }: ChartsProps) {
             />
           ))}
           <LabelList
-            dataKey="cout"
+            dataKey="label"
             position="right"
-            formatter={(_value: number, _props: any, idx: number) => {
-              const item = coloredData[idx];
-              if (!item) return "";
-              const mdh = (item.cout / 1e6).toFixed(1);
-              const pct = item.pct.toFixed(1);
-              return `${mdh} MDH (${pct}%)`;
-            }}
-            style={{ fontSize: 9, fontWeight: 700, fill: "#334155" }}
+            style={{ fontSize: 10, fontWeight: 700, fill: "#1e293b" }}
           />
         </Bar>
       </BarChart>
@@ -253,11 +250,12 @@ export function ProvinceBarChart({
     communes: d.communes,
     barColor: PROVINCE_BAR_COLORS[idx % PROVINCE_BAR_COLORS.length],
     pct: totalCost > 0 ? (d.cout_total / totalCost) * 100 : 0,
+    coutLabel: `${(d.cout_total / 1e6).toFixed(1)} MDH (${(totalCost > 0 ? (d.cout_total / totalCost) * 100 : 0).toFixed(1)}%)`,
   }));
 
   return (
-    <ResponsiveContainer width="100%" height={240}>
-      <BarChart data={data} margin={{ left: 10, right: 40, top: 20, bottom: 5 }}>
+    <ResponsiveContainer width="100%" height={260}>
+      <BarChart data={data} margin={{ left: 10, right: 50, top: 20, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis dataKey="name" fontSize={11} tick={{ fill: "#333" }} />
         <YAxis
@@ -284,14 +282,9 @@ export function ProvinceBarChart({
             <Cell key={`cout-${index}`} fill={entry.barColor} fillOpacity={0.8} />
           ))}
           <LabelList
-            dataKey="cout"
+            dataKey="coutLabel"
             position="top"
-            formatter={(_value: number, _props: any, idx: number) => {
-              const item = data[idx];
-              if (!item) return formatCost(_value);
-              return `${formatCost(item.cout)} (${item.pct.toFixed(1)}%)`;
-            }}
-            style={{ fontSize: 9, fontWeight: 700, fill: "#475569" }}
+            style={{ fontSize: 9, fontWeight: 700, fill: "#1e293b" }}
           />
         </Bar>
         <Bar yAxisId="right" dataKey="projets" fill="#8b5cf6" radius={[4, 4, 0, 0]} maxBarSize={40} name="Projets">
