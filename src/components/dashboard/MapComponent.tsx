@@ -29,6 +29,22 @@ const SECTEUR_DOT_COLORS: Record<string, string> = {
   "Génie civil": "#8b5cf6",
 };
 
+const PROVINCE_COLORS: Record<string, string> = {
+  "Kénitra": "#3b82f6",
+  "Sidi Kacem": "#ef4444",
+  "Sidi Slimane": "#10b981",
+};
+
+// 30-color palette for individual communes
+const COMMUNE_PALETTE = [
+  "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6",
+  "#ec4899", "#06b6d4", "#f97316", "#14b8a6", "#6366f1",
+  "#84cc16", "#e11d48", "#0ea5e9", "#d946ef", "#65a30d",
+  "#dc2626", "#0891b2", "#c026d3", "#059669", "#ea580c",
+  "#2563eb", "#db2777", "#0d9488", "#9333ea", "#ca8a04",
+  "#7c3aed", "#16a34a", "#e4d214", "#4f46e5", "#a21caf",
+];
+
 export default function MapComponent({
   geojsonData,
   selectedCommune,
@@ -134,22 +150,30 @@ export default function MapComponent({
 
     if (filteredFeatures.length === 0) return;
 
-    const maxCost = Math.max(
-      ...filteredFeatures
-        .filter((f) => f.properties?.has_project)
-        .map((f) => f.properties?.cout_total || 0),
-      1
-    );
+    // Build commune index for province-view coloring
+    const communeColorMap: Record<string, string> = {};
+    if (selectedProvince) {
+      const communeNames = filteredFeatures
+        .filter(f => f.properties?.has_project)
+        .map(f => f.properties?.commune_orig || f.properties?.NAME_4)
+        .filter((v, i, a) => v && a.indexOf(v) === i);
+      communeNames.forEach((name, i) => {
+        communeColorMap[name] = COMMUNE_PALETTE[i % COMMUNE_PALETTE.length];
+      });
+    }
 
-    const getColor = (cost: number) => {
-      if (cost === 0) return "#e8e8e8";
-      const ratio = cost / maxCost;
-      if (ratio > 0.7) return "#b10026";
-      if (ratio > 0.5) return "#e31a1c";
-      if (ratio > 0.3) return "#fc4e2a";
-      if (ratio > 0.15) return "#fd8d3c";
-      if (ratio > 0.05) return "#fed976";
-      return "#ffffcc";
+    const getFeatureColor = (props: any) => {
+      if (!props?.has_project) return "#e8e8e8";
+
+      if (!selectedProvince) {
+        // Overview: color by province
+        const prov = props.province_project;
+        return PROVINCE_COLORS[prov] || "#94a3b8";
+      } else {
+        // Province view: color by commune using 30-color palette
+        const commune = props.commune_orig || props.NAME_4;
+        return communeColorMap[commune] || "#94a3b8";
+      }
     };
 
     const filteredCollection: GeoJSON.FeatureCollection = {
@@ -160,9 +184,11 @@ export default function MapComponent({
     const layer = L.geoJSON(filteredCollection as any, {
       style: (feature) => {
         const props = feature?.properties;
+        const fillColor = getFeatureColor(props);
+
         if (!props?.has_project) {
           return {
-            fillColor: "#f0f0f0",
+            fillColor: fillColor,
             weight: 0.5,
             opacity: 0.3,
             color: "#ccc",
@@ -172,7 +198,7 @@ export default function MapComponent({
 
         if (selectedCommune && props.commune_orig === selectedCommune) {
           return {
-            fillColor: getColor(props.cout_total),
+            fillColor: fillColor,
             weight: 3,
             opacity: 1,
             color: "#1a1a1a",
@@ -181,7 +207,7 @@ export default function MapComponent({
         }
 
         return {
-          fillColor: getColor(props.cout_total),
+          fillColor: fillColor,
           weight: 1.5,
           opacity: 0.8,
           color: "#555",
@@ -273,6 +299,7 @@ export default function MapComponent({
             mouseout: (e) => {
               const isSelected = selectedCommune && props.commune_orig === selectedCommune;
               e.target.setStyle({
+                fillColor: getFeatureColor(props),
                 weight: isSelected ? 3 : 1.5,
                 color: isSelected ? "#1a1a1a" : "#555",
                 fillOpacity: isSelected ? 0.85 : 0.7,
@@ -402,6 +429,32 @@ export default function MapComponent({
           }}
         />
       )}
+      {/* Map Legend */}
+      <div className="absolute bottom-4 left-4 z-[450] bg-white/90 backdrop-blur-sm rounded-lg shadow-lg border border-slate-200/60 p-3 max-h-[300px] overflow-y-auto">
+        {!selectedProvince ? (
+          // Overview legend: provinces
+          <>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Provinces</p>
+            {Object.entries(PROVINCE_COLORS).map(([name, color]) => (
+              <div key={name} className="flex items-center gap-2 mb-1">
+                <span className="w-3 h-3 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: color }} />
+                <span className="text-[11px] font-semibold text-slate-700">{name}</span>
+              </div>
+            ))}
+          </>
+        ) : (
+          // Province legend: communes
+          <>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Communes</p>
+            {projectsByCommune && Object.keys(projectsByCommune).sort().map((name, i) => (
+              <div key={name} className="flex items-center gap-2 mb-0.5">
+                <span className="w-3 h-3 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: COMMUNE_PALETTE[i % COMMUNE_PALETTE.length] }} />
+                <span className="text-[10px] font-medium text-slate-600 truncate max-w-[120px]">{name}</span>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
       <div ref={containerRef} className="w-full h-full" />
     </div>
   );
