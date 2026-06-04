@@ -393,7 +393,7 @@ export default function MapComponent({
         }, 1500);
       }
     }
-  }, [geojsonData, selectedCommune, selectedProvince, onCommuneClick]);
+  }, [geojsonData, selectedCommune, selectedProvince, onCommuneClick, externalColorMap]);
 
   return (
     <div className="relative w-full h-full">

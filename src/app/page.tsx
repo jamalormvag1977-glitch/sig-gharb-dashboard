@@ -183,12 +183,12 @@ export default function Home() {
       const el = communeRefs.current[commune];
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
-        el.classList.add("ring-2", "ring-offset-2");
-        setTimeout(() => {
-          el.classList.remove("ring-2", "ring-offset-2");
-        }, 3000);
       }
-    }, 200);
+    }, 300);
+    // Auto-clear highlight after 4 seconds
+    setTimeout(() => {
+      setSelectedCommune(null);
+    }, 4000);
   }, []);
 
   // Get KPI color scheme based on selected province
@@ -606,7 +606,7 @@ export default function Home() {
                   return (
                     <div
                       key={commune}
-                      ref={(el) => { communeRefs.current[commune] = el; }}
+                      ref={(el: HTMLDivElement | null) => { communeRefs.current[commune] = el; }}
                     >
                     <Card
                       className={`overflow-hidden shadow-md border-slate-200/60 transition-all duration-300 ${isHighlighted ? "ring-2 ring-offset-2" : ""}`}
