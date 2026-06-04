@@ -61,6 +61,8 @@ const MapComponent = dynamic(
   { ssr: false }
 );
 
+import InteractiveOrmvagMap from "@/components/dashboard/InteractiveOrmvagMap";
+
 type ViewType = "overview" | "kenitra" | "sidi-kacem" | "sidi-slimane" | "suivi-avancement" | "rapport";
 
 const NAV_ITEMS: { id: ViewType; label: string; icon: React.ElementType }[] = [
@@ -541,27 +543,17 @@ export default function Home() {
                       <p className="text-2xl font-black text-purple-700">{Object.keys(data.bySecteur).length}</p>
                     </div>
                   </div>
-                  {/* ORMVAG Zone d'action map */}
+                  {/* Interactive ORMVAG Zone d'action map */}
                   <div className="mt-4 rounded-xl overflow-hidden border border-amber-200/60 shadow-md">
-                    <div className="relative">
-                      <img
-                        src="/carte_ormvag.jpeg"
-                        alt="Carte ORMVAG - Découpage administratif des secteurs équipés"
-                        className="w-full h-auto max-h-[350px] object-contain bg-slate-50"
-                      />
-                      <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-md border border-amber-200/50">
-                        <p className="text-[10px] font-bold text-amber-700 uppercase tracking-widest">Zone d&apos;action ORMVAG</p>
-                        <p className="text-[9px] text-slate-500">Découpage administratif — Secteurs équipés</p>
-                      </div>
-                      <div className="absolute bottom-3 right-3 flex items-center gap-2">
-                        {Object.entries(PROVINCE_COLORS).map(([name, color]) => (
-                          <div key={name} className="flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-md px-2 py-1 shadow-sm border border-slate-200/50">
-                            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-                            <span className="text-[9px] font-bold text-slate-700">{name}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    <InteractiveOrmvagMap
+                      data={data}
+                      compact
+                      onProvinceClick={(province) => {
+                        if (province === "Kénitra") setActiveView("kenitra");
+                        else if (province === "Sidi Kacem") setActiveView("sidi-kacem");
+                        else if (province === "Sidi Slimane") setActiveView("sidi-slimane");
+                      }}
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -1280,43 +1272,17 @@ export default function Home() {
             />
           </div>
 
-          {/* ORMVAG Zone d'action banner - overview only */}
+          {/* Interactive ORMVAG Map - overview only */}
           {activeView === "overview" && (
             <Card className="overflow-hidden shadow-xl border-slate-200/60">
-              <div className="relative">
-                <img
-                  src="/carte_ormvag.jpeg"
-                  alt="Carte ORMVAG - Découpage administratif des secteurs équipés"
-                  className="w-full h-auto max-h-[420px] object-contain bg-slate-100"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent pointer-events-none" />
-                <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <div className="flex items-end justify-between flex-wrap gap-3">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                        <span className="text-[10px] font-bold text-green-300 uppercase tracking-widest">Zone d&apos;action ORMVAG</span>
-                      </div>
-                      <h3 className="text-lg font-extrabold text-white drop-shadow-lg">Découpage Administratif — Secteurs Équipés</h3>
-                      <p className="text-xs text-slate-300 mt-0.5">Office Régional de Mise en Valeur Agricole du Gharb — Kénitra</p>
-                    </div>
-                    <div className="flex items-center gap-2.5">
-                      {Object.entries(PROVINCE_COLORS).map(([name, color]) => {
-                        const provData = data.byProvince[name];
-                        return (
-                          <div key={name} className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/20">
-                            <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: color }} />
-                            <div>
-                              <p className="text-[10px] font-bold text-white">{name}</p>
-                              <p className="text-[9px] text-slate-300">{((provData?.cout_total ?? 0) / 1e6).toFixed(1)} MDH · {provData?.nb_projets ?? 0} projets</p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <InteractiveOrmvagMap
+                data={data}
+                onProvinceClick={(province) => {
+                  if (province === "Kénitra") setActiveView("kenitra");
+                  else if (province === "Sidi Kacem") setActiveView("sidi-kacem");
+                  else if (province === "Sidi Slimane") setActiveView("sidi-slimane");
+                }}
+              />
             </Card>
           )}
 
