@@ -1,3 +1,41 @@
+# Worklog — Task 3: Add Interactive ORMVAG Map with Project Data Overlays
+
+**Date**: 2026-06-05
+**Task ID**: 3
+**Files modified**: 
+- `/home/z/my-project/src/components/dashboard/InteractiveOrmvagMap.tsx` (new)
+- `/home/z/my-project/src/app/page.tsx` (modified)
+
+## Summary
+
+Created an interactive ORMVAG map component that overlays clickable province zones and commune hotspots on the official ORMVAG card image. Users can hover/click provinces to see project data, budget, status breakdown, and navigate to province-specific views.
+
+## Changes Made
+
+### 1. New Component: InteractiveOrmvagMap
+- SVG overlay on the ORMVAG card image with province polygon zones
+- Province zones: Kénitra (yellow), Sidi Kacem (pink), Sidi Slimane (green)
+- Commune dots positioned at approximate geographic locations on the map
+- Each dot sized by project count, colored by dominant status
+- Hover effects: province highlight, commune tooltip with project data
+- Click: province detail panel with budget, status counts, progress bars
+- Click "Voir détail" button navigates to the province's dedicated view
+- Compact mode for rapport section
+- Animated pulse effects on active provinces and commune dots
+- Status legend (Terminé/En cours/Non démarré)
+
+### 2. page.tsx Integration
+- Imported InteractiveOrmvagMap component
+- Replaced static ORMVAG banner in overview section with interactive map
+- Replaced static ORMVAG map in rapport section with compact interactive map
+- onProvinceClick handler navigates to province views (kenitra/sidi-kacem/sidi-slimane)
+
+## Build Status
+✅ `npx next build` passed successfully
+✅ Pushed to GitHub (commit 1b8d609)
+
+---
+
 # Worklog — Task 2: Add Interactive Project Markers to the Leaflet Map
 
 **Date**: 2026-03-05
