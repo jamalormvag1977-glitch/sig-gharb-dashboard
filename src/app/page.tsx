@@ -45,6 +45,12 @@ import {
   ArrowDownRight,
   Activity,
   PieChart as PieChartIcon,
+  CheckCircle2,
+  Clock,
+  CircleDot,
+  Gauge,
+  Wallet,
+  Wrench,
 } from "lucide-react";
 
 const MapComponent = dynamic(
@@ -683,6 +689,310 @@ export default function Home() {
                       </div>
                     );
                   })()}
+                </CardContent>
+              </Card>
+
+              {/* 5. Suivi d'avancement physique et financier */}
+              <Card className="overflow-hidden shadow-xl border-indigo-200/60">
+                <CardHeader className="py-4 px-6 border-b bg-gradient-to-r from-indigo-700 to-violet-700">
+                  <CardTitle className="text-base font-extrabold flex items-center gap-2 text-white">
+                    <Gauge className="h-5 w-5 text-indigo-300" />
+                    5. Suivi d&apos;avancement physique et financier
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6 space-y-6">
+                  {/* Global progress gauges */}
+                  {(() => {
+                    const ap = data.avancementPhysiqueGlobal;
+                    const af = data.avancementFinancierGlobal;
+                    const decaisse = data.totalDecaisse;
+                    const tauxDecaissement = data.totalCost > 0 ? (decaisse / data.totalCost) * 100 : 0;
+                    const getStatusColor = (val: number) => val >= 75 ? "#10b981" : val >= 50 ? "#f59e0b" : val >= 25 ? "#f97316" : "#ef4444";
+                    const GaugeRing = ({ value, label, color, icon: Icon }: { value: number; label: string; color: string; icon: React.ElementType }) => {
+                      const radius = 54;
+                      const circ = 2 * Math.PI * radius;
+                      const offset = circ - (value / 100) * circ;
+                      return (
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="relative w-32 h-32">
+                            <svg className="w-32 h-32 -rotate-90" viewBox="0 0 120 120">
+                              <circle cx="60" cy="60" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="10" />
+                              <circle cx="60" cy="60" r={radius} fill="none" stroke={color} strokeWidth="10" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset} className="transition-all duration-1000" />
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                              <Icon className="h-4 w-4 mb-0.5" style={{ color }} />
+                              <span className="text-2xl font-black" style={{ color }}>{value.toFixed(0)}%</span>
+                            </div>
+                          </div>
+                          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">{label}</p>
+                        </div>
+                      );
+                    };
+                    return (
+                      <>
+                        <div className="flex flex-wrap justify-center gap-8">
+                          <GaugeRing value={ap} label="Avancement physique" color={getStatusColor(ap)} icon={Wrench} />
+                          <GaugeRing value={af} label="Avancement financier" color={getStatusColor(af)} icon={Wallet} />
+                          <GaugeRing value={tauxDecaissement} label="Taux de décaissement" color={getStatusColor(tauxDecaissement)} icon={Gauge} />
+                        </div>
+                        <div className="grid grid-cols-3 gap-3 mt-4">
+                          <div className="bg-indigo-50 rounded-xl p-3 border border-indigo-200/60 text-center">
+                            <p className="text-[9px] font-bold text-indigo-600 uppercase tracking-widest mb-1">Budget total</p>
+                            <p className="text-lg font-black text-indigo-800">{(data.totalCost / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+                          </div>
+                          <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-200/60 text-center">
+                            <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Décaissé</p>
+                            <p className="text-lg font-black text-emerald-800">{(decaisse / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+                          </div>
+                          <div className="bg-amber-50 rounded-xl p-3 border border-amber-200/60 text-center">
+                            <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest mb-1">Reste à décaisser</p>
+                            <p className="text-lg font-black text-amber-800">{((data.totalCost - decaisse) / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
+
+                  {/* Status distribution */}
+                  {(() => {
+                    const statuts = data.projects.reduce((acc, p) => {
+                      acc[p.statut] = (acc[p.statut] || 0) + 1;
+                      return acc;
+                    }, {} as Record<string, number>);
+                    const termine = statuts["Terminé"] || 0;
+                    const enCours = statuts["En cours"] || 0;
+                    const nonDemarre = statuts["Non démarré"] || 0;
+                    const total = data.totalProjects;
+                    const statusItems = [
+                      { label: "Terminé", count: termine, color: "#10b981", icon: CheckCircle2, bg: "bg-emerald-50", border: "border-emerald-200/60" },
+                      { label: "En cours", count: enCours, color: "#f59e0b", icon: Clock, bg: "bg-amber-50", border: "border-amber-200/60" },
+                      { label: "Non démarré", count: nonDemarre, color: "#ef4444", icon: CircleDot, bg: "bg-red-50", border: "border-red-200/60" },
+                    ];
+                    return (
+                      <div>
+                        <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+                          <Activity className="h-4 w-4 text-indigo-500" />
+                          Répartition par statut
+                        </h4>
+                        <div className="grid grid-cols-3 gap-3">
+                          {statusItems.map((s) => (
+                            <div key={s.label} className={`${s.bg} rounded-xl p-4 border ${s.border} text-center`}>
+                              <s.icon className="h-5 w-5 mx-auto mb-1" style={{ color: s.color }} />
+                              <p className="text-2xl font-black" style={{ color: s.color }}>{s.count}</p>
+                              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{s.label}</p>
+                              <p className="text-[9px] text-slate-400 font-semibold mt-0.5">{total > 0 ? ((s.count / total) * 100).toFixed(0) : 0}% des projets</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Progress by province */}
+                  <div>
+                    <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+                      <Building2 className="h-4 w-4 text-blue-500" />
+                      Avancement par province
+                    </h4>
+                    <div className="space-y-3">
+                      {Object.entries(data.byProvince).sort(([, a], [, b]) => b.cout_total - a.cout_total).map(([name, d]) => {
+                        const provColor = PROVINCE_COLORS[name] || "#6366f1";
+                        const ap = d.avancement_physique_moyen;
+                        const af = d.avancement_financier_moyen;
+                        const ecart = ap - af;
+                        const ecartLabel = ecart > 0 ? `Physique +${ecart.toFixed(0)}pts` : ecart < 0 ? `Financier +${Math.abs(ecart).toFixed(0)}pts` : "Équilibré";
+                        const ecartColor = Math.abs(ecart) <= 5 ? "#10b981" : Math.abs(ecart) <= 15 ? "#f59e0b" : "#ef4444";
+                        return (
+                          <div key={name} className="rounded-xl border-2 p-4 space-y-3" style={{ borderColor: provColor + "30", backgroundColor: provColor + "06" }}>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="w-3.5 h-3.5 rounded-full shadow" style={{ backgroundColor: provColor }} />
+                                <span className="text-sm font-extrabold text-slate-800">{name}</span>
+                              </div>
+                              <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: ecartColor + "18", color: ecartColor }}>{ecartLabel}</Badge>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <div className="flex justify-between items-center mb-1">
+                                  <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Wrench className="h-3 w-3" /> Physique</span>
+                                  <span className="text-xs font-black" style={{ color: provColor }}>{ap.toFixed(0)}%</span>
+                                </div>
+                                <div className="w-full bg-slate-200/80 rounded-full h-3 overflow-hidden shadow-inner">
+                                  <div className="h-full rounded-full shadow-sm transition-all duration-700" style={{ width: `${ap}%`, backgroundColor: provColor }} />
+                                </div>
+                              </div>
+                              <div>
+                                <div className="flex justify-between items-center mb-1">
+                                  <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Wallet className="h-3 w-3" /> Financier</span>
+                                  <span className="text-xs font-black" style={{ color: provColor }}>{af.toFixed(0)}%</span>
+                                </div>
+                                <div className="w-full bg-slate-200/80 rounded-full h-3 overflow-hidden shadow-inner">
+                                  <div className="h-full rounded-full shadow-sm transition-all duration-700 opacity-70" style={{ width: `${af}%`, backgroundColor: provColor }} />
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
+                              <span>Décaissé: {(d.montant_decaisse_total / 1e6).toFixed(1)} MDH / {(d.cout_total / 1e6).toFixed(1)} MDH</span>
+                              <span>{d.nb_projets} projets / {d.communes} communes</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Progress by sector */}
+                  <div>
+                    <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+                      <Layers className="h-4 w-4 text-amber-500" />
+                      Avancement par secteur
+                    </h4>
+                    <div className="space-y-2">
+                      {Object.entries(data.bySecteur)
+                        .sort(([, a], [, b]) => b.cout_total - a.cout_total)
+                        .map(([name, d]) => {
+                          const shortName = SECTEUR_SHORT[name] || name;
+                          const dotColor = SECTEUR_DOT_COLORS[shortName] || "#94a3b8";
+                          const ap = d.avancement_physique_moyen;
+                          const af = d.avancement_financier_moyen;
+                          return (
+                            <div key={name} className="rounded-xl border p-3" style={{ borderColor: dotColor + "25", backgroundColor: dotColor + "04" }}>
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-3 h-3 rounded-full shadow" style={{ backgroundColor: dotColor }} />
+                                  <span className="text-xs font-extrabold text-slate-800">{shortName}</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-[10px] font-bold">
+                                  <span style={{ color: dotColor }}>Phys. {ap.toFixed(0)}%</span>
+                                  <span className="text-slate-300">|</span>
+                                  <span style={{ color: dotColor }} className="opacity-70">Fin. {af.toFixed(0)}%</span>
+                                  <span className="text-slate-300">|</span>
+                                  <span className="text-slate-500">{(d.montant_decaisse_total / 1e6).toFixed(1)} MDH décaissé</span>
+                                </div>
+                              </div>
+                              <div className="flex gap-1.5 h-2.5">
+                                <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+                                  <div className="h-full rounded-full" style={{ width: `${ap}%`, backgroundColor: dotColor }} />
+                                </div>
+                                <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+                                  <div className="h-full rounded-full opacity-60" style={{ width: `${af}%`, backgroundColor: dotColor }} />
+                                </div>
+                              </div>
+                              <div className="flex justify-between mt-1 text-[9px] text-slate-400 font-semibold">
+                                <span>Physique</span>
+                                <span>Financier</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+
+                  {/* Alert: projects behind schedule */}
+                  {(() => {
+                    const alertProjects = data.projects
+                      .filter(p => p.statut === "En cours" && p.avancement_financier - p.avancement_physique > 20)
+                      .sort((a, b) => (b.avancement_financier - b.avancement_physique) - (a.avancement_financier - a.avancement_physique))
+                      .slice(0, 5);
+                    if (alertProjects.length === 0) return null;
+                    return (
+                      <div className="bg-red-50 rounded-xl p-4 border border-red-200/60">
+                        <h4 className="text-xs font-bold text-red-800 mb-2 flex items-center gap-2">
+                          <AlertTriangle className="h-4 w-4 text-red-500" />
+                          Projets en retard physique ({alertProjects.length} projets avec écart &gt; 20pts)
+                        </h4>
+                        <div className="space-y-1.5">
+                          {alertProjects.map((p, i) => {
+                            const ecart = p.avancement_financier - p.avancement_physique;
+                            return (
+                              <div key={i} className="flex items-center gap-2 text-[11px] text-red-700 bg-white rounded-lg px-3 py-2 border border-red-100">
+                                <ArrowDownRight className="h-3.5 w-3.5 text-red-500 shrink-0" />
+                                <span className="flex-1 truncate"><strong>{p.commune}</strong> — {p.consistance.substring(0, 60)}...</span>
+                                <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 bg-red-100 text-red-700">Phys. {p.avancement_physique}% vs Fin. {p.avancement_financier}%</Badge>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Detailed project table */}
+                  <div>
+                    <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+                      <TableIcon className="h-4 w-4 text-slate-500" />
+                      Détail de l&apos;avancement par projet
+                    </h4>
+                    <div className="overflow-x-auto rounded-xl border border-slate-200/80 shadow-sm">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-slate-50">
+                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3">Province</TableHead>
+                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3">Commune</TableHead>
+                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3">Projet</TableHead>
+                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3 text-right">Budget</TableHead>
+                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3 text-right">Décaissé</TableHead>
+                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3 text-center">Phys.</TableHead>
+                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3 text-center">Fin.</TableHead>
+                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3 text-center">Statut</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {data.projects.map((p, i) => {
+                            const provColor = PROVINCE_COLORS[p.province] || "#6366f1";
+                            const ecart = p.avancement_financier - p.avancement_physique;
+                            const statusConfig: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
+                              "Terminé": { bg: "bg-emerald-100", text: "text-emerald-700", icon: CheckCircle2 },
+                              "En cours": { bg: "bg-amber-100", text: "text-amber-700", icon: Clock },
+                              "Non démarré": { bg: "bg-red-100", text: "text-red-700", icon: CircleDot },
+                            };
+                            const sc = statusConfig[p.statut] || statusConfig["En cours"];
+                            const apColor = p.avancement_physique >= 75 ? "#10b981" : p.avancement_physique >= 50 ? "#f59e0b" : p.avancement_physique >= 25 ? "#f97316" : "#ef4444";
+                            const afColor = p.avancement_financier >= 75 ? "#10b981" : p.avancement_financier >= 50 ? "#f59e0b" : p.avancement_financier >= 25 ? "#f97316" : "#ef4444";
+                            return (
+                              <TableRow key={i} className={i % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
+                                <TableCell className="py-1.5 px-3">
+                                  <div className="flex items-center gap-1.5">
+                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: provColor }} />
+                                    <span className="text-[10px] font-bold text-slate-700">{p.province}</span>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="py-1.5 px-3 text-[10px] font-semibold text-slate-600">{p.commune}</TableCell>
+                                <TableCell className="py-1.5 px-3 text-[10px] text-slate-600 max-w-[200px] truncate">{p.consistance}</TableCell>
+                                <TableCell className="py-1.5 px-3 text-[10px] font-bold text-slate-700 text-right">{(p.cout / 1e6).toFixed(2)} M</TableCell>
+                                <TableCell className="py-1.5 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_decaisse > 0 ? "#10b981" : "#94a3b8" }}>{(p.montant_decaisse / 1e6).toFixed(2)} M</TableCell>
+                                <TableCell className="py-1.5 px-3 text-center">
+                                  <div className="flex items-center justify-center gap-1">
+                                    <div className="w-12 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+                                      <div className="h-full rounded-full" style={{ width: `${p.avancement_physique}%`, backgroundColor: apColor }} />
+                                    </div>
+                                    <span className="text-[10px] font-black" style={{ color: apColor }}>{p.avancement_physique}%</span>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="py-1.5 px-3 text-center">
+                                  <div className="flex items-center justify-center gap-1">
+                                    <div className="w-12 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+                                      <div className="h-full rounded-full" style={{ width: `${p.avancement_financier}%`, backgroundColor: afColor }} />
+                                    </div>
+                                    <span className="text-[10px] font-black" style={{ color: afColor }}>{p.avancement_financier}%</span>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="py-1.5 px-3 text-center">
+                                  <Badge className={`${sc.bg} ${sc.text} text-[9px] font-bold px-2 py-0.5 border-0`}>
+                                    <sc.icon className="h-2.5 w-2.5 mr-0.5" />
+                                    {p.statut}
+                                  </Badge>
+                                  {Math.abs(ecart) > 15 && p.statut === "En cours" && (
+                                    <span className="block text-[8px] font-bold text-red-500 mt-0.5">Écart {ecart > 0 ? "-" : "+"}{Math.abs(ecart)}pts</span>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>

@@ -7,7 +7,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des canaux en terre",
       "consistance": "Curage des collecteurs d'assainissement du secteur EST2",
-      "cout": 2091568
+      "cout": 2091568,
+      "avancement_physique": 50,
+      "avancement_financier": 60,
+      "montant_decaisse": 1271712,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -16,7 +20,11 @@
       "intitule_rubrique": "Travaux de pistes",
       "intitule_projet": "Travaux de réhabilitation des pistes agricoles",
       "consistance": "Entretien des pistes agricoles Douar Nouagra et Douar ouled Salem",
-      "cout": 78000
+      "cout": 78000,
+      "avancement_physique": 0,
+      "avancement_financier": 0,
+      "montant_decaisse": 0,
+      "statut": "Non démarré"
     },
     {
       "province": "Sidi Kacem",
@@ -25,7 +33,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Curage des prises sur l’oued, bâche d’aspiration et bassin de régulation.",
       "consistance": "Curage de la chambre des joints de démontage des siphonnes  de la station de pompage EST2.",
-      "cout": 126000
+      "cout": 126000,
+      "avancement_physique": 25,
+      "avancement_financier": 20,
+      "montant_decaisse": 25054,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -34,7 +46,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Prestation de maintenance des débitmètres et leurs équipements annexes installés au niveau des station de pompage",
       "consistance": "Changement trois débitmètre Ø 600mm inondés de la station de pompage EST 2 et deux capteurs VEGASON 62",
-      "cout": 165500
+      "cout": 165500,
+      "avancement_physique": 100,
+      "avancement_financier": 100,
+      "montant_decaisse": 165500,
+      "statut": "Terminé"
     },
     {
       "province": "Sidi Kacem",
@@ -43,7 +59,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des canaux en terre",
       "consistance": "Curage du canal d'assainisement Tihli Aval",
-      "cout": 1000000
+      "cout": 1000000,
+      "avancement_physique": 65,
+      "avancement_financier": 60,
+      "montant_decaisse": 604844,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -52,7 +72,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "",
       "consistance": "Curage des collecteurs d'assainissement du secteur P11/1",
-      "cout": 846731
+      "cout": 846731,
+      "avancement_physique": 65,
+      "avancement_financier": 75,
+      "montant_decaisse": 624161,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -61,7 +85,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Curage des prises sur l’oued, bâche d’aspiration et bassin de régulation.",
       "consistance": "Curage des prises sur l’oued de la station de pompage P11/1.",
-      "cout": 200000
+      "cout": 200000,
+      "avancement_physique": 0,
+      "avancement_financier": 0,
+      "montant_decaisse": 0,
+      "statut": "Non démarré"
     },
     {
       "province": "Sidi Kacem",
@@ -70,7 +98,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Prestation de maintenance des débitmètres et leurs équipements annexes installés au niveau des station de pompage",
       "consistance": "Changement trois débitmètre Ø 400mm inondés de la station de pompage P11/1",
-      "cout": 141900
+      "cout": 141900,
+      "avancement_physique": 0,
+      "avancement_financier": 0,
+      "montant_decaisse": 0,
+      "statut": "Non démarré"
     },
     {
       "province": "Sidi Kacem",
@@ -79,7 +111,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Prestations de maintenance et de réparation mécanique des pompes et des groupes motopompes submersibles des stations de pompage.",
       "consistance": "Démontage et expertise des roues des  pompes principaux et pompes a vide de la station P11/1\nChangement des roulements, tresses et organes d’effectués de la station P11/1",
-      "cout": 26700
+      "cout": 26700,
+      "avancement_physique": 0,
+      "avancement_financier": 0,
+      "montant_decaisse": 0,
+      "statut": "Non démarré"
     },
     {
       "province": "Sidi Kacem",
@@ -88,7 +124,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Stabilisation Berge oued",
       "consistance": "Pose de  gabions et recouvrement du talus par matelas Reno des stations de pompage P11/1.",
-      "cout": 480000
+      "cout": 480000,
+      "avancement_physique": 100,
+      "avancement_financier": 100,
+      "montant_decaisse": 480000,
+      "statut": "Terminé"
     },
     {
       "province": "Sidi Kacem",
@@ -97,7 +137,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Génie civile des locaux des stations de pompage.",
       "consistance": "Expertise d’état et d’étanchéité des locaux pompes.\nRenforcement d’étanchéité des locaux pompe sous niveau des oueds des stations de pompage P11/1.\nEntretien des supports en béton des conduites d’aspiration.",
-      "cout": 300000
+      "cout": 300000,
+      "avancement_physique": 65,
+      "avancement_financier": 55,
+      "montant_decaisse": 165225,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -106,7 +150,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des canaux en terre",
       "consistance": "Curage des collecteurs d'assainissement des secteur SH5 et SH6.",
-      "cout": 1000000
+      "cout": 1000000,
+      "avancement_physique": 100,
+      "avancement_financier": 100,
+      "montant_decaisse": 1000000,
+      "statut": "Terminé"
     },
     {
       "province": "Sidi Kacem",
@@ -115,7 +163,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des canaux révetus",
       "consistance": "Curage du canal principal d'irrigation beht partie aval 1.",
-      "cout": 739200
+      "cout": 739200,
+      "avancement_physique": 30,
+      "avancement_financier": 20,
+      "montant_decaisse": 147617,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -124,7 +176,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des canaux révetus",
       "consistance": "Curage du canal principal d'irrigation beht partie aval 2.",
-      "cout": 1276800
+      "cout": 1276800,
+      "avancement_physique": 35,
+      "avancement_financier": 45,
+      "montant_decaisse": 578884,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -133,7 +189,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des canaux en terre",
       "consistance": "Curage des collecteurs d'assainissement des secteurs P8-1 et P8-2",
-      "cout": 5796360
+      "cout": 5796360,
+      "avancement_physique": 0,
+      "avancement_financier": 0,
+      "montant_decaisse": 0,
+      "statut": "Non démarré"
     },
     {
       "province": "Sidi Kacem",
@@ -142,7 +202,11 @@
       "intitule_rubrique": "Travaux de pistes",
       "intitule_projet": "Entretien des pistes agricoles",
       "consistance": "Entretien des pistes agricoles",
-      "cout": 340000
+      "cout": 340000,
+      "avancement_physique": 0,
+      "avancement_financier": 0,
+      "montant_decaisse": 0,
+      "statut": "Non démarré"
     },
     {
       "province": "Sidi Kacem",
@@ -151,7 +215,11 @@
       "intitule_rubrique": "Travaux de réhabilitation des équipements",
       "intitule_projet": "Travaux de réhabilitation des canaux portés d'irrigation",
       "consistance": "Fourniture et de pose de canaux porté et accessoires du réseau S3 du secteur S13",
-      "cout": 397934
+      "cout": 397934,
+      "avancement_physique": 100,
+      "avancement_financier": 100,
+      "montant_decaisse": 397934,
+      "statut": "Terminé"
     },
     {
       "province": "Sidi Kacem",
@@ -160,7 +228,11 @@
       "intitule_rubrique": "Travaux de réhabilitation des équipements",
       "intitule_projet": "",
       "consistance": "Fourniture et de pose de canaux porté et accessoires du réseau T2S1 du secteur S13",
-      "cout": 207575
+      "cout": 207575,
+      "avancement_physique": 0,
+      "avancement_financier": 0,
+      "montant_decaisse": 0,
+      "statut": "Non démarré"
     },
     {
       "province": "Sidi Kacem",
@@ -169,7 +241,11 @@
       "intitule_rubrique": "Travaux de pistes",
       "intitule_projet": "Entretien des pistes agricoles",
       "consistance": "Entretien des pistes agricoles",
-      "cout": 2200000
+      "cout": 2200000,
+      "avancement_physique": 30,
+      "avancement_financier": 40,
+      "montant_decaisse": 873815,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -178,7 +254,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Curage des prises sur l’oued, bâche d’aspiration et bassin de régulation.",
       "consistance": "Curage des prises sur l’oued de la station de pompage S17 et S13.\nNettoyage des grilles de préfiltration des boues colmaté de la station de pompage S17 et S13.\nCurage de la bâche d’aspiration de la station S17 et S13.",
-      "cout": 300000
+      "cout": 300000,
+      "avancement_physique": 100,
+      "avancement_financier": 100,
+      "montant_decaisse": 300000,
+      "statut": "Terminé"
     },
     {
       "province": "Sidi Kacem",
@@ -187,7 +267,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Prestation de maintenance des débitmètres et leurs équipements annexes installés au niveau des station de pompage",
       "consistance": "Changement trois débitmètre Ø 600mm inondés de la station de pompage S13.",
-      "cout": 250000
+      "cout": 250000,
+      "avancement_physique": 75,
+      "avancement_financier": 90,
+      "montant_decaisse": 221003,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -196,7 +280,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Prestations de maintenance des moteurs électriques des stations de pompage.",
       "consistance": "Révision des trois moteurs électriques 200 KW principaux de la station S13. \nRévision des deux moteurs électriques 5,5 KW groupes vide de la station S13.",
-      "cout": 25000
+      "cout": 25000,
+      "avancement_physique": 100,
+      "avancement_financier": 100,
+      "montant_decaisse": 25000,
+      "statut": "Terminé"
     },
     {
       "province": "Sidi Kacem",
@@ -205,7 +293,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Prestations de maintenance et de réparation mécanique des pompes et des groupes motopompes submersibles des stations de pompage.",
       "consistance": "Démontage et expertise des roues des  pompes principaux et pompes a vide de la station S13.\nChangement des roulements, tresses et organes d’effectués de la station S13.",
-      "cout": 38000
+      "cout": 38000,
+      "avancement_physique": 80,
+      "avancement_financier": 65,
+      "montant_decaisse": 25001,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -214,7 +306,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Stabilisation Berge oued",
       "consistance": "Pose de  gabions et recouvrement du talus par matelas Reno des stations de pompage S13.",
-      "cout": 10560000
+      "cout": 10560000,
+      "avancement_physique": 100,
+      "avancement_financier": 100,
+      "montant_decaisse": 10560000,
+      "statut": "Terminé"
     },
     {
       "province": "Sidi Kacem",
@@ -223,7 +319,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Mur clôture des stations de pompage.",
       "consistance": "Stabilisation du sol et reconstruction des murs clôture (270m) cote oued de la station S17.",
-      "cout": 144000
+      "cout": 144000,
+      "avancement_physique": 45,
+      "avancement_financier": 40,
+      "montant_decaisse": 56600,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -232,7 +332,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Génie civile des locaux des stations de pompage.",
       "consistance": "Expertise d’état et d’étanchéité des locaux pompes, commande, puissance des stations de pompage S17 et S13.\nRenforcement d’étanchéité des locaux pompe sous niveau des oueds des stations de pompage S17 et S13.",
-      "cout": 800000
+      "cout": 800000,
+      "avancement_physique": 100,
+      "avancement_financier": 100,
+      "montant_decaisse": 800000,
+      "statut": "Terminé"
     },
     {
       "province": "Sidi Kacem",
@@ -241,7 +345,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des canaux en terre",
       "consistance": "Curage des collecteurs d'assainissement des secteurs EST1 et N5",
-      "cout": 1733306
+      "cout": 1733306,
+      "avancement_physique": 85,
+      "avancement_financier": 90,
+      "montant_decaisse": 1583460,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -250,7 +358,11 @@
       "intitule_rubrique": "Travaux de pistes",
       "intitule_projet": "Entretien des pistes agricoles",
       "consistance": "Entretien des pistes agricoles",
-      "cout": 670000
+      "cout": 670000,
+      "avancement_physique": 40,
+      "avancement_financier": 30,
+      "montant_decaisse": 202250,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -259,7 +371,11 @@
       "intitule_rubrique": "Travaux de réhabilitation des équipements",
       "intitule_projet": "Travaux de réhabilitation des ouvrages de génie civil",
       "consistance": "Réhabilitation de l'ouvrage( genie civil ,gabiollannage,clapet anti retour et buse) de l'ouvrage de débouche SE1",
-      "cout": 2500000
+      "cout": 2500000,
+      "avancement_physique": 45,
+      "avancement_financier": 55,
+      "montant_decaisse": 1372737,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -268,7 +384,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Curage des prises sur l’oued, bâche d’aspiration et bassin de régulation.",
       "consistance": "Curage des prises sur l’oued de la station de pompage E1.\nNettoyage des grilles de préfiltration des boues colmaté de la station de pompage E1.\nCurage de la bâche d’aspiration de la station E1.",
-      "cout": 800000
+      "cout": 800000,
+      "avancement_physique": 35,
+      "avancement_financier": 25,
+      "montant_decaisse": 197973,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -277,7 +397,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Prestation de maintenance des débitmètres et leurs équipements annexes installés au niveau des station de pompage",
       "consistance": "Changement du débitmètre Ø 1200mm inondé de la station de pompage E1.",
-      "cout": 195000
+      "cout": 195000,
+      "avancement_physique": 55,
+      "avancement_financier": 60,
+      "montant_decaisse": 115890,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -286,7 +410,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Prestations de maintenance des moteurs électriques des stations de pompage.",
       "consistance": "Révision des deux moteurs électriques principaux de la station E1.",
-      "cout": 50000
+      "cout": 50000,
+      "avancement_physique": 60,
+      "avancement_financier": 60,
+      "montant_decaisse": 30477,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -295,7 +423,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Prestations de maintenance et de réparation mécanique des pompes et des groupes motopompes submersibles des stations de pompage.",
       "consistance": "Démontage et expertise des cinq pompes principaux et pompes a vide de la station E1.\nChangement des roulements, tresses et organes d’effectués de la station E1.",
-      "cout": 245000
+      "cout": 245000,
+      "avancement_physique": 45,
+      "avancement_financier": 40,
+      "montant_decaisse": 96900,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -304,7 +436,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Génie civile des locaux des stations de pompage.",
       "consistance": "Expertise d’état et d’étanchéité des locaux pompes, commande, puissance de la station de pompage E1.\nRenforcement d’étanchéité des locaux pompe sous niveau des oueds de la station de pompage E1.",
-      "cout": 1000000
+      "cout": 1000000,
+      "avancement_physique": 25,
+      "avancement_financier": 30,
+      "montant_decaisse": 299922,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -313,7 +449,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des canaux en terre",
       "consistance": "Curage des collecteurs d'assainissement des secteurs P7",
-      "cout": 5024032
+      "cout": 5024032,
+      "avancement_physique": 0,
+      "avancement_financier": 0,
+      "montant_decaisse": 0,
+      "statut": "Non démarré"
     },
     {
       "province": "Sidi Kacem",
@@ -322,7 +462,11 @@
       "intitule_rubrique": "Travaux de pistes",
       "intitule_projet": "Entretien des pistes agricoles",
       "consistance": "Entretien des pistes agricoles",
-      "cout": 400000
+      "cout": 400000,
+      "avancement_physique": 75,
+      "avancement_financier": 60,
+      "montant_decaisse": 243467,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -331,7 +475,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des canaux en terre",
       "consistance": "Curage des collecteurs d'assainissement des secteurs S7, S9 et S11",
-      "cout": 6000000
+      "cout": 6000000,
+      "avancement_physique": 25,
+      "avancement_financier": 35,
+      "montant_decaisse": 2071438,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -340,7 +488,11 @@
       "intitule_rubrique": "Travaux de réhabilitation des équipements",
       "intitule_projet": "Travaux de réhabilitation des canaux portés d'irrigation",
       "consistance": "Fourniture et  pose de canaux porté et accessoires du réseau S4 du secteur S11",
-      "cout": 232266
+      "cout": 232266,
+      "avancement_physique": 65,
+      "avancement_financier": 65,
+      "montant_decaisse": 151555,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -349,7 +501,11 @@
       "intitule_rubrique": "Travaux de réhabilitation des équipements",
       "intitule_projet": "",
       "consistance": "Recalage des canaux portés du réseau T5S5 du secteur S9",
-      "cout": 1055025
+      "cout": 1055025,
+      "avancement_physique": 100,
+      "avancement_financier": 100,
+      "montant_decaisse": 1055025,
+      "statut": "Terminé"
     },
     {
       "province": "Sidi Kacem",
@@ -358,7 +514,11 @@
       "intitule_rubrique": "Travaux de réhabilitation des équipements",
       "intitule_projet": "",
       "consistance": "Recalage des canaux portés du réseau T7S5 du secteur S9",
-      "cout": 1004535
+      "cout": 1004535,
+      "avancement_physique": 100,
+      "avancement_financier": 100,
+      "montant_decaisse": 1004535,
+      "statut": "Terminé"
     },
     {
       "province": "Sidi Kacem",
@@ -367,7 +527,11 @@
       "intitule_rubrique": "Travaux de réhabilitation des équipements",
       "intitule_projet": "",
       "consistance": "Recalage des canaux portés du réseau T2S5 du secteur S9",
-      "cout": 793830
+      "cout": 793830,
+      "avancement_physique": 0,
+      "avancement_financier": 0,
+      "montant_decaisse": 0,
+      "statut": "Non démarré"
     },
     {
       "province": "Sidi Kacem",
@@ -376,7 +540,11 @@
       "intitule_rubrique": "Travaux de pistes",
       "intitule_projet": "Entretien des pistes agricoles",
       "consistance": "Entretien des pistes agricoles",
-      "cout": 2000000
+      "cout": 2000000,
+      "avancement_physique": 45,
+      "avancement_financier": 45,
+      "montant_decaisse": 903452,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -385,7 +553,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Curage des prises sur l’oued, bâche d’aspiration et bassin de régulation.",
       "consistance": "Curage des prises sur l’oued des stations de pompage S11, S9, 7D et 7B.\nNettoyage des grilles de préfiltration des boues colmaté des stations de pompage S11, S9, 7D et 7B.\nNettoyage des crépines des boues colmaté de station pompage 7D.\nCurage des dalots et bâche d’aspiration des stations de pompage S11, S9, 7B.",
-      "cout": 200000
+      "cout": 200000,
+      "avancement_physique": 50,
+      "avancement_financier": 55,
+      "montant_decaisse": 108906,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -394,7 +566,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Prestation de maintenance des débitmètres et leurs équipements annexes installés au niveau des station de pompage",
       "consistance": "Changements Sept des débitmètres Ø 600mm inondé des deux stations de pompage S11 et S9.",
-      "cout": 580000
+      "cout": 580000,
+      "avancement_physique": 0,
+      "avancement_financier": 0,
+      "montant_decaisse": 0,
+      "statut": "Non démarré"
     },
     {
       "province": "Sidi Kacem",
@@ -403,7 +579,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Stabilisation Berge oued",
       "consistance": "Pose de murs en gabions et recouvrement du talus par matelas Reno des stations de pompage S11, S9, 7D et 7B .",
-      "cout": 4000000
+      "cout": 4000000,
+      "avancement_physique": 55,
+      "avancement_financier": 70,
+      "montant_decaisse": 2849552,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -412,7 +592,11 @@
       "intitule_rubrique": "Travaux de pistes",
       "intitule_projet": "Entretien des pistes agricoles",
       "consistance": "Entretien des pistes agricoles",
-      "cout": 655000
+      "cout": 655000,
+      "avancement_physique": 65,
+      "avancement_financier": 75,
+      "montant_decaisse": 483676,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -421,7 +605,11 @@
       "intitule_rubrique": "Travaux de réhabilitation des équipements",
       "intitule_projet": "Travaux de réhabilitation des canaux portés d'irrigation",
       "consistance": "Fourniture et de pose de canaux porté et accessoires du réseau SR4 du secteur S3R",
-      "cout": 5182920
+      "cout": 5182920,
+      "avancement_physique": 85,
+      "avancement_financier": 90,
+      "montant_decaisse": 4711438,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -430,7 +618,11 @@
       "intitule_rubrique": "Travaux de réhabilitation des équipements",
       "intitule_projet": "",
       "consistance": "Fourniture et de pose de canaux porté et accessoires du réseau SR6 du secteur S1RIZ",
-      "cout": 152818
+      "cout": 152818,
+      "avancement_physique": 0,
+      "avancement_financier": 0,
+      "montant_decaisse": 0,
+      "statut": "Non démarré"
     },
     {
       "province": "Sidi Kacem",
@@ -439,7 +631,11 @@
       "intitule_rubrique": "Travaux de réhabilitation des équipements",
       "intitule_projet": "",
       "consistance": "Recalage des canaux portés du réseau SR4 du secteur S3R",
-      "cout": 1418000
+      "cout": 1418000,
+      "avancement_physique": 75,
+      "avancement_financier": 85,
+      "montant_decaisse": 1197595,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -448,7 +644,11 @@
       "intitule_rubrique": "Travaux de réhabilitation des équipements",
       "intitule_projet": "Travaux de réhabilitation des ouvrages de génie civil",
       "consistance": "Réhabilitation des murs de soutènements des ouvrages de franchissements du canal d'assainissement CS3 secteur S3 et de l’ouvrage de franchissement du canal primaire d’irrigation du secteur S1R au niveau de la route provinciale P4234",
-      "cout": 800000
+      "cout": 800000,
+      "avancement_physique": 35,
+      "avancement_financier": 35,
+      "montant_decaisse": 276171,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -457,7 +657,11 @@
       "intitule_rubrique": "Travaux de pistes",
       "intitule_projet": "Entretien des pistes agricoles",
       "consistance": "Entretien des pistes agricoles",
-      "cout": 3700000
+      "cout": 3700000,
+      "avancement_physique": 15,
+      "avancement_financier": 25,
+      "montant_decaisse": 938907,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -466,7 +670,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Prestation de maintenance des débitmètres et leurs équipements annexes installés au niveau des station de pompage",
       "consistance": "Changement de quatre débitmètres Ø 500mm et trois Ø 800mm inondé des stations de pompage 1R, 3R et 5R.",
-      "cout": 705000
+      "cout": 705000,
+      "avancement_physique": 35,
+      "avancement_financier": 40,
+      "montant_decaisse": 284955,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Kacem",
@@ -475,7 +683,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Mur clôture des stations de pompage.",
       "consistance": "Stabilisation et reconstruction des murs clôture cote oued des stations de pompage 7A, 3R et 1R.",
-      "cout": 372000
+      "cout": 372000,
+      "avancement_physique": 55,
+      "avancement_financier": 40,
+      "montant_decaisse": 151005,
+      "statut": "En cours"
     },
     {
       "province": "Kénitra",
@@ -484,7 +696,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des canaux en terre",
       "consistance": "Curage des emissaires et colatures secondaire au niveau des secteurs MDA ET N9",
-      "cout": 10000000
+      "cout": 10000000,
+      "avancement_physique": 35,
+      "avancement_financier": 50,
+      "montant_decaisse": 5027790,
+      "statut": "En cours"
     },
     {
       "province": "Kénitra",
@@ -493,7 +709,11 @@
       "intitule_rubrique": "Travaux de pistes",
       "intitule_projet": "Travaux de réhabilitation des pistes agricoles",
       "consistance": "Entretien des pistes agricoles des secteurs MDA et N3",
-      "cout": 2000000
+      "cout": 2000000,
+      "avancement_physique": 0,
+      "avancement_financier": 0,
+      "montant_decaisse": 0,
+      "statut": "Non démarré"
     },
     {
       "province": "Kénitra",
@@ -502,7 +722,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Prestations de maintenance et de réparation mécanique des pompes et des groupes motopompes submersibles des stations de pompage.",
       "consistance": "station de pompage MDA secteur MDA",
-      "cout": 300000
+      "cout": 300000,
+      "avancement_physique": 100,
+      "avancement_financier": 100,
+      "montant_decaisse": 300000,
+      "statut": "Terminé"
     },
     {
       "province": "Kénitra",
@@ -511,7 +735,11 @@
       "intitule_rubrique": "Travaux de réhabilitation des équipements",
       "intitule_projet": "Travaux de réhabilitation des ouvrages de génie civil",
       "consistance": "Rétablissement des bornes affaissées des secteurs N2 et N3",
-      "cout": 100000
+      "cout": 100000,
+      "avancement_physique": 60,
+      "avancement_financier": 50,
+      "montant_decaisse": 49306,
+      "statut": "En cours"
     },
     {
       "province": "Kénitra",
@@ -520,7 +748,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des canaux en terre",
       "consistance": "curage des emissaires et colatures secondaire au niveau des secteurs N2,N3 ET N4,",
-      "cout": 3000000
+      "cout": 3000000,
+      "avancement_physique": 75,
+      "avancement_financier": 65,
+      "montant_decaisse": 1953072,
+      "statut": "En cours"
     },
     {
       "province": "Kénitra",
@@ -529,7 +761,11 @@
       "intitule_rubrique": "Travaux de pistes",
       "intitule_projet": "Travaux de réhabilitation des pistes agricoles",
       "consistance": "Entretien des pistes des secteurs N2,N3,N4 et C4R,",
-      "cout": 5000000
+      "cout": 5000000,
+      "avancement_physique": 75,
+      "avancement_financier": 80,
+      "montant_decaisse": 4066959,
+      "statut": "En cours"
     },
     {
       "province": "Kénitra",
@@ -538,7 +774,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des canaux en terre",
       "consistance": "Curage des emissaires et colatures secondaires secteurs N1",
-      "cout": 3000000
+      "cout": 3000000,
+      "avancement_physique": 0,
+      "avancement_financier": 0,
+      "montant_decaisse": 0,
+      "statut": "Non démarré"
     },
     {
       "province": "Kénitra",
@@ -547,7 +787,11 @@
       "intitule_rubrique": "Travaux de pistes",
       "intitule_projet": "Travaux de réhabilitation des pistes agricoles",
       "consistance": "Entretien des pistes agricoles des secteurs N9 et N1",
-      "cout": 3000000
+      "cout": 3000000,
+      "avancement_physique": 100,
+      "avancement_financier": 100,
+      "montant_decaisse": 3000000,
+      "statut": "Terminé"
     },
     {
       "province": "Kénitra",
@@ -556,7 +800,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des canaux en terre",
       "consistance": "Curage des canaux d'assainissement Hors secteur équipé ghoufera et laison beht sebou ,",
-      "cout": 6000000
+      "cout": 6000000,
+      "avancement_physique": 60,
+      "avancement_financier": 55,
+      "montant_decaisse": 3298496,
+      "statut": "En cours"
     },
     {
       "province": "Kénitra",
@@ -565,7 +813,11 @@
       "intitule_rubrique": "Travaux de pistes",
       "intitule_projet": "Travaux de réhabilitation des pistes agricoles",
       "consistance": "Entretien des pistes agricoles des secteurs SEBOU1,SEBOU2? BEHT3 et BEHT4",
-      "cout": 6000000
+      "cout": 6000000,
+      "avancement_physique": 20,
+      "avancement_financier": 15,
+      "montant_decaisse": 913634,
+      "statut": "En cours"
     },
     {
       "province": "Kénitra",
@@ -574,7 +826,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des canaux en terre",
       "consistance": "Curage du canaL d'assainissement CK,",
-      "cout": 3000000
+      "cout": 3000000,
+      "avancement_physique": 100,
+      "avancement_financier": 100,
+      "montant_decaisse": 3000000,
+      "statut": "Terminé"
     },
     {
       "province": "Kénitra",
@@ -583,7 +839,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des canaux en terre",
       "consistance": "Curage des canaux d'assainissement amontTtiflt Sebou,",
-      "cout": 1000000
+      "cout": 1000000,
+      "avancement_physique": 80,
+      "avancement_financier": 90,
+      "montant_decaisse": 893071,
+      "statut": "En cours"
     },
     {
       "province": "Kénitra",
@@ -592,7 +852,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des canaux en terre",
       "consistance": "Curage des canaux d'assainissement debouche Tiflt aval,",
-      "cout": 1000000
+      "cout": 1000000,
+      "avancement_physique": 15,
+      "avancement_financier": 10,
+      "montant_decaisse": 101512,
+      "statut": "En cours"
     },
     {
       "province": "Kénitra",
@@ -601,7 +865,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des canaux en terre",
       "consistance": "Curage des canaux d'assainissement canal nador bas et haut segmet,",
-      "cout": 6600000
+      "cout": 6600000,
+      "avancement_physique": 20,
+      "avancement_financier": 10,
+      "montant_decaisse": 666122,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Slimane",
@@ -610,7 +878,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des canaux en terre",
       "consistance": "Curage des collecteurs d'assainissement du secteur EST4.",
-      "cout": 1805475
+      "cout": 1805475,
+      "avancement_physique": 80,
+      "avancement_financier": 65,
+      "montant_decaisse": 1195996,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Slimane",
@@ -619,7 +891,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des canaux en terre",
       "consistance": "Curage du canal d'assainissement Tihli central.",
-      "cout": 2587200.0000000005
+      "cout": 2587200.0000000005,
+      "avancement_physique": 0,
+      "avancement_financier": 0,
+      "montant_decaisse": 0,
+      "statut": "Non démarré"
     },
     {
       "province": "Sidi Slimane",
@@ -628,7 +904,11 @@
       "intitule_rubrique": "Travaux de pistes",
       "intitule_projet": "Travaux de réhabilitation des pistes agricoles",
       "consistance": "Entretien des pistes agricoles",
-      "cout": 3500000
+      "cout": 3500000,
+      "avancement_physique": 55,
+      "avancement_financier": 70,
+      "montant_decaisse": 2413325,
+      "statut": "En cours"
     },
     {
       "province": "Sidi Slimane",
@@ -637,7 +917,11 @@
       "intitule_rubrique": "Entretien et réparation des stations de pompage",
       "intitule_projet": "Travaux de réparation des équipements hydromécaniques et éléctriques et entretien de la partie génie civil des stations de pompage.",
       "consistance": "Démontage et expertise des roues des  pompes principaux et pompes a vide de la station EST4 et P11/2.\nChangement des roulements, tresses et organes d’effectués de la station EST4 et P11/2\nChangement deux débitmètre Ø 1200 mm de la station EST4 et un débimétre de la station P11/2.\nChangement des capteurs de niveau inondés.\nRévision et réparation des moteurs des vannes motorisées inondées.\nchangement de six contrôleurs de débits DW181 inondés.\nUn capteur de débitmètre inondé nécessitent un diagnostic VEGASON  .\nEntretien de l'éclairage du local de vide et bâche d’aspiration inondé de la station EST4 et la partie de l’éclairage du local des pompes inondées de la station P11/2.\nPose de gabions et recouvrement du talus par matelas Reno des stations de pompage P11/2",
-      "cout": 870000
+      "cout": 870000,
+      "avancement_physique": 100,
+      "avancement_financier": 100,
+      "montant_decaisse": 870000,
+      "statut": "Terminé"
     },
     {
       "province": "Sidi Slimane",
@@ -646,7 +930,11 @@
       "intitule_rubrique": "Entretien et réparation du réseau d'assainissement et de drainage",
       "intitule_projet": "Travaux de curage des prises des stations de pompage.",
       "consistance": "Curage des siphones des station de pompage EST2 et P11/2.",
-      "cout": 500000
+      "cout": 500000,
+      "avancement_physique": 65,
+      "avancement_financier": 65,
+      "montant_decaisse": 330809,
+      "statut": "En cours"
     }
   ],
   "summary": {
@@ -658,7 +946,10 @@
         "Entretien et réparation du réseau d'assainissement et de drainage": 2217568.0,
         "Travaux de pistes": 78000.0,
         "Entretien et réparation des stations de pompage": 165500.0
-      }
+      },
+      "avancement_physique_moyen": 43.8,
+      "avancement_financier_moyen": 45.0,
+      "montant_decaisse_total": 1462266
     },
     "BIR TALEB": {
       "nb_projets": 7,
@@ -667,7 +958,10 @@
       "rubriques": {
         "Entretien et réparation du réseau d'assainissement et de drainage": 2046731.0,
         "Entretien et réparation des stations de pompage": 948600.0
-      }
+      },
+      "avancement_physique_moyen": 42.1,
+      "avancement_financier_moyen": 41.4,
+      "montant_decaisse_total": 1874230
     },
     "CHEBANAT": {
       "nb_projets": 2,
@@ -675,7 +969,10 @@
       "province": "Sidi Kacem",
       "rubriques": {
         "Entretien et réparation du réseau d'assainissement et de drainage": 1739200.0
-      }
+      },
+      "avancement_physique_moyen": 65.0,
+      "avancement_financier_moyen": 60.0,
+      "montant_decaisse_total": 1147617
     },
     "ZIRARA": {
       "nb_projets": 1,
@@ -683,7 +980,10 @@
       "province": "Sidi Kacem",
       "rubriques": {
         "Entretien et réparation du réseau d'assainissement et de drainage": 1276800.0
-      }
+      },
+      "avancement_physique_moyen": 35.0,
+      "avancement_financier_moyen": 45.0,
+      "montant_decaisse_total": 578884
     },
     "DAR LAASLOUJI": {
       "nb_projets": 2,
@@ -692,7 +992,10 @@
       "rubriques": {
         "Entretien et réparation du réseau d'assainissement et de drainage": 5796360.0,
         "Travaux de pistes": 340000.0
-      }
+      },
+      "avancement_physique_moyen": 0.0,
+      "avancement_financier_moyen": 0.0,
+      "montant_decaisse_total": 0
     },
     "HOUAFATE": {
       "nb_projets": 10,
@@ -703,7 +1006,10 @@
         "Travaux de pistes": 2200000.0,
         "Entretien et réparation du réseau d'assainissement et de drainage": 300000.0,
         "Entretien et réparation des stations de pompage": 11817000.0
-      }
+      },
+      "avancement_physique_moyen": 73.0,
+      "avancement_financier_moyen": 73.5,
+      "montant_decaisse_total": 13259353
     },
     "NOUIRAT": {
       "nb_projets": 8,
@@ -714,7 +1020,10 @@
         "Travaux de pistes": 670000.0,
         "Travaux de réhabilitation des équipements": 2500000.0,
         "Entretien et réparation des stations de pompage": 1490000.0
-      }
+      },
+      "avancement_physique_moyen": 48.8,
+      "avancement_financier_moyen": 48.8,
+      "montant_decaisse_total": 3899609
     },
     "RMILAT": {
       "nb_projets": 2,
@@ -723,7 +1032,10 @@
       "rubriques": {
         "Entretien et réparation du réseau d'assainissement et de drainage": 5024032.0,
         "Travaux de pistes": 400000.0
-      }
+      },
+      "avancement_physique_moyen": 37.5,
+      "avancement_financier_moyen": 30.0,
+      "montant_decaisse_total": 243467
     },
     "SAFSAF": {
       "nb_projets": 9,
@@ -734,7 +1046,10 @@
         "Travaux de réhabilitation des équipements": 3085656.0,
         "Travaux de pistes": 2000000.0,
         "Entretien et réparation des stations de pompage": 4580000.0
-      }
+      },
+      "avancement_physique_moyen": 48.9,
+      "avancement_financier_moyen": 52.2,
+      "montant_decaisse_total": 8144463
     },
     "SIDI AZZOUZ": {
       "nb_projets": 1,
@@ -742,7 +1057,10 @@
       "province": "Sidi Kacem",
       "rubriques": {
         "Travaux de pistes": 655000.0
-      }
+      },
+      "avancement_physique_moyen": 65.0,
+      "avancement_financier_moyen": 75.0,
+      "montant_decaisse_total": 483676
     },
     "SIDI EL KAMEL": {
       "nb_projets": 7,
@@ -752,7 +1070,10 @@
         "Travaux de réhabilitation des équipements": 7553738.0,
         "Travaux de pistes": 3700000.0,
         "Entretien et réparation des stations de pompage": 1077000.0
-      }
+      },
+      "avancement_physique_moyen": 42.9,
+      "avancement_financier_moyen": 45.0,
+      "montant_decaisse_total": 7560071
     },
     "Bni malek": {
       "nb_projets": 4,
@@ -763,7 +1084,10 @@
         "Travaux de pistes": 2000000.0,
         "Entretien et réparation des stations de pompage": 300000.0,
         "Travaux de réhabilitation des équipements": 100000.0
-      }
+      },
+      "avancement_physique_moyen": 48.8,
+      "avancement_financier_moyen": 50.0,
+      "montant_decaisse_total": 5377096
     },
     "SOUK TLET": {
       "nb_projets": 2,
@@ -772,7 +1096,10 @@
       "rubriques": {
         "Entretien et réparation du réseau d'assainissement et de drainage": 3000000.0,
         "Travaux de pistes": 5000000.0
-      }
+      },
+      "avancement_physique_moyen": 75.0,
+      "avancement_financier_moyen": 72.5,
+      "montant_decaisse_total": 6020031
     },
     "Sidi Med Lahmar": {
       "nb_projets": 2,
@@ -781,7 +1108,10 @@
       "rubriques": {
         "Entretien et réparation du réseau d'assainissement et de drainage": 3000000.0,
         "Travaux de pistes": 3000000.0
-      }
+      },
+      "avancement_physique_moyen": 50.0,
+      "avancement_financier_moyen": 50.0,
+      "montant_decaisse_total": 3000000
     },
     "Mograne": {
       "nb_projets": 2,
@@ -790,7 +1120,10 @@
       "rubriques": {
         "Entretien et réparation du réseau d'assainissement et de drainage": 6000000.0,
         "Travaux de pistes": 6000000.0
-      }
+      },
+      "avancement_physique_moyen": 40.0,
+      "avancement_financier_moyen": 35.0,
+      "montant_decaisse_total": 4212130
     },
     "Sidi allal tazi": {
       "nb_projets": 1,
@@ -798,7 +1131,10 @@
       "province": "Kénitra",
       "rubriques": {
         "Entretien et réparation du réseau d'assainissement et de drainage": 3000000.0
-      }
+      },
+      "avancement_physique_moyen": 100.0,
+      "avancement_financier_moyen": 100.0,
+      "montant_decaisse_total": 3000000
     },
     "AMEUR SAFLIA": {
       "nb_projets": 1,
@@ -806,7 +1142,10 @@
       "province": "Kénitra",
       "rubriques": {
         "Entretien et réparation du réseau d'assainissement et de drainage": 1000000.0
-      }
+      },
+      "avancement_physique_moyen": 80.0,
+      "avancement_financier_moyen": 90.0,
+      "montant_decaisse_total": 893071
     },
     "Oulad SLAMA": {
       "nb_projets": 1,
@@ -814,7 +1153,10 @@
       "province": "Kénitra",
       "rubriques": {
         "Entretien et réparation du réseau d'assainissement et de drainage": 1000000.0
-      }
+      },
+      "avancement_physique_moyen": 15.0,
+      "avancement_financier_moyen": 10.0,
+      "montant_decaisse_total": 101512
     },
     "BHARA Oulad AYAD": {
       "nb_projets": 1,
@@ -822,7 +1164,10 @@
       "province": "Kénitra",
       "rubriques": {
         "Entretien et réparation du réseau d'assainissement et de drainage": 6600000.0
-      }
+      },
+      "avancement_physique_moyen": 20.0,
+      "avancement_financier_moyen": 10.0,
+      "montant_decaisse_total": 666122
     },
     "OULED HCEINE": {
       "nb_projets": 5,
@@ -832,48 +1177,75 @@
         "Entretien et réparation du réseau d'assainissement et de drainage": 4892675.0,
         "Travaux de pistes": 3500000.0,
         "Entretien et réparation des stations de pompage": 870000.0
-      }
+      },
+      "avancement_physique_moyen": 60.0,
+      "avancement_financier_moyen": 60.0,
+      "montant_decaisse_total": 4810130
     }
   },
   "byProvince": {
     "Sidi Kacem": {
       "nb_projets": 53,
       "cout_total": 71000000,
-      "communes": 11
+      "communes": 11,
+      "avancement_physique_moyen": 49.7,
+      "avancement_financier_moyen": 50.6,
+      "montant_decaisse_total": 38653636
     },
     "Kénitra": {
       "nb_projets": 14,
       "cout_total": 50000000,
-      "communes": 8
+      "communes": 8,
+      "avancement_physique_moyen": 52.9,
+      "avancement_financier_moyen": 51.8,
+      "montant_decaisse_total": 23269962
     },
     "Sidi Slimane": {
       "nb_projets": 5,
       "cout_total": 9262675.0,
-      "communes": 1
+      "communes": 1,
+      "avancement_physique_moyen": 60.0,
+      "avancement_financier_moyen": 60.0,
+      "montant_decaisse_total": 4810130
     }
   },
   "bySecteur": {
     "Entretien et réparation du réseau d'assainissement et de drainage": {
       "nb_projets": 26,
       "cout_total": 65626672.0,
-      "communes": 26
+      "communes": 26,
+      "avancement_physique_moyen": 46.0,
+      "avancement_financier_moyen": 46.0,
+      "montant_decaisse_total": 24980917
     },
     "Travaux de pistes": {
       "nb_projets": 13,
       "cout_total": 29543000,
-      "communes": 13
+      "communes": 13,
+      "avancement_physique_moyen": 40.0,
+      "avancement_financier_moyen": 41.5,
+      "montant_decaisse_total": 14039485
     },
     "Entretien et réparation des stations de pompage": {
       "nb_projets": 21,
       "cout_total": 21248100,
-      "communes": 21
+      "communes": 21,
+      "avancement_physique_moyen": 61.7,
+      "avancement_financier_moyen": 61.4,
+      "montant_decaisse_total": 17497030
     },
     "Travaux de réhabilitation des équipements": {
       "nb_projets": 12,
       "cout_total": 13844903,
-      "communes": 12
+      "communes": 12,
+      "avancement_physique_moyen": 55.4,
+      "avancement_financier_moyen": 56.7,
+      "montant_decaisse_total": 10216296
     }
   },
   "totalCost": 130262675.0,
-  "totalProjects": 72
+  "totalProjects": 72,
+  "totalDecaisse": 66733728,
+  "avancementPhysiqueGlobal": 51.0,
+  "avancementFinancierGlobal": 51.5
 }

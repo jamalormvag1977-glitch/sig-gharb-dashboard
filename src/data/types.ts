@@ -1,3 +1,5 @@
+export type ProjectStatus = "Terminé" | "En cours" | "Non démarré";
+
 export interface Project {
   province: string;
   commune: string;
@@ -6,6 +8,10 @@ export interface Project {
   intitule_projet: string;
   consistance: string;
   cout: number;
+  avancement_physique: number; // 0-100 %
+  avancement_financier: number; // 0-100 %
+  montant_decaisse: number; // DH
+  statut: ProjectStatus;
 }
 
 export interface CommuneSummary {
@@ -13,18 +19,27 @@ export interface CommuneSummary {
   cout_total: number;
   province: string;
   rubriques: Record<string, number>;
+  avancement_physique_moyen: number;
+  avancement_financier_moyen: number;
+  montant_decaisse_total: number;
 }
 
 export interface ProvinceData {
   nb_projets: number;
   cout_total: number;
   communes: number;
+  avancement_physique_moyen: number;
+  avancement_financier_moyen: number;
+  montant_decaisse_total: number;
 }
 
 export interface SecteurData {
   nb_projets: number;
   cout_total: number;
   communes: number;
+  avancement_physique_moyen: number;
+  avancement_financier_moyen: number;
+  montant_decaisse_total: number;
 }
 
 export interface DashboardData {
@@ -34,6 +49,9 @@ export interface DashboardData {
   bySecteur: Record<string, SecteurData>;
   totalCost: number;
   totalProjects: number;
+  totalDecaisse: number;
+  avancementPhysiqueGlobal: number;
+  avancementFinancierGlobal: number;
 }
 
 export const SECTEUR_COLORS: Record<string, string> = {
