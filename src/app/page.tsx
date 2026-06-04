@@ -38,6 +38,13 @@ import {
   Maximize,
   Minimize,
   FileDown,
+  ClipboardCheck,
+  AlertTriangle,
+  Target,
+  ArrowUpRight,
+  ArrowDownRight,
+  Activity,
+  PieChart as PieChartIcon,
 } from "lucide-react";
 
 const MapComponent = dynamic(
@@ -45,13 +52,14 @@ const MapComponent = dynamic(
   { ssr: false }
 );
 
-type ViewType = "overview" | "kenitra" | "sidi-kacem" | "sidi-slimane";
+type ViewType = "overview" | "kenitra" | "sidi-kacem" | "sidi-slimane" | "rapport";
 
 const NAV_ITEMS: { id: ViewType; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Vue d'ensemble", icon: LayoutDashboard },
   { id: "kenitra", label: "Kénitra", icon: Building2 },
   { id: "sidi-kacem", label: "Sidi Kacem", icon: Building2 },
   { id: "sidi-slimane", label: "Sidi Slimane", icon: Building2 },
+  { id: "rapport", label: "Rapport", icon: FileText },
 ];
 
 const PROVINCE_MAP: Record<ViewType, string | null> = {
@@ -59,6 +67,7 @@ const PROVINCE_MAP: Record<ViewType, string | null> = {
   kenitra: "Kénitra",
   "sidi-kacem": "Sidi Kacem",
   "sidi-slimane": "Sidi Slimane",
+  rapport: null,
 };
 
 const SECTEUR_DOT_COLORS: Record<string, string> = {
@@ -255,6 +264,7 @@ export default function Home() {
             if (item.id === "kenitra") { activeBg = "from-blue-600 to-cyan-600"; activeShadow = "shadow-blue-600/25"; }
             if (item.id === "sidi-kacem") { activeBg = "from-red-600 to-rose-600"; activeShadow = "shadow-red-600/25"; }
             if (item.id === "sidi-slimane") { activeBg = "from-emerald-600 to-green-600"; activeShadow = "shadow-emerald-600/25"; }
+            if (item.id === "rapport") { activeBg = "from-amber-500 to-orange-600"; activeShadow = "shadow-amber-500/25"; }
 
             return (
               <button
@@ -318,6 +328,11 @@ export default function Home() {
                     <LayoutDashboard className="h-5 w-5 text-blue-600" />
                     ORMVAG - Tableau de bord
                   </>
+                ) : activeView === "rapport" ? (
+                  <>
+                    <ClipboardCheck className="h-5 w-5 text-amber-600" />
+                    Rapport d&apos;analyse
+                  </>
                 ) : (
                   <>
                     <Building2
@@ -355,7 +370,413 @@ export default function Home() {
         </div>
 
         <div className="p-5 space-y-5">
-          {/* KPI Cards */}
+          {/* ===== RAPPORT VIEW ===== */}
+          {activeView === "rapport" ? (
+            <div className="space-y-6">
+              {/* Rapport Header */}
+              <Card className="overflow-hidden shadow-xl border-amber-200/60">
+                <CardHeader className="py-5 px-6 bg-gradient-to-r from-amber-600 to-orange-600">
+                  <CardTitle className="text-lg font-extrabold text-white flex items-center gap-3">
+                    <ClipboardCheck className="h-6 w-6" />
+                    Rapport d&apos;Analyse — Projets de Lutte contre les Inondations
+                  </CardTitle>
+                  <p className="text-amber-100 text-xs mt-1">Région du Gharb — ORMVAG — Année 2026</p>
+                </CardHeader>
+                <CardContent className="p-6 space-y-4">
+                  <p className="text-sm text-slate-700 leading-relaxed">
+                    Ce rapport présente une analyse détaillée de l&apos;ensemble des projets de lutte contre les inondations
+                    dans la région du Gharb, couvrant les trois provinces de Kénitra, Sidi Kacem et Sidi Slimane.
+                    L&apos;objectif est d&apos;identifier les priorités d&apos;investissement, d&apos;évaluer la répartition géographique
+                    et sectorielle des budgets, et de formuler des recommandations stratégiques pour optimiser
+                    l&apos;allocation des ressources disponibles.
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
+                    <div className="bg-amber-50 rounded-xl p-4 border border-amber-200/60 text-center">
+                      <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest mb-1">Coût Global</p>
+                      <p className="text-2xl font-black text-amber-700">{(data.totalCost / 1e6).toFixed(1)} <span className="text-sm">MDH</span></p>
+                    </div>
+                    <div className="bg-blue-50 rounded-xl p-4 border border-blue-200/60 text-center">
+                      <p className="text-[9px] font-bold text-blue-600 uppercase tracking-widest mb-1">Projets</p>
+                      <p className="text-2xl font-black text-blue-700">{data.totalProjects}</p>
+                    </div>
+                    <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200/60 text-center">
+                      <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Communes</p>
+                      <p className="text-2xl font-black text-emerald-700">{Object.keys(data.summary).length}</p>
+                    </div>
+                    <div className="bg-purple-50 rounded-xl p-4 border border-purple-200/60 text-center">
+                      <p className="text-[9px] font-bold text-purple-600 uppercase tracking-widest mb-1">Secteurs</p>
+                      <p className="text-2xl font-black text-purple-700">{Object.keys(data.bySecteur).length}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* 1. Analyse par Province */}
+              <Card className="overflow-hidden shadow-lg border-slate-200/60">
+                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-slate-800 to-slate-700">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-white">
+                    <Building2 className="h-4 w-4 text-blue-400" />
+                    1. Analyse comparative par province
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-5 space-y-4">
+                  <p className="text-sm text-slate-700 leading-relaxed">
+                    La répartition des investissements entre les trois provinces révèle des disparités significatives
+                    qui reflètent à la fois l&apos;étendue des besoins en infrastructure et la densité des zones à risque
+                    inondation dans chaque province. L&apos;analyse des écarts budgétaires permet d&apos;identifier les provinces
+                    nécessitant une attention prioritaire en matière de renforcement des ouvrages de protection.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {Object.entries(data.byProvince).sort(([, a], [, b]) => b.cout_total - a.cout_total).map(([name, d]) => {
+                      const pct = data.totalCost > 0 ? (d.cout_total / data.totalCost) * 100 : 0;
+                      const avgCost = d.nb_projets > 0 ? d.cout_total / d.nb_projets : 0;
+                      const provColor = PROVINCE_COLORS[name] || "#6366f1";
+                      const isTop = pct === Math.max(...Object.values(data.byProvince).map(p => data.totalCost > 0 ? (p.cout_total / data.totalCost) * 100 : 0));
+                      return (
+                        <div key={name} className="rounded-xl border-2 p-4 space-y-3 transition-shadow hover:shadow-lg" style={{ borderColor: provColor + "40", backgroundColor: provColor + "08" }}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 rounded-full shadow-md" style={{ backgroundColor: provColor }} />
+                              <span className="text-sm font-extrabold text-slate-800">{name}</span>
+                            </div>
+                            {isTop && (
+                              <Badge className="text-[8px] font-bold px-2 py-0.5 border-0 bg-amber-100 text-amber-700">
+                                <ArrowUpRight className="h-3 w-3 mr-0.5" /> Dominante
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-[10px] text-slate-500 font-semibold">Budget alloué</span>
+                              <span className="text-sm font-black" style={{ color: provColor }}>{(d.cout_total / 1e6).toFixed(1)} MDH</span>
+                            </div>
+                            <div className="w-full bg-slate-200/80 rounded-full h-3 overflow-hidden shadow-inner">
+                              <div className="h-full rounded-full shadow-sm" style={{ width: `${pct}%`, backgroundColor: provColor }} />
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[10px] font-bold text-slate-600">{pct.toFixed(1)}% du total</span>
+                              <span className="text-[10px] text-slate-400">{d.nb_projets} projets / {d.communes} communes</span>
+                            </div>
+                          </div>
+                          <div className="bg-white rounded-lg p-2.5 border border-slate-100 mt-1">
+                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Coût moyen / projet</p>
+                            <p className="text-sm font-black text-slate-800">{(avgCost / 1e6).toFixed(2)} MDH</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {(() => {
+                    const provEntries = Object.entries(data.byProvince).sort(([, a], [, b]) => b.cout_total - a.cout_total);
+                    const maxPct = data.totalCost > 0 ? (provEntries[0][1].cout_total / data.totalCost) * 100 : 0;
+                    const minPct = data.totalCost > 0 ? (provEntries[provEntries.length - 1][1].cout_total / data.totalCost) * 100 : 0;
+                    const ecart = maxPct - minPct;
+                    return (
+                      <div className="bg-amber-50 rounded-xl p-4 border border-amber-200/60 flex items-start gap-3">
+                        <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-bold text-amber-800 mb-1">Constat clé — Disparité inter-provinciale</p>
+                          <p className="text-[11px] text-amber-700 leading-relaxed">
+                            L&apos;écart entre la province la plus dotée ({provEntries[0][0]}, {maxPct.toFixed(1)}%) et la moins dotée
+                            ({provEntries[provEntries.length - 1][0]}, {minPct.toFixed(1)}%) est de <strong>{ecart.toFixed(1)} points</strong>.
+                            Cet écart reflète une concentration des investissements sur les zones les plus vulnérables, mais
+                            souligne également la nécessité de renforcer les infrastructures dans les provinces à faible couverture.
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </CardContent>
+              </Card>
+
+              {/* 2. Analyse par Secteur */}
+              <Card className="overflow-hidden shadow-lg border-slate-200/60">
+                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-slate-800 to-slate-700">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-white">
+                    <Layers className="h-4 w-4 text-amber-400" />
+                    2. Analyse sectorielle des investissements
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-5 space-y-4">
+                  <p className="text-sm text-slate-700 leading-relaxed">
+                    L&apos;analyse sectorielle met en évidence la répartition des budgets entre les cinq grands secteurs
+                    d&apos;intervention. Cette ventilation permet d&apos;identifier les domaines prioritaires et de vérifier
+                    l&apos;adéquation entre les investissements et les risques identifiés sur le terrain. Les secteurs
+                    d&apos;assainissement et de drainage concentrent logiquement la part la plus importante des budgets,
+                    reflétant la nature hydrologique des enjeux dans la plaine du Gharb.
+                  </p>
+                  <div className="space-y-3">
+                    {Object.entries(data.bySecteur)
+                      .sort(([, a], [, b]) => b.cout_total - a.cout_total)
+                      .map(([name, d]) => {
+                        const shortName = SECTEUR_SHORT[name] || name;
+                        const dotColor = SECTEUR_DOT_COLORS[shortName] || "#94a3b8";
+                        const pct = data.totalCost > 0 ? (d.cout_total / data.totalCost) * 100 : 0;
+                        const avgCost = d.nb_projets > 0 ? d.cout_total / d.nb_projets : 0;
+                        return (
+                          <div key={name} className="rounded-xl border p-4" style={{ borderColor: dotColor + "30", backgroundColor: dotColor + "06" }}>
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-4 h-4 rounded-full shadow-md" style={{ backgroundColor: dotColor }} />
+                                <span className="text-sm font-extrabold text-slate-800">{shortName}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-black" style={{ color: dotColor }}>{(d.cout_total / 1e6).toFixed(1)} MDH</span>
+                                <Badge className="text-[10px] font-bold px-2 py-0.5 border-0 shadow-sm" style={{ backgroundColor: dotColor + "15", color: dotColor }}>
+                                  {pct.toFixed(1)}%
+                                </Badge>
+                              </div>
+                            </div>
+                            <div className="w-full bg-slate-200/80 rounded-full h-4 overflow-hidden shadow-inner mb-2">
+                              <div className="h-full rounded-full shadow-sm transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: dotColor }} />
+                            </div>
+                            <div className="flex gap-4 text-[10px] text-slate-500 font-semibold">
+                              <span>{d.nb_projets} projets</span>
+                              <span>{d.communes} communes</span>
+                              <span>Coût moyen: {(avgCost / 1e6).toFixed(2)} MDH/projet</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                  {(() => {
+                    const secteurEntries = Object.entries(data.bySecteur).sort(([, a], [, b]) => b.cout_total - a.cout_total);
+                    const topSecteur = secteurEntries[0];
+                    const topPct = data.totalCost > 0 ? (topSecteur[1].cout_total / data.totalCost) * 100 : 0;
+                    return (
+                      <div className="bg-blue-50 rounded-xl p-4 border border-blue-200/60 flex items-start gap-3">
+                        <Target className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-bold text-blue-800 mb-1">Secteur prédominant</p>
+                          <p className="text-[11px] text-blue-700 leading-relaxed">
+                            Le secteur <strong>{SECTEUR_SHORT[topSecteur[0]] || topSecteur[0]}</strong> capte à lui seul
+                            <strong> {topPct.toFixed(1)}%</strong> du budget total avec <strong>{topSecteur[1].nb_projets} projets</strong> pour
+                            un montant de <strong>{(topSecteur[1].cout_total / 1e6).toFixed(1)} MDH</strong>. Cette dominance
+                            s&apos;explique par la vocation agricole de la région du Gharb, où le réseau d&apos;assainissement
+                            et de drainage constitue l&apos;infrastructure critique pour la gestion des eaux de crue et la
+                            protection des terres agricoles.
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </CardContent>
+              </Card>
+
+              {/* 3. Top Communes */}
+              <Card className="overflow-hidden shadow-lg border-slate-200/60">
+                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-slate-800 to-slate-700">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-white">
+                    <TrendingUp className="h-4 w-4 text-emerald-400" />
+                    3. Classement des communes par effort d&apos;investissement
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-5 space-y-4">
+                  <p className="text-sm text-slate-700 leading-relaxed">
+                    Le classement des communes selon le montant total des investissements révéle une concentration
+                    marquée des budgets sur un nombre réduit de communes. Les communes les mieux dotées correspondent
+                    généralement aux zones les plus exposées aux risques d&apos;inondation, situées dans les bassins versants
+                    principaux de l&apos;Oued Sebou et ses affluents. Cette concentration est justifiée par l&apos;ampleur des
+                    travaux nécessaires pour protéger les populations et les infrastructures agricoles.
+                  </p>
+                  {(() => {
+                    const allCommunes = Object.entries(data.summary)
+                      .map(([name, d]) => ({ name, ...d }))
+                      .sort((a, b) => b.cout_total - a.cout_total);
+                    const top5 = allCommunes.slice(0, 5);
+                    const top5Cost = top5.reduce((s, d) => s + d.cout_total, 0);
+                    const top5Pct = data.totalCost > 0 ? (top5Cost / data.totalCost) * 100 : 0;
+                    const avgCost = data.totalProjects > 0 ? data.totalCost / data.totalProjects : 0;
+                    return (
+                      <>
+                        <div className="space-y-2">
+                          {top5.map((d, idx) => {
+                            const pct = data.totalCost > 0 ? (d.cout_total / data.totalCost) * 100 : 0;
+                            const commColor = communeColorMap[d.name] || "#6366f1";
+                            const provColor = PROVINCE_COLORS[d.province] || "#6366f1";
+                            return (
+                              <div key={d.name} className="flex items-center gap-3 rounded-xl border border-slate-200/80 p-3 hover:shadow-md transition-shadow" style={{ borderLeftWidth: "4px", borderLeftColor: commColor }}>
+                                <span className="text-lg font-black text-slate-300 w-8 text-center shrink-0">#{idx + 1}</span>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-sm font-extrabold text-slate-800 truncate">{d.name}</span>
+                                    <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: provColor + "18", color: provColor }}>{d.province}</Badge>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex-1 bg-slate-200/80 rounded-full h-2.5 overflow-hidden shadow-inner">
+                                      <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: commColor }} />
+                                    </div>
+                                    <span className="text-[10px] font-bold text-slate-600 w-10 text-right">{pct.toFixed(1)}%</span>
+                                  </div>
+                                </div>
+                                <div className="text-right shrink-0">
+                                  <p className="text-sm font-black text-emerald-600">{(d.cout_total / 1e6).toFixed(2)} MDH</p>
+                                  <p className="text-[10px] text-slate-400">{d.nb_projets} projets</p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200/60 flex items-start gap-3">
+                          <Activity className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-xs font-bold text-emerald-800 mb-1">Concentration des investissements</p>
+                            <p className="text-[11px] text-emerald-700 leading-relaxed">
+                              Les 5 communes les mieux dotées concentrent <strong>{top5Pct.toFixed(1)}%</strong> du budget total
+                              ({(top5Cost / 1e6).toFixed(1)} MDH sur {(data.totalCost / 1e6).toFixed(1)} MDH). Le coût moyen par projet
+                              à l&apos;échelle régionale s&apos;élève à <strong>{(avgCost / 1e6).toFixed(2)} MDH</strong>. Cette concentration
+                              traduit la priorisation des zones les plus vulnérables, mais appelle une vigilance pour
+                              maintenir un niveau d&apos;investissement minimal dans les communes moins dotées.
+                            </p>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </CardContent>
+              </Card>
+
+              {/* 4. Indicateurs de performance */}
+              <Card className="overflow-hidden shadow-lg border-slate-200/60">
+                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-slate-800 to-slate-700">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-white">
+                    <BarChart3 className="h-4 w-4 text-blue-400" />
+                    4. Indicateurs clés de performance (KPI)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-5 space-y-4">
+                  <p className="text-sm text-slate-700 leading-relaxed">
+                    Les indicateurs ci-dessous offrent une vue synthétique de l&apos;effort d&apos;investissement à l&apos;échelle
+                    régionale. Ils permettent de mesurer l&apos;intensité de la dépense par commune et par projet, ainsi que
+                    la diversité sectorielle des interventions. Ces métriques sont essentielles pour le pilotage
+                    stratégique du programme et l&apos;évaluation de son efficacité.
+                  </p>
+                  {(() => {
+                    const nbCommunes = Object.keys(data.summary).length;
+                    const nbSecteurs = Object.keys(data.bySecteur).length;
+                    const avgCostPerCommune = nbCommunes > 0 ? data.totalCost / nbCommunes : 0;
+                    const avgCostPerProject = data.totalProjects > 0 ? data.totalCost / data.totalProjects : 0;
+                    const maxCommuneCost = Math.max(...Object.values(data.summary).map(d => d.cout_total));
+                    const minCommuneCost = Math.min(...Object.values(data.summary).map(d => d.cout_total));
+                    const maxMinRatio = minCommuneCost > 0 ? maxCommuneCost / minCommuneCost : 0;
+                    const kpis = [
+                      { label: "Coût moyen / commune", value: `${(avgCostPerCommune / 1e6).toFixed(2)} MDH`, color: "#3b82f6", icon: LandPlot },
+                      { label: "Coût moyen / projet", value: `${(avgCostPerProject / 1e6).toFixed(2)} MDH`, color: "#10b981", icon: Hash },
+                      { label: "Projets / commune", value: (data.totalProjects / nbCommunes).toFixed(1), color: "#f59e0b", icon: MapPin },
+                      { label: "Ratio max/min (commune)", value: `×${maxMinRatio.toFixed(1)}`, color: "#ef4444", icon: AlertTriangle },
+                      { label: "Couverture sectorielle", value: `${nbSecteurs} secteurs`, color: "#8b5cf6", icon: Layers },
+                      { label: "Densité investissement", value: `${(data.totalCost / 1e6 / nbCommunes).toFixed(2)} MDH/commune`, color: "#06b6d4", icon: Activity },
+                    ];
+                    return (
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {kpis.map((kpi) => (
+                          <div key={kpi.label} className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: kpi.color + "15" }}>
+                                <kpi.icon className="h-4 w-4" style={{ color: kpi.color }} />
+                              </div>
+                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-tight">{kpi.label}</span>
+                            </div>
+                            <p className="text-lg font-black text-slate-800">{kpi.value}</p>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </CardContent>
+              </Card>
+
+              {/* 5. Synthèse & Recommandations */}
+              <Card className="overflow-hidden shadow-xl border-amber-200/60">
+                <CardHeader className="py-4 px-6 border-b bg-gradient-to-r from-amber-700 to-orange-700">
+                  <CardTitle className="text-base font-extrabold flex items-center gap-2 text-white">
+                    <Target className="h-5 w-5 text-amber-300" />
+                    5. Synthèse et Recommandations stratégiques
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6 space-y-5">
+                  {(() => {
+                    const provEntries = Object.entries(data.byProvince).sort(([, a], [, b]) => b.cout_total - a.cout_total);
+                    const secteurEntries = Object.entries(data.bySecteur).sort(([, a], [, b]) => b.cout_total - a.cout_total);
+                    const topProv = provEntries[0];
+                    const topSecteur = secteurEntries[0];
+                    const nbCommunes = Object.keys(data.summary).length;
+                    const top5Cost = Object.values(data.summary).sort((a, b) => b.cout_total - a.cout_total).slice(0, 5).reduce((s, d) => s + d.cout_total, 0);
+                    const top5Pct = data.totalCost > 0 ? (top5Cost / data.totalCost) * 100 : 0;
+                    return (
+                      <>
+                        <div>
+                          <h4 className="text-sm font-extrabold text-slate-800 mb-2 flex items-center gap-2">
+                            <ArrowUpRight className="h-4 w-4 text-emerald-500" />
+                            Principaux constats
+                          </h4>
+                          <ul className="space-y-2">
+                            <li className="flex items-start gap-2 text-[12px] text-slate-700 leading-relaxed">
+                              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1.5" />
+                              <span><strong>Enveloppe globale :</strong> Le programme mobilise un budget total de <strong>{(data.totalCost / 1e6).toFixed(1)} MDH</strong> répartis sur <strong>{data.totalProjects} projets</strong> couvrant <strong>{nbCommunes} communes</strong> et <strong>{Object.keys(data.bySecteur).length} secteurs</strong> d&apos;intervention à travers les trois provinces.</span>
+                            </li>
+                            <li className="flex items-start gap-2 text-[12px] text-slate-700 leading-relaxed">
+                              <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0 mt-1.5" />
+                              <span><strong>Province dominante :</strong> {topProv[0]} absorbe <strong>{(data.totalCost > 0 ? (topProv[1].cout_total / data.totalCost) * 100 : 0).toFixed(1)}%</strong> du budget total avec <strong>{topProv[1].nb_projets} projets</strong>, confirmant son statut de zone prioritaire pour la lutte contre les inondations.</span>
+                            </li>
+                            <li className="flex items-start gap-2 text-[12px] text-slate-700 leading-relaxed">
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 mt-1.5" />
+                              <span><strong>Secteur prépondérant :</strong> Le secteur {SECTEUR_SHORT[topSecteur[0]] || topSecteur[0]} représente à lui seul <strong>{(data.totalCost > 0 ? (topSecteur[1].cout_total / data.totalCost) * 100 : 0).toFixed(1)}%</strong> des investissements, ce qui démontre l&apos;importance critique du réseau d&apos;assainissement.</span>
+                            </li>
+                            <li className="flex items-start gap-2 text-[12px] text-slate-700 leading-relaxed">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-1.5" />
+                              <span><strong>Concentration géographique :</strong> Les 5 communes les mieux dotées captent <strong>{top5Pct.toFixed(1)}%</strong> de l&apos;enveloppe totale, indiquant une forte concentration territoriale des investissements.</span>
+                            </li>
+                          </ul>
+                        </div>
+                        <div className="border-t border-slate-200 pt-4">
+                          <h4 className="text-sm font-extrabold text-slate-800 mb-2 flex items-center gap-2">
+                            <ClipboardCheck className="h-4 w-4 text-amber-500" />
+                            Recommandations
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="bg-blue-50 rounded-xl p-3.5 border border-blue-200/60">
+                              <p className="text-xs font-bold text-blue-800 mb-1">1. Rééquilibrage inter-provincial</p>
+                              <p className="text-[11px] text-blue-700 leading-relaxed">
+                                Envisager un rééquilibrage progressif des budgets en faveur des provinces moins dotées,
+                                notamment {provEntries[provEntries.length - 1][0]}, afin de réduire la vulnérabilité des zones
+                                actuellement sous-équipées et d&apos;assurer une couverture territoriale plus homogène.
+                              </p>
+                            </div>
+                            <div className="bg-emerald-50 rounded-xl p-3.5 border border-emerald-200/60">
+                              <p className="text-xs font-bold text-emerald-800 mb-1">2. Diversification sectorielle</p>
+                              <p className="text-[11px] text-emerald-700 leading-relaxed">
+                                Renforcer les investissements dans les secteurs complémentaires (pistes agricoles,
+                                réhabilitation des équipements) pour garantir une approche intégrée de la gestion
+                                des risques d&apos;inondation et une meilleure résilience du territoire.
+                              </p>
+                            </div>
+                            <div className="bg-amber-50 rounded-xl p-3.5 border border-amber-200/60">
+                              <p className="text-xs font-bold text-amber-800 mb-1">3. Suivi des communes à faible couverture</p>
+                              <p className="text-[11px] text-amber-700 leading-relaxed">
+                                Identifier et prioriter les communes bénéficiant d&apos;un montant d&apos;investissement
+                                inférieur à la moyenne régionale, afin de réduire les inégalités d&apos;accès aux
+                                infrastructures de protection contre les crues.
+                              </p>
+                            </div>
+                            <div className="bg-purple-50 rounded-xl p-3.5 border border-purple-200/60">
+                              <p className="text-xs font-bold text-purple-800 mb-1">4. Optimisation coût-efficacité</p>
+                              <p className="text-[11px] text-purple-700 leading-relaxed">
+                                Analyser le rapport coût-efficacité des projets par secteur et par commune pour
+                                identifier les interventions offrant le meilleur retour sur investissement en termes
+                                de réduction du risque inondation et de protection des terres agricoles.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+          <>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <KPICard title="Coût Global" value={`${(totalCost / 1e6).toFixed(1)} MDH`} icon={TrendingUp} {...getKpiColors(0)} />
             <KPICard title="Projets" value={totalProjects.toString()} icon={Hash} {...getKpiColors(1)} />
@@ -1215,6 +1636,8 @@ export default function Home() {
                 })}
               </div>
             </div>
+          )}
+          </>
           )}
         </div>
       </main>
