@@ -36,20 +36,6 @@ const PROVINCE_COLORS: Record<string, string> = {
   "Sidi Slimane": "#5bb58a",
 };
 
-// Status colors for project markers
-const STATUS_COLORS: Record<string, string> = {
-  "Terminé": "#10b981",
-  "En cours": "#f59e0b",
-  "Non démarré": "#ef4444",
-};
-
-// Status labels for legend
-const STATUS_LABELS: Record<string, string> = {
-  "Terminé": "Terminé",
-  "En cours": "En cours",
-  "Non démarré": "Non démarré",
-};
-
 // 30-color palette for individual communes
 const COMMUNE_PALETTE = [
   "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6",
@@ -74,7 +60,6 @@ export default function MapComponent({
   const currentProvinceRef = useRef<string | null>(null);
   const projectsRef = useRef<Record<string, Project[]> | undefined>(undefined);
   const projectsLayerRef = useRef<L.LayerGroup | null>(null);
-  const legendRef = useRef<HTMLDivElement | null>(null);
 
   // Keep ref in sync without triggering re-renders
   projectsRef.current = projectsByCommune;
@@ -116,8 +101,7 @@ export default function MapComponent({
       if (!center) return;
 
       projects.forEach((p, idx) => {
-        const statusColor = STATUS_COLORS[p.statut] || "#94a3b8";
-        const borderColor = PROVINCE_COLORS[p.province] || "#555";
+        const fillColor = PROVINCE_COLORS[p.province] || "#555";
         const radius = Math.max(4, Math.min(15, Math.sqrt(p.cout / 1e6) * 3));
 
         // Slight offset for multiple projects in the same commune
@@ -131,20 +115,6 @@ export default function MapComponent({
         const ordonneMDH = (p.montant_ordonne / 1e6).toFixed(2);
         const physPct = Math.min(100, Math.max(0, p.avancement_physique));
         const finPct = Math.min(100, Math.max(0, p.avancement_financier));
-
-        // Status badge styling
-        let statusBadgeBg: string;
-        let statusBadgeBorder: string;
-        if (p.statut === "Terminé") {
-          statusBadgeBg = "#10b981";
-          statusBadgeBorder = "#059669";
-        } else if (p.statut === "En cours") {
-          statusBadgeBg = "#f59e0b";
-          statusBadgeBorder = "#d97706";
-        } else {
-          statusBadgeBg = "#ef4444";
-          statusBadgeBorder = "#dc2626";
-        }
 
         // Progress bar helper
         const progressBar = (pct: number, color: string) => {
@@ -190,17 +160,12 @@ export default function MapComponent({
               ${progressBar(finPct, "#8b5cf6")}
             </div>
           </div>
-          <div style="border-top:1px solid #e2e8f0; padding-top:6px; text-align:center;">
-            <span style="display:inline-block; padding:3px 12px; border-radius:12px; font-size:11px; font-weight:700; color:#fff; background:${statusBadgeBg}; border:1px solid ${statusBadgeBorder};">
-              ${STATUS_LABELS[p.statut] || p.statut}
-            </span>
-          </div>
         </div>`;
 
         const marker = L.circleMarker([lat, lng], {
           radius: radius,
-          fillColor: statusColor,
-          color: borderColor,
+          fillColor: fillColor,
+          color: "#fff",
           weight: 1.5,
           fillOpacity: 0.7,
           opacity: 0.9,
@@ -216,7 +181,7 @@ export default function MapComponent({
         marker.bindTooltip(
           `<div style="font-size:11px; line-height:1.3;">
             <div style="font-weight:700;">${p.consistance || p.intitule_projet || "Projet"}</div>
-            <div style="color:#64748b; font-size:10px;">${coutMDH} MDH — ${STATUS_LABELS[p.statut] || p.statut}</div>
+            <div style="color:#64748b; font-size:10px;">${coutMDH} MDH</div>
           </div>`,
           {
             direction: "top",
@@ -233,40 +198,7 @@ export default function MapComponent({
     projectsLayerRef.current = projectsLayer;
   };
 
-  // Helper: add/update project status legend
-  const updateProjectLegend = (map: L.Map) => {
-    // Remove existing legend if any
-    if (legendRef.current) {
-      legendRef.current.remove();
-      legendRef.current = null;
-    }
 
-    const legend = L.control({ position: "bottomright" });
-
-    legend.onAdd = () => {
-      const div = L.DomUtil.create("div", "project-status-legend");
-      div.innerHTML = `
-        <div style="background:rgba(255,255,255,0.92); backdrop-filter:blur(4px); border-radius:10px; box-shadow:0 2px 12px rgba(0,0,0,0.15); border:1px solid rgba(226,232,240,0.6); padding:10px 12px; font-size:11px; line-height:1.4;">
-          <div style="font-size:9px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px;">Statuts des projets</div>
-          <div style="display:flex; flex-direction:column; gap:4px;">
-            ${Object.entries(STATUS_COLORS).map(([status, color]) => `
-              <div style="display:flex; align-items:center; gap:6px;">
-                <span style="width:12px; height:12px; border-radius:50%; background:${color}; border:1.5px solid rgba(0,0,0,0.15); display:inline-block; flex-shrink:0; box-shadow:0 1px 3px rgba(0,0,0,0.15);"></span>
-                <span style="color:#475569; font-weight:600; font-size:10px;">${STATUS_LABELS[status] || status}</span>
-              </div>
-            `).join("")}
-          </div>
-          <div style="margin-top:6px; padding-top:6px; border-top:1px solid #e2e8f0;">
-            <div style="font-size:9px; color:#94a3b8; font-weight:600;">Taille ∝ budget</div>
-          </div>
-        </div>
-      `;
-      legendRef.current = div;
-      return div;
-    };
-
-    legend.addTo(map);
-  };
 
   // Initialize map once
   useEffect(() => {
@@ -296,9 +228,6 @@ export default function MapComponent({
     labels.addTo(newMap);
 
     mapRef.current = newMap;
-
-    // Add project status legend
-    updateProjectLegend(newMap);
 
     const timeouts = [
       setTimeout(() => newMap.invalidateSize(), 50),
