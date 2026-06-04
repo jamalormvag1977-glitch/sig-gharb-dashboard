@@ -546,7 +546,7 @@ export default function Home() {
                   Coût par commune (MDH)
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-3">
+              <CardContent className="p-4">
                 <CostByCommuneChart
                   summary={filteredSummary}
                   selectedProvince={selectedProvince}

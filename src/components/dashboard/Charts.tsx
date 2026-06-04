@@ -44,7 +44,7 @@ export function CostByCommuneChart({ summary, selectedProvince }: ChartsProps) {
   const data = Object.entries(summary)
     .filter(([, d]) => !selectedProvince || d.province === selectedProvince)
     .map(([name, d], idx) => ({
-      name: name.length > 14 ? name.substring(0, 14) + "…" : name,
+      name: name.length > 18 ? name.substring(0, 16) + "…" : name,
       fullName: name,
       cout: d.cout_total,
       province: d.province,
@@ -56,13 +56,16 @@ export function CostByCommuneChart({ summary, selectedProvince }: ChartsProps) {
   // Re-assign colors after sort to maintain distinct colors
   const coloredData = data.map((d, idx) => ({ ...d, color: COMMUNE_PALETTE[idx % COMMUNE_PALETTE.length] }));
 
+  // Dynamic height: 38px per commune bar, min 200px
+  const chartHeight = Math.max(200, coloredData.length * 38 + 30);
+
   return (
-    <ResponsiveContainer width="100%" height={350}>
+    <ResponsiveContainer width="100%" height={chartHeight}>
       <BarChart
         data={coloredData}
         layout="vertical"
-        margin={{ left: 10, right: 70, top: 5, bottom: 5 }}
-        barCategoryGap={8}
+        margin={{ left: 5, right: 100, top: 5, bottom: 5 }}
+        barCategoryGap="20%"
         barGap={4}
       >
         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" horizontal={false} />
@@ -76,9 +79,9 @@ export function CostByCommuneChart({ summary, selectedProvince }: ChartsProps) {
         <YAxis
           type="category"
           dataKey="name"
-          width={105}
+          width={130}
           fontSize={10}
-          tick={{ fill: "#475569" }}
+          tick={{ fill: "#334155", fontWeight: 600 }}
           axisLine={false}
           tickLine={false}
         />
@@ -95,25 +98,25 @@ export function CostByCommuneChart({ summary, selectedProvince }: ChartsProps) {
             fontSize: "12px",
           }}
         />
-        <Bar dataKey="cout" radius={[0, 6, 6, 0]} maxBarSize={28}>
+        <Bar dataKey="cout" radius={[0, 6, 6, 0]} maxBarSize={26} minPointSize={3}>
           {coloredData.map((entry, index) => (
             <Cell
               key={`cell-${index}`}
               fill={entry.color}
-              fillOpacity={0.85}
+              fillOpacity={0.88}
             />
           ))}
           <LabelList
             dataKey="cout"
             position="right"
-            formatter={(value: number, _props: any, idx: number) => {
+            formatter={(_value: number, _props: any, idx: number) => {
               const item = coloredData[idx];
-              if (!item) return `${(value / 1e6).toFixed(1)}`;
-              const mdh = (value / 1e6).toFixed(1);
+              if (!item) return "";
+              const mdh = (item.cout / 1e6).toFixed(1);
               const pct = item.pct.toFixed(1);
-              return `${mdh} (${pct}%)`;
+              return `${mdh} MDH (${pct}%)`;
             }}
-            style={{ fontSize: 9, fontWeight: 700, fill: "#475569" }}
+            style={{ fontSize: 9, fontWeight: 700, fill: "#334155" }}
           />
         </Bar>
       </BarChart>
@@ -135,8 +138,10 @@ export function ProjectsByCommuneChart({ summary, selectedProvince }: ChartsProp
 
   const coloredData = data.map((d, idx) => ({ ...d, color: COMMUNE_PALETTE[idx % COMMUNE_PALETTE.length] }));
 
+  const chartHeight = Math.max(200, coloredData.length * 34 + 30);
+
   return (
-    <ResponsiveContainer width="100%" height={280}>
+    <ResponsiveContainer width="100%" height={chartHeight}>
       <BarChart data={coloredData} layout="vertical" margin={{ left: 10, right: 40, top: 5, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis type="number" fontSize={11} tick={{ fill: "#666" }} />
@@ -251,8 +256,8 @@ export function ProvinceBarChart({
   }));
 
   return (
-    <ResponsiveContainer width="100%" height={220}>
-      <BarChart data={data} margin={{ left: 10, right: 30, top: 10, bottom: 5 }}>
+    <ResponsiveContainer width="100%" height={240}>
+      <BarChart data={data} margin={{ left: 10, right: 40, top: 20, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis dataKey="name" fontSize={11} tick={{ fill: "#333" }} />
         <YAxis
@@ -281,10 +286,10 @@ export function ProvinceBarChart({
           <LabelList
             dataKey="cout"
             position="top"
-            formatter={(value: number, _props: any, idx: number) => {
+            formatter={(_value: number, _props: any, idx: number) => {
               const item = data[idx];
-              if (!item) return formatCost(value);
-              return `${formatCost(value)} (${item.pct.toFixed(1)}%)`;
+              if (!item) return formatCost(_value);
+              return `${formatCost(item.cout)} (${item.pct.toFixed(1)}%)`;
             }}
             style={{ fontSize: 9, fontWeight: 700, fill: "#475569" }}
           />
