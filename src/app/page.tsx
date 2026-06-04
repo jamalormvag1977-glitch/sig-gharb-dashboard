@@ -1158,9 +1158,9 @@ export default function Home() {
                                       return (
                                         <TableRow key={i} className={`border-b border-slate-100/80 ${i % 2 === 0 ? "bg-white" : "bg-slate-50/40"}`} style={{ borderLeftWidth: "3px", borderLeftColor: provColor + "30" }}>
                                           <TableCell className="py-2 px-3">
-                                            <span className="text-[10px] font-bold text-slate-700">{p.commune}</span>
+                                            <span className="text-[10px] font-bold text-slate-700 whitespace-nowrap">{p.commune}</span>
                                           </TableCell>
-                                          <TableCell className="py-2 px-3 text-[10px] text-slate-600 max-w-[220px] truncate">{p.consistance}</TableCell>
+                                          <TableCell className="py-2 px-3 text-[10px] text-slate-600 max-w-[300px] leading-relaxed whitespace-normal">{p.consistance}</TableCell>
                                           <TableCell className="py-2 px-3 text-[10px] font-bold text-slate-700 text-right">{(p.cout / 1e6).toFixed(2)} M</TableCell>
                                           <TableCell className="py-2 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_ordonne > 0 ? "#8b5cf6" : "#94a3b8" }}>{(p.montant_ordonne / 1e6).toFixed(2)} M</TableCell>
                                           <TableCell className="py-2 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_paye > 0 ? "#10b981" : "#94a3b8" }}>{(p.montant_paye / 1e6).toFixed(2)} M</TableCell>
