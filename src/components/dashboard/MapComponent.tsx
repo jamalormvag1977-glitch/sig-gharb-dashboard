@@ -12,6 +12,7 @@ interface MapProps {
   selectedProvince: string | null;
   onCommuneClick: (commune: string) => void;
   projectsByCommune?: Record<string, Project[]>;
+  communeColorMap?: Record<string, string>;
 }
 
 const GAD_PROVINCE_MAP: Record<string, string> = {
@@ -51,6 +52,7 @@ export default function MapComponent({
   selectedProvince,
   onCommuneClick,
   projectsByCommune,
+  communeColorMap: externalColorMap,
 }: MapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const geoLayerRef = useRef<L.GeoJSON | null>(null);
@@ -150,9 +152,11 @@ export default function MapComponent({
 
     if (filteredFeatures.length === 0) return;
 
-    // Build commune index for province-view coloring
+    // Build commune index for province-view coloring (use external map if provided)
     const communeColorMap: Record<string, string> = {};
-    if (selectedProvince) {
+    if (externalColorMap && Object.keys(externalColorMap).length > 0) {
+      Object.assign(communeColorMap, externalColorMap);
+    } else if (selectedProvince) {
       const communeNames = filteredFeatures
         .filter(f => f.properties?.has_project)
         .map(f => f.properties?.commune_orig || f.properties?.NAME_4)
@@ -443,15 +447,23 @@ export default function MapComponent({
             ))}
           </>
         ) : (
-          // Province legend: communes
+          // Province legend: communes (use external color map for consistency)
           <>
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Communes</p>
-            {projectsByCommune && Object.keys(projectsByCommune).sort().map((name, i) => (
-              <div key={name} className="flex items-center gap-2 mb-0.5">
-                <span className="w-3 h-3 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: COMMUNE_PALETTE[i % COMMUNE_PALETTE.length] }} />
-                <span className="text-[10px] font-medium text-slate-600 truncate max-w-[120px]">{name}</span>
-              </div>
-            ))}
+            {externalColorMap && Object.keys(externalColorMap).length > 0
+              ? Object.entries(externalColorMap).map(([name, color]) => (
+                  <div key={name} className="flex items-center gap-2 mb-0.5">
+                    <span className="w-3 h-3 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: color }} />
+                    <span className="text-[10px] font-medium text-slate-600 truncate max-w-[120px]">{name}</span>
+                  </div>
+                ))
+              : projectsByCommune && Object.keys(projectsByCommune).sort().map((name, i) => (
+                  <div key={name} className="flex items-center gap-2 mb-0.5">
+                    <span className="w-3 h-3 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: COMMUNE_PALETTE[i % COMMUNE_PALETTE.length] }} />
+                    <span className="text-[10px] font-medium text-slate-600 truncate max-w-[120px]">{name}</span>
+                  </div>
+                ))
+            }
           </>
         )}
       </div>

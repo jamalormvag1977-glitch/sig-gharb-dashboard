@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -75,6 +75,16 @@ const CONVENTION_PDF: Record<string, string> = {
   "Sidi Slimane": "/conventions/convention-sidi-slimane.pdf",
 };
 
+// 30-color palette for communes (same as MapComponent)
+const COMMUNE_PALETTE = [
+  "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6",
+  "#ec4899", "#06b6d4", "#f97316", "#14b8a6", "#6366f1",
+  "#84cc16", "#e11d48", "#0ea5e9", "#d946ef", "#65a30d",
+  "#dc2626", "#0891b2", "#c026d3", "#059669", "#ea580c",
+  "#2563eb", "#db2777", "#0d9488", "#9333ea", "#ca8a04",
+  "#7c3aed", "#16a34a", "#e4d214", "#4f46e5", "#a21caf",
+];
+
 // Province-matched KPI colors
 const KENITRA_COLOR = { gradient: "from-blue-500 to-cyan-600", bgGradient: "from-blue-50 to-cyan-50", textColor: "text-blue-700", iconBg: "bg-blue-100", iconColor: "text-blue-600" };
 const SIDI_KACEM_COLOR = { gradient: "from-red-500 to-rose-600", bgGradient: "from-red-50 to-rose-50", textColor: "text-red-700", iconBg: "bg-red-100", iconColor: "text-red-600" };
@@ -87,6 +97,8 @@ export default function Home() {
   const [activeView, setActiveView] = useState<ViewType>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mapFullscreen, setMapFullscreen] = useState(false);
+  const [selectedCommune, setSelectedCommune] = useState<string | null>(null);
+  const communeRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   // Trigger map resize when fullscreen toggles
   useEffect(() => {
@@ -152,6 +164,32 @@ export default function Home() {
     acc[key].push(p);
     return acc;
   }, {});
+
+  // Build commune color map (consistent with map)
+  const communeColorMap: Record<string, string> = {};
+  const sortedCommuneNames = Object.keys(projectsByCommune).sort((a, b) => {
+    const totalA = projectsByCommune[a].reduce((s, p) => s + p.cout, 0);
+    const totalB = projectsByCommune[b].reduce((s, p) => s + p.cout, 0);
+    return totalB - totalA;
+  });
+  sortedCommuneNames.forEach((name, i) => {
+    communeColorMap[name] = COMMUNE_PALETTE[i % COMMUNE_PALETTE.length];
+  });
+
+  // Handle commune click from map -> scroll to table
+  const handleCommuneClick = useCallback((commune: string) => {
+    setSelectedCommune(commune);
+    setTimeout(() => {
+      const el = communeRefs.current[commune];
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ring-2", "ring-offset-2");
+        setTimeout(() => {
+          el.classList.remove("ring-2", "ring-offset-2");
+        }, 3000);
+      }
+    }, 200);
+  }, []);
 
   // Get KPI color scheme based on selected province
   const getKpiColors = (index: number) => {
@@ -393,10 +431,11 @@ export default function Home() {
             <CardContent className="p-0 flex-1 min-h-0" style={{ height: mapFullscreen ? "calc(100vh - 44px)" : "calc(100% - 44px)" }}>
               <MapComponent
                 geojsonData={geojsonData}
-                selectedCommune={null}
+                selectedCommune={selectedCommune}
                 selectedProvince={selectedProvince}
-                onCommuneClick={() => {}}
+                onCommuneClick={handleCommuneClick}
                 projectsByCommune={projectsByCommune}
+                communeColorMap={communeColorMap}
               />
             </CardContent>
           </Card>
@@ -562,14 +601,20 @@ export default function Home() {
                 .map(([commune, projects]) => {
                   const communeTotal = projects.reduce((s, p) => s + p.cout, 0);
                   const communeData = filteredSummary[commune];
-                  const provColor = communeData
-                    ? PROVINCE_COLORS[communeData.province] || "#6366f1"
-                    : "#6366f1";
+                  const commColor = communeColorMap[commune] || "#6366f1";
+                  const isHighlighted = selectedCommune === commune;
                   return (
-                    <Card
+                    <div
                       key={commune}
-                      className="overflow-hidden shadow-md border-slate-200/60"
-                      style={{ borderTopColor: provColor, borderTopWidth: "3px" }}
+                      ref={(el) => { communeRefs.current[commune] = el; }}
+                    >
+                    <Card
+                      className={`overflow-hidden shadow-md border-slate-200/60 transition-all duration-300 ${isHighlighted ? "ring-2 ring-offset-2" : ""}`}
+                      style={{
+                        borderTopColor: commColor,
+                        borderTopWidth: "3px",
+                        ...(isHighlighted ? { ringColor: commColor } : {}),
+                      }}
                     >
                       {/* Commune header inside card */}
                       <CardHeader className="py-3 px-4 border-b bg-gradient-to-r from-slate-50 to-white">
@@ -577,7 +622,7 @@ export default function Home() {
                           <div className="flex items-center gap-2">
                             <div
                               className="w-3 h-3 rounded-full shadow-sm"
-                              style={{ backgroundColor: provColor }}
+                              style={{ backgroundColor: commColor }}
                             />
                             <CardTitle className="text-sm font-bold text-slate-800">
                               {commune}
@@ -585,9 +630,9 @@ export default function Home() {
                             <Badge
                               className="text-[9px] font-semibold px-1.5 py-0"
                               style={{
-                                backgroundColor: provColor + "15",
-                                color: provColor,
-                                borderColor: provColor + "25",
+                                backgroundColor: commColor + "15",
+                                color: commColor,
+                                borderColor: commColor + "25",
                               }}
                               variant="outline"
                             >
@@ -700,6 +745,7 @@ export default function Home() {
                         </Table>
                       </CardContent>
                     </Card>
+                    </div>
                   );
                 })}
             </div>
