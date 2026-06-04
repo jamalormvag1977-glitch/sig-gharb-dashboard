@@ -51,6 +51,9 @@ import {
   Gauge,
   Wallet,
   Wrench,
+  Upload,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 
 const MapComponent = dynamic(
@@ -115,6 +118,9 @@ export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mapFullscreen, setMapFullscreen] = useState(false);
   const [selectedCommune, setSelectedCommune] = useState<string | null>(null);
+  const [importStatus, setImportStatus] = useState<"idle" | "success" | "error">("idle");
+  const [importMessage, setImportMessage] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const communeRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   // Trigger map resize when fullscreen toggles
@@ -371,6 +377,100 @@ export default function Home() {
                 <FileDown className="h-4 w-4" />
                 Exporter Modèle Excel
               </a>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  try {
+                    const XLSX = await import("xlsx");
+                    const arrayBuffer = await file.arrayBuffer();
+                    const workbook = XLSX.read(arrayBuffer, { type: "array" });
+                    const sheetName = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[sheetName];
+                    const rows: Record<string, unknown>[] = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+                    if (!data) return;
+
+                    const updatedProjects = [...data.projects];
+                    let matchedCount = 0;
+
+                    rows.forEach((row, idx) => {
+                      const projectIndex = idx;
+                      if (projectIndex < updatedProjects.length) {
+                        const avPhys = row["Avancement Physique (%)"];
+                        const avFin = row["Avancement Financier (%)"];
+                        const decaisse = row["Montant Décaissé (DH)"];
+                        const statut = row["Statut"];
+
+                        if (avPhys !== undefined && avPhys !== "") {
+                          updatedProjects[projectIndex] = {
+                            ...updatedProjects[projectIndex],
+                            avancement_physique: typeof avPhys === "number" ? Math.round(avPhys * 100) : Number(avPhys) || updatedProjects[projectIndex].avancement_physique,
+                          };
+                        }
+                        if (avFin !== undefined && avFin !== "") {
+                          updatedProjects[projectIndex] = {
+                            ...updatedProjects[projectIndex],
+                            avancement_financier: typeof avFin === "number" ? Math.round(avFin * 100) : Number(avFin) || updatedProjects[projectIndex].avancement_financier,
+                          };
+                        }
+                        if (decaisse !== undefined && decaisse !== "") {
+                          const decaisseVal = typeof decaisse === "number" ? decaisse : Number(decaisse) || 0;
+                          updatedProjects[projectIndex] = {
+                            ...updatedProjects[projectIndex],
+                            montant_paye: decaisseVal,
+                          };
+                        }
+                        if (statut !== undefined && statut !== "") {
+                          const statutStr = String(statut).trim();
+                          if (["Terminé", "En cours", "Non démarré"].includes(statutStr)) {
+                            updatedProjects[projectIndex] = {
+                              ...updatedProjects[projectIndex],
+                              statut: statutStr as "Terminé" | "En cours" | "Non démarré",
+                            };
+                          }
+                        }
+                        matchedCount++;
+                      }
+                    });
+
+                    setData({ ...data, projects: updatedProjects });
+                    setImportStatus("success");
+                    setImportMessage(`${matchedCount} projets mis à jour depuis le fichier Excel`);
+                    setTimeout(() => { setImportStatus("idle"); setImportMessage(""); }, 4000);
+                  } catch (err) {
+                    console.error("Erreur import Excel:", err);
+                    setImportStatus("error");
+                    setImportMessage("Erreur lors de l'import du fichier Excel");
+                    setTimeout(() => { setImportStatus("idle"); setImportMessage(""); }, 4000);
+                  }
+                  if (fileInputRef.current) fileInputRef.current.value = "";
+                }}
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.03] active:scale-95 bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-blue-400/30 hover:from-blue-600 hover:to-indigo-700"
+                title="Charger un fichier Excel pour mettre à jour le suivi physique et financier"
+              >
+                <Upload className="h-4 w-4" />
+                Importer Excel
+              </button>
+              {importStatus !== "idle" && (
+                <div
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ${
+                    importStatus === "success"
+                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                      : "bg-red-50 text-red-700 border border-red-200"
+                  }`}
+                >
+                  {importStatus === "success" ? <CheckCircle className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+                  {importMessage}
+                </div>
+              )}
               {activeView === "overview" &&
                 Object.entries(PROVINCE_COLORS).map(([name, color]) => {
                   const provData = data.byProvince[name];
