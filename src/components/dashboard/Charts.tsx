@@ -60,17 +60,17 @@ export function CostByCommuneChart({ summary, selectedProvince }: ChartsProps) {
     label: `${(d.cout / 1e6).toFixed(1)} MDH (${d.pct.toFixed(1)}%)`,
   }));
 
-  // Dynamic height: 40px per commune bar, min 200px
-  const chartHeight = Math.max(200, coloredData.length * 40 + 30);
+  // Dynamic height: 52px per commune bar, min 200px
+  const chartHeight = Math.max(200, coloredData.length * 52 + 30);
 
   return (
     <ResponsiveContainer width="100%" height={chartHeight}>
       <BarChart
         data={coloredData}
         layout="vertical"
-        margin={{ left: 5, right: 110, top: 5, bottom: 5 }}
-        barCategoryGap="20%"
-        barGap={4}
+        margin={{ left: 5, right: 120, top: 5, bottom: 5 }}
+        barCategoryGap="5%"
+        barGap={2}
       >
         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" horizontal={false} />
         <XAxis
@@ -83,8 +83,8 @@ export function CostByCommuneChart({ summary, selectedProvince }: ChartsProps) {
         <YAxis
           type="category"
           dataKey="name"
-          width={130}
-          fontSize={10}
+          width={140}
+          fontSize={11}
           tick={{ fill: "#334155", fontWeight: 600 }}
           axisLine={false}
           tickLine={false}
@@ -102,7 +102,7 @@ export function CostByCommuneChart({ summary, selectedProvince }: ChartsProps) {
             fontSize: "12px",
           }}
         />
-        <Bar dataKey="cout" radius={[0, 6, 6, 0]} maxBarSize={26} minPointSize={3}>
+        <Bar dataKey="cout" radius={[0, 8, 8, 0]} maxBarSize={50} minPointSize={3}>
           {coloredData.map((entry, index) => (
             <Cell
               key={`cell-${index}`}
@@ -113,7 +113,7 @@ export function CostByCommuneChart({ summary, selectedProvince }: ChartsProps) {
           <LabelList
             dataKey="label"
             position="right"
-            style={{ fontSize: 10, fontWeight: 700, fill: "#1e293b" }}
+            style={{ fontSize: 11, fontWeight: 700, fill: "#1e293b" }}
           />
         </Bar>
       </BarChart>
