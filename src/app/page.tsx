@@ -58,13 +58,14 @@ const MapComponent = dynamic(
   { ssr: false }
 );
 
-type ViewType = "overview" | "kenitra" | "sidi-kacem" | "sidi-slimane" | "rapport";
+type ViewType = "overview" | "kenitra" | "sidi-kacem" | "sidi-slimane" | "suivi-avancement" | "rapport";
 
 const NAV_ITEMS: { id: ViewType; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Vue d'ensemble", icon: LayoutDashboard },
   { id: "kenitra", label: "Kénitra", icon: Building2 },
   { id: "sidi-kacem", label: "Sidi Kacem", icon: Building2 },
   { id: "sidi-slimane", label: "Sidi Slimane", icon: Building2 },
+  { id: "suivi-avancement", label: "Suivi Avancement", icon: Gauge },
   { id: "rapport", label: "Rapport", icon: FileText },
 ];
 
@@ -73,6 +74,7 @@ const PROVINCE_MAP: Record<ViewType, string | null> = {
   kenitra: "Kénitra",
   "sidi-kacem": "Sidi Kacem",
   "sidi-slimane": "Sidi Slimane",
+  "suivi-avancement": null,
   rapport: null,
 };
 
@@ -271,6 +273,7 @@ export default function Home() {
             if (item.id === "sidi-kacem") { activeBg = "from-red-600 to-rose-600"; activeShadow = "shadow-red-600/25"; }
             if (item.id === "sidi-slimane") { activeBg = "from-emerald-600 to-green-600"; activeShadow = "shadow-emerald-600/25"; }
             if (item.id === "rapport") { activeBg = "from-amber-500 to-orange-600"; activeShadow = "shadow-amber-500/25"; }
+            if (item.id === "suivi-avancement") { activeBg = "from-indigo-500 to-violet-600"; activeShadow = "shadow-indigo-500/25"; }
 
             return (
               <button
@@ -338,6 +341,11 @@ export default function Home() {
                   <>
                     <ClipboardCheck className="h-5 w-5 text-amber-600" />
                     Rapport d&apos;analyse
+                  </>
+                ) : activeView === "suivi-avancement" ? (
+                  <>
+                    <Gauge className="h-5 w-5 text-indigo-600" />
+                    Suivi d&apos;avancement physique et financier
                   </>
                 ) : (
                   <>
@@ -691,22 +699,27 @@ export default function Home() {
                   })()}
                 </CardContent>
               </Card>
-
-              {/* 5. Suivi d'avancement physique et financier */}
+            </div>
+          ) : activeView === "suivi-avancement" ? (
+            <div className="space-y-6">
+              {/* Suivi Header */}
               <Card className="overflow-hidden shadow-xl border-indigo-200/60">
-                <CardHeader className="py-4 px-6 border-b bg-gradient-to-r from-indigo-700 to-violet-700">
-                  <CardTitle className="text-base font-extrabold flex items-center gap-2 text-white">
-                    <Gauge className="h-5 w-5 text-indigo-300" />
-                    5. Suivi d&apos;avancement physique et financier
+                <CardHeader className="py-5 px-6 bg-gradient-to-r from-indigo-700 to-violet-700">
+                  <CardTitle className="text-lg font-extrabold text-white flex items-center gap-3">
+                    <Gauge className="h-6 w-6 text-indigo-300" />
+                    Suivi d&apos;Avancement Physique et Financier
                   </CardTitle>
+                  <p className="text-indigo-200 text-xs mt-1">Région du Gharb — ORMVAG — Année 2026</p>
                 </CardHeader>
                 <CardContent className="p-6 space-y-6">
                   {/* Global progress gauges */}
                   {(() => {
                     const ap = data.avancementPhysiqueGlobal;
                     const af = data.avancementFinancierGlobal;
-                    const decaisse = data.totalDecaisse;
-                    const tauxDecaissement = data.totalCost > 0 ? (decaisse / data.totalCost) * 100 : 0;
+                    const paye = data.totalPaye;
+                    const ordonne = data.totalOrdonne;
+                    const tauxPaiement = data.totalCost > 0 ? (paye / data.totalCost) * 100 : 0;
+                    const tauxOrdonnancement = data.totalCost > 0 ? (ordonne / data.totalCost) * 100 : 0;
                     const getStatusColor = (val: number) => val >= 75 ? "#10b981" : val >= 50 ? "#f59e0b" : val >= 25 ? "#f97316" : "#ef4444";
                     const GaugeRing = ({ value, label, color, icon: Icon }: { value: number; label: string; color: string; icon: React.ElementType }) => {
                       const radius = 54;
@@ -733,20 +746,25 @@ export default function Home() {
                         <div className="flex flex-wrap justify-center gap-8">
                           <GaugeRing value={ap} label="Avancement physique" color={getStatusColor(ap)} icon={Wrench} />
                           <GaugeRing value={af} label="Avancement financier" color={getStatusColor(af)} icon={Wallet} />
-                          <GaugeRing value={tauxDecaissement} label="Taux de décaissement" color={getStatusColor(tauxDecaissement)} icon={Gauge} />
+                          <GaugeRing value={tauxOrdonnancement} label="Taux d'ordonnancement" color={getStatusColor(tauxOrdonnancement)} icon={FileText} />
+                          <GaugeRing value={tauxPaiement} label="Taux de paiement" color={getStatusColor(tauxPaiement)} icon={Wallet} />
                         </div>
-                        <div className="grid grid-cols-3 gap-3 mt-4">
+                        <div className="grid grid-cols-4 gap-3 mt-4">
                           <div className="bg-indigo-50 rounded-xl p-3 border border-indigo-200/60 text-center">
                             <p className="text-[9px] font-bold text-indigo-600 uppercase tracking-widest mb-1">Budget total</p>
                             <p className="text-lg font-black text-indigo-800">{(data.totalCost / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
                           </div>
+                          <div className="bg-violet-50 rounded-xl p-3 border border-violet-200/60 text-center">
+                            <p className="text-[9px] font-bold text-violet-600 uppercase tracking-widest mb-1">Ordonnancé</p>
+                            <p className="text-lg font-black text-violet-800">{(ordonne / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+                          </div>
                           <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-200/60 text-center">
-                            <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Décaissé</p>
-                            <p className="text-lg font-black text-emerald-800">{(decaisse / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+                            <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Payé</p>
+                            <p className="text-lg font-black text-emerald-800">{(paye / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
                           </div>
                           <div className="bg-amber-50 rounded-xl p-3 border border-amber-200/60 text-center">
-                            <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest mb-1">Reste à décaisser</p>
-                            <p className="text-lg font-black text-amber-800">{((data.totalCost - decaisse) / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+                            <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest mb-1">Reste à payer</p>
+                            <p className="text-lg font-black text-amber-800">{((data.totalCost - paye) / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
                           </div>
                         </div>
                       </>
@@ -831,8 +849,9 @@ export default function Home() {
                                 </div>
                               </div>
                             </div>
-                            <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
-                              <span>Décaissé: {(d.montant_decaisse_total / 1e6).toFixed(1)} MDH / {(d.cout_total / 1e6).toFixed(1)} MDH</span>
+                            <div className="grid grid-cols-3 gap-2 text-[10px] text-slate-400 font-semibold">
+                              <span>Ordonnancé: {(d.montant_ordonne_total / 1e6).toFixed(1)} MDH</span>
+                              <span>Payé: {(d.montant_paye_total / 1e6).toFixed(1)} MDH / {(d.cout_total / 1e6).toFixed(1)} MDH</span>
                               <span>{d.nb_projets} projets / {d.communes} communes</span>
                             </div>
                           </div>
@@ -867,7 +886,9 @@ export default function Home() {
                                   <span className="text-slate-300">|</span>
                                   <span style={{ color: dotColor }} className="opacity-70">Fin. {af.toFixed(0)}%</span>
                                   <span className="text-slate-300">|</span>
-                                  <span className="text-slate-500">{(d.montant_decaisse_total / 1e6).toFixed(1)} MDH décaissé</span>
+                                  <span className="text-violet-500">{(d.montant_ordonne_total / 1e6).toFixed(1)} MDH ord.</span>
+                                  <span className="text-slate-300">|</span>
+                                  <span className="text-emerald-500">{(d.montant_paye_total / 1e6).toFixed(1)} MDH payé</span>
                                 </div>
                               </div>
                               <div className="flex gap-1.5 h-2.5">
@@ -931,7 +952,8 @@ export default function Home() {
                             <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3">Commune</TableHead>
                             <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3">Projet</TableHead>
                             <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3 text-right">Budget</TableHead>
-                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3 text-right">Décaissé</TableHead>
+                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3 text-right">Ordonnancé</TableHead>
+                            <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3 text-right">Payé</TableHead>
                             <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3 text-center">Phys.</TableHead>
                             <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3 text-center">Fin.</TableHead>
                             <TableHead className="text-[10px] font-bold text-slate-500 uppercase tracking-wider py-2 px-3 text-center">Statut</TableHead>
@@ -946,7 +968,7 @@ export default function Home() {
                               "En cours": { bg: "bg-amber-100", text: "text-amber-700", icon: Clock },
                               "Non démarré": { bg: "bg-red-100", text: "text-red-700", icon: CircleDot },
                             };
-                            const sc = statusConfig[p.statut] || statusConfig["En cours"];
+                            const sc = statusConfig[p.statut] || statusConfig["Non démarré"];
                             const apColor = p.avancement_physique >= 75 ? "#10b981" : p.avancement_physique >= 50 ? "#f59e0b" : p.avancement_physique >= 25 ? "#f97316" : "#ef4444";
                             const afColor = p.avancement_financier >= 75 ? "#10b981" : p.avancement_financier >= 50 ? "#f59e0b" : p.avancement_financier >= 25 ? "#f97316" : "#ef4444";
                             return (
@@ -960,7 +982,8 @@ export default function Home() {
                                 <TableCell className="py-1.5 px-3 text-[10px] font-semibold text-slate-600">{p.commune}</TableCell>
                                 <TableCell className="py-1.5 px-3 text-[10px] text-slate-600 max-w-[200px] truncate">{p.consistance}</TableCell>
                                 <TableCell className="py-1.5 px-3 text-[10px] font-bold text-slate-700 text-right">{(p.cout / 1e6).toFixed(2)} M</TableCell>
-                                <TableCell className="py-1.5 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_decaisse > 0 ? "#10b981" : "#94a3b8" }}>{(p.montant_decaisse / 1e6).toFixed(2)} M</TableCell>
+                                <TableCell className="py-1.5 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_ordonne > 0 ? "#8b5cf6" : "#94a3b8" }}>{(p.montant_ordonne / 1e6).toFixed(2)} M</TableCell>
+                                <TableCell className="py-1.5 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_paye > 0 ? "#10b981" : "#94a3b8" }}>{(p.montant_paye / 1e6).toFixed(2)} M</TableCell>
                                 <TableCell className="py-1.5 px-3 text-center">
                                   <div className="flex items-center justify-center gap-1">
                                     <div className="w-12 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">

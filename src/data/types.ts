@@ -10,7 +10,8 @@ export interface Project {
   cout: number;
   avancement_physique: number; // 0-100 %
   avancement_financier: number; // 0-100 %
-  montant_decaisse: number; // DH
+  montant_paye: number; // DH — montant effectivement payé
+  montant_ordonne: number; // DH — montant ordonnancé (engagé mais non encore payé)
   statut: ProjectStatus;
 }
 
@@ -21,7 +22,8 @@ export interface CommuneSummary {
   rubriques: Record<string, number>;
   avancement_physique_moyen: number;
   avancement_financier_moyen: number;
-  montant_decaisse_total: number;
+  montant_paye_total: number;
+  montant_ordonne_total: number;
 }
 
 export interface ProvinceData {
@@ -30,7 +32,8 @@ export interface ProvinceData {
   communes: number;
   avancement_physique_moyen: number;
   avancement_financier_moyen: number;
-  montant_decaisse_total: number;
+  montant_paye_total: number;
+  montant_ordonne_total: number;
 }
 
 export interface SecteurData {
@@ -39,7 +42,8 @@ export interface SecteurData {
   communes: number;
   avancement_physique_moyen: number;
   avancement_financier_moyen: number;
-  montant_decaisse_total: number;
+  montant_paye_total: number;
+  montant_ordonne_total: number;
 }
 
 export interface DashboardData {
@@ -49,7 +53,8 @@ export interface DashboardData {
   bySecteur: Record<string, SecteurData>;
   totalCost: number;
   totalProjects: number;
-  totalDecaisse: number;
+  totalPaye: number;
+  totalOrdonne: number;
   avancementPhysiqueGlobal: number;
   avancementFinancierGlobal: number;
 }
@@ -72,6 +77,6 @@ export const SECTEUR_SHORT: Record<string, string> = {
 
 export const PROVINCE_COLORS: Record<string, string> = {
   "Kénitra": "#3b82f6",
-  "Sidi Kacem": "#ef4444",
   "Sidi Slimane": "#10b981",
+  "Sidi Kacem": "#ef4444",
 };
