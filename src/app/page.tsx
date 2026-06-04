@@ -361,7 +361,16 @@ export default function Home() {
                 Projets d&apos;inondations - Région du Gharb - 2026
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <a
+                href="/Modele_Suivi_Avancement_Gharb_2026.xlsx"
+                download
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.03] active:scale-95 bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-emerald-400/30 hover:from-emerald-600 hover:to-teal-700"
+                title="Télécharger le modèle Excel pour le suivi physique et financier des projets"
+              >
+                <FileDown className="h-4 w-4" />
+                Exporter Modèle Excel
+              </a>
               {activeView === "overview" &&
                 Object.entries(PROVINCE_COLORS).map(([name, color]) => {
                   const provData = data.byProvince[name];
