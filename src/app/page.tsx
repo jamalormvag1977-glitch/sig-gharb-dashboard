@@ -119,47 +119,39 @@ export default function Home() {
 
   const selectedProvince = PROVINCE_MAP[activeView];
 
-  if (!data) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-        <div className="text-center">
-          <div className="relative">
-            <Droplets className="h-14 w-14 text-blue-500 mx-auto animate-pulse" />
-            <div className="absolute -inset-4 bg-blue-400/20 rounded-full blur-xl animate-pulse" />
-          </div>
-          <p className="mt-6 text-lg font-semibold text-gray-700">
-            Chargement du dashboard...
-          </p>
-          <p className="mt-1 text-sm text-gray-400">SIG Gharb - Projets Inondations</p>
-        </div>
-      </div>
-    );
-  }
-
+  // ALL hooks must be called BEFORE any conditional return (React Rules of Hooks)
   // Filter data by province - useMemo for stability (prevents infinite re-renders)
   const filteredSummary = useMemo(() => {
+    if (!data) return {} as Record<string, CommuneSummary>;
     return Object.entries(data.summary)
       .filter(([, d]) => !selectedProvince || d.province === selectedProvince)
       .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {} as Record<string, CommuneSummary>);
-  }, [data.summary, selectedProvince]);
+  }, [data, selectedProvince]);
 
   const filteredProjects = useMemo(() => {
+    if (!data) return [] as Project[];
     return data.projects.filter(
       (p) => !selectedProvince || p.province === selectedProvince
     );
-  }, [data.projects, selectedProvince]);
+  }, [data, selectedProvince]);
 
-  const totalCost = selectedProvince
-    ? data.byProvince[selectedProvince]?.cout_total ?? data.totalCost
-    : data.totalCost;
+  const totalCost = data
+    ? (selectedProvince
+        ? data.byProvince[selectedProvince]?.cout_total ?? data.totalCost
+        : data.totalCost)
+    : 0;
 
-  const totalProjects = selectedProvince
-    ? data.byProvince[selectedProvince]?.nb_projets ?? data.totalProjects
-    : data.totalProjects;
+  const totalProjects = data
+    ? (selectedProvince
+        ? data.byProvince[selectedProvince]?.nb_projets ?? data.totalProjects
+        : data.totalProjects)
+    : 0;
 
-  const totalCommunes = selectedProvince
-    ? data.byProvince[selectedProvince]?.communes ?? Object.keys(data.summary).length
-    : Object.keys(data.summary).length;
+  const totalCommunes = data
+    ? (selectedProvince
+        ? data.byProvince[selectedProvince]?.communes ?? Object.keys(data.summary).length
+        : Object.keys(data.summary).length)
+    : 0;
 
   // Group projects by commune for the detail table - useMemo for stability
   const projectsByCommune = useMemo(() => {
@@ -199,6 +191,24 @@ export default function Home() {
       setSelectedCommune(null);
     }, 4000);
   }, []);
+
+  // Early return for loading state - AFTER all hooks
+  if (!data) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="text-center">
+          <div className="relative">
+            <Droplets className="h-14 w-14 text-blue-500 mx-auto animate-pulse" />
+            <div className="absolute -inset-4 bg-blue-400/20 rounded-full blur-xl animate-pulse" />
+          </div>
+          <p className="mt-6 text-lg font-semibold text-gray-700">
+            Chargement du dashboard...
+          </p>
+          <p className="mt-1 text-sm text-gray-400">SIG Gharb - Projets Inondations</p>
+        </div>
+      </div>
+    );
+  }
 
   // Get KPI color scheme based on selected province
   const getKpiColors = (index: number) => {
