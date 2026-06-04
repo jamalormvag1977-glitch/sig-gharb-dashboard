@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -136,14 +136,18 @@ export default function Home() {
     );
   }
 
-  // Filter data by province
-  const filteredSummary = Object.entries(data.summary)
-    .filter(([, d]) => !selectedProvince || d.province === selectedProvince)
-    .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {} as Record<string, CommuneSummary>);
+  // Filter data by province - useMemo for stability (prevents infinite re-renders)
+  const filteredSummary = useMemo(() => {
+    return Object.entries(data.summary)
+      .filter(([, d]) => !selectedProvince || d.province === selectedProvince)
+      .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {} as Record<string, CommuneSummary>);
+  }, [data.summary, selectedProvince]);
 
-  const filteredProjects = data.projects.filter(
-    (p) => !selectedProvince || p.province === selectedProvince
-  );
+  const filteredProjects = useMemo(() => {
+    return data.projects.filter(
+      (p) => !selectedProvince || p.province === selectedProvince
+    );
+  }, [data.projects, selectedProvince]);
 
   const totalCost = selectedProvince
     ? data.byProvince[selectedProvince]?.cout_total ?? data.totalCost
@@ -157,24 +161,29 @@ export default function Home() {
     ? data.byProvince[selectedProvince]?.communes ?? Object.keys(data.summary).length
     : Object.keys(data.summary).length;
 
-  // Group projects by commune for the detail table
-  const projectsByCommune = filteredProjects.reduce<Record<string, Project[]>>((acc, p) => {
-    const key = p.commune;
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(p);
-    return acc;
-  }, {});
+  // Group projects by commune for the detail table - useMemo for stability
+  const projectsByCommune = useMemo(() => {
+    return filteredProjects.reduce<Record<string, Project[]>>((acc, p) => {
+      const key = p.commune;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(p);
+      return acc;
+    }, {});
+  }, [filteredProjects]);
 
-  // Build commune color map (consistent with map)
-  const communeColorMap: Record<string, string> = {};
-  const sortedCommuneNames = Object.keys(projectsByCommune).sort((a, b) => {
-    const totalA = projectsByCommune[a].reduce((s, p) => s + p.cout, 0);
-    const totalB = projectsByCommune[b].reduce((s, p) => s + p.cout, 0);
-    return totalB - totalA;
-  });
-  sortedCommuneNames.forEach((name, i) => {
-    communeColorMap[name] = COMMUNE_PALETTE[i % COMMUNE_PALETTE.length];
-  });
+  // Build commune color map (consistent with map) - useMemo to avoid infinite re-renders
+  const communeColorMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    const sortedNames = Object.keys(projectsByCommune).sort((a, b) => {
+      const totalA = projectsByCommune[a].reduce((s, p) => s + p.cout, 0);
+      const totalB = projectsByCommune[b].reduce((s, p) => s + p.cout, 0);
+      return totalB - totalA;
+    });
+    sortedNames.forEach((name, i) => {
+      map[name] = COMMUNE_PALETTE[i % COMMUNE_PALETTE.length];
+    });
+    return map;
+  }, [projectsByCommune]);
 
   // Handle commune click from map -> scroll to table
   const handleCommuneClick = useCallback((commune: string) => {
