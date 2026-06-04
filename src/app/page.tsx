@@ -200,12 +200,6 @@ export default function Home() {
   const handleCommuneClick = useCallback((commune: string) => {
     setSelectedCommune(commune);
     setTimeout(() => {
-      const el = communeRefs.current[commune];
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    }, 300);
-    setTimeout(() => {
       setSelectedCommune(null);
     }, 4000);
   }, []);

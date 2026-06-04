@@ -386,13 +386,55 @@ export default function MapComponent({
             }
           );
 
-          // Simple summary popup — click scrolls to detail table below
+          // Popup with project table on click
+          const communeProjects = projectsRef.current?.[name] || [];
+          let popupHTML = `<div style="font-size:13px; max-width:420px; max-height:350px; overflow-y:auto;">
+            <div style="font-weight:bold; font-size:16px; margin-bottom:2px; color:#1e293b;">${name}</div>
+            <div style="color:#64748b; font-size:11px; margin-bottom:8px;">${props.province_project} — ${props.nb_projets} projet${props.nb_projets > 1 ? "s" : ""} — <strong style="color:#16a34a;">${costMDH} MDH</strong></div>`;
+
+          if (communeProjects.length > 0) {
+            popupHTML += `<table style="width:100%; border-collapse:collapse; font-size:11px;">
+              <thead>
+                <tr style="background:#f1f5f9; border-bottom:2px solid #e2e8f0;">
+                  <th style="text-align:left; padding:4px 6px; color:#475569; font-size:10px;">Rubrique</th>
+                  <th style="text-align:left; padding:4px 6px; color:#475569; font-size:10px;">Projet</th>
+                  <th style="text-align:left; padding:4px 6px; color:#475569; font-size:10px;">Consistance</th>
+                  <th style="text-align:right; padding:4px 6px; color:#475569; font-size:10px;">Coût</th>
+                </tr>
+              </thead>
+              <tbody>`;
+
+            communeProjects.forEach((p, i) => {
+              const shortRub = SECTEUR_SHORT[p.intitule_rubrique] || p.intitule_rubrique;
+              const dotColor = SECTEUR_DOT_COLORS[shortRub] || "#94a3b8";
+              const bgColor = i % 2 === 0 ? "#fff" : "#f8fafc";
+              popupHTML += `<tr style="background:${bgColor}; border-bottom:1px solid #f1f5f9;">
+                <td style="padding:4px 6px; vertical-align:top;">
+                  <span style="display:inline-flex; align-items:center; gap:3px; font-size:10px; color:${dotColor}; font-weight:600;">
+                    <span style="width:6px; height:6px; border-radius:50%; background:${dotColor}; display:inline-block;"></span>
+                    ${shortRub}
+                  </span>
+                </td>
+                <td style="padding:4px 6px; vertical-align:top; color:#334155; font-weight:500;">${p.intitule_projet || "—"}</td>
+                <td style="padding:4px 6px; vertical-align:top; color:#64748b; font-size:10px;">${p.consistance || "—"}</td>
+                <td style="padding:4px 6px; text-align:right; font-weight:700; color:#16a34a; white-space:nowrap;">${p.cout.toLocaleString("fr-FR")} DH</td>
+              </tr>`;
+            });
+
+            popupHTML += `</tbody></table>`;
+          } else {
+            popupHTML += `<div style="color:#94a3b8; font-size:11px; padding:8px 0;">Aucun détail disponible</div>`;
+          }
+
+          popupHTML += `</div>`;
+
+          lyr.bindPopup(popupHTML, {
+            className: "commune-detail-popup",
+            maxWidth: 450,
+            minWidth: 300,
+          });
+
           lyr.on({
-            click: () => {
-              if (props.commune_orig) {
-                onCommuneClick(props.commune_orig);
-              }
-            },
             mouseover: (e) => {
               e.target.setStyle({ weight: 3, color: "#1a1a1a", fillOpacity: 0.9 });
               e.target.bringToFront();
@@ -510,6 +552,19 @@ export default function MapComponent({
         }
         .commune-label-tooltip::before {
           display: none !important;
+        }
+        .commune-detail-popup .leaflet-popup-content-wrapper {
+          border-radius: 12px;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+          padding: 0;
+        }
+        .commune-detail-popup .leaflet-popup-content {
+          margin: 0;
+          padding: 12px 14px;
+          line-height: 1.4;
+        }
+        .commune-detail-popup .leaflet-popup-tip {
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         .project-marker-popup .leaflet-popup-content-wrapper {
           border-radius: 10px;
