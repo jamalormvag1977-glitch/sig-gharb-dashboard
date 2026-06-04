@@ -61,7 +61,6 @@ const MapComponent = dynamic(
   { ssr: false }
 );
 
-import InteractiveOrmvagMap from "@/components/dashboard/InteractiveOrmvagMap";
 
 type ViewType = "overview" | "kenitra" | "sidi-kacem" | "sidi-slimane" | "suivi-avancement" | "rapport";
 
@@ -543,18 +542,7 @@ export default function Home() {
                       <p className="text-2xl font-black text-purple-700">{Object.keys(data.bySecteur).length}</p>
                     </div>
                   </div>
-                  {/* Interactive ORMVAG Zone d'action map */}
-                  <div className="mt-4 rounded-xl overflow-hidden border border-amber-200/60 shadow-md">
-                    <InteractiveOrmvagMap
-                      data={data}
-                      compact
-                      onProvinceClick={(province) => {
-                        if (province === "Kénitra") setActiveView("kenitra");
-                        else if (province === "Sidi Kacem") setActiveView("sidi-kacem");
-                        else if (province === "Sidi Slimane") setActiveView("sidi-slimane");
-                      }}
-                    />
-                  </div>
+
                 </CardContent>
               </Card>
 
@@ -1272,19 +1260,7 @@ export default function Home() {
             />
           </div>
 
-          {/* Interactive ORMVAG Map - overview only */}
-          {activeView === "overview" && (
-            <Card className="overflow-hidden shadow-xl border-slate-200/60">
-              <InteractiveOrmvagMap
-                data={data}
-                onProvinceClick={(province) => {
-                  if (province === "Kénitra") setActiveView("kenitra");
-                  else if (province === "Sidi Kacem") setActiveView("sidi-kacem");
-                  else if (province === "Sidi Slimane") setActiveView("sidi-slimane");
-                }}
-              />
-            </Card>
-          )}
+
 
           {/* Convention PDF download */}
           {selectedProvince && CONVENTION_PDF[selectedProvince] && (
