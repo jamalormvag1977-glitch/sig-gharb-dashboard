@@ -573,19 +573,17 @@ export default function Home() {
 
           {/* ===== DETAILED PROJECT TABLES - EACH COMMUNE ===== */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <FileText className="h-4 w-4 text-indigo-500" />
-              <h3 className="text-sm font-semibold text-slate-700">
+            <div className="flex items-center gap-2 mb-4 py-3 px-5 rounded-lg bg-gradient-to-r from-slate-800 to-slate-700">
+              <FileText className="h-4 w-4 text-amber-400" />
+              <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                 Détail des projets par commune
                 {selectedProvince && (
                   <Badge
-                    className="text-[10px] font-semibold ml-2"
+                    className="text-[10px] font-semibold ml-1 border-0"
                     style={{
-                      backgroundColor: (PROVINCE_COLORS[selectedProvince] || "#6366f1") + "15",
-                      color: PROVINCE_COLORS[selectedProvince] || "#6366f1",
-                      borderColor: (PROVINCE_COLORS[selectedProvince] || "#6366f1") + "30",
+                      backgroundColor: "rgba(255,255,255,0.15)",
+                      color: "#fff",
                     }}
-                    variant="outline"
                   >
                     {selectedProvince}
                   </Badge>
@@ -768,18 +766,16 @@ export default function Home() {
           {/* ===== ANALYSE PAR RUBRIQUE - Province View ===== */}
           {selectedProvince && (
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Layers className="h-4 w-4 text-purple-500" />
-                <h3 className="text-sm font-semibold text-slate-700">
+              <div className="flex items-center gap-2 mb-4 py-3 px-5 rounded-lg bg-gradient-to-r from-slate-800 to-slate-700">
+                <Layers className="h-4 w-4 text-amber-400" />
+                <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                   Analyse par rubrique
                   <Badge
-                    className="text-[10px] font-semibold ml-2"
+                    className="text-[10px] font-semibold ml-1 border-0"
                     style={{
-                      backgroundColor: (PROVINCE_COLORS[selectedProvince] || "#6366f1") + "15",
-                      color: PROVINCE_COLORS[selectedProvince] || "#6366f1",
-                      borderColor: (PROVINCE_COLORS[selectedProvince] || "#6366f1") + "30",
+                      backgroundColor: "rgba(255,255,255,0.15)",
+                      color: "#fff",
                     }}
-                    variant="outline"
                   >
                     {selectedProvince}
                   </Badge>
