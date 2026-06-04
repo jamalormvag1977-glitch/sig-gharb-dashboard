@@ -31,9 +31,9 @@ const SECTEUR_DOT_COLORS: Record<string, string> = {
 };
 
 const PROVINCE_COLORS: Record<string, string> = {
-  "Kénitra": "#3b82f6",
-  "Sidi Kacem": "#ef4444",
-  "Sidi Slimane": "#10b981",
+  "Kénitra": "#d4a017",
+  "Sidi Kacem": "#c76e7e",
+  "Sidi Slimane": "#5bb58a",
 };
 
 // 30-color palette for individual communes

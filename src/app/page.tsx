@@ -105,10 +105,10 @@ const COMMUNE_PALETTE = [
   "#7c3aed", "#16a34a", "#e4d214", "#4f46e5", "#a21caf",
 ];
 
-// Province-matched KPI colors
-const KENITRA_COLOR = { gradient: "from-blue-500 to-cyan-600", bgGradient: "from-blue-50 to-cyan-50", textColor: "text-blue-700", iconBg: "bg-blue-100", iconColor: "text-blue-600" };
-const SIDI_KACEM_COLOR = { gradient: "from-red-500 to-rose-600", bgGradient: "from-red-50 to-rose-50", textColor: "text-red-700", iconBg: "bg-red-100", iconColor: "text-red-600" };
-const SIDI_SLIMANE_COLOR = { gradient: "from-emerald-500 to-green-600", bgGradient: "from-emerald-50 to-green-50", textColor: "text-emerald-700", iconBg: "bg-emerald-100", iconColor: "text-emerald-600" };
+// Province-matched KPI colors (matching ORMVAG official map)
+const KENITRA_COLOR = { gradient: "from-amber-500 to-yellow-600", bgGradient: "from-amber-50 to-yellow-50", textColor: "text-amber-700", iconBg: "bg-amber-100", iconColor: "text-amber-600" };
+const SIDI_KACEM_COLOR = { gradient: "from-rose-500 to-pink-600", bgGradient: "from-rose-50 to-pink-50", textColor: "text-rose-700", iconBg: "bg-rose-100", iconColor: "text-rose-600" };
+const SIDI_SLIMANE_COLOR = { gradient: "from-emerald-500 to-teal-600", bgGradient: "from-emerald-50 to-teal-50", textColor: "text-emerald-700", iconBg: "bg-emerald-100", iconColor: "text-emerald-600" };
 const DEFAULT_KPI = { gradient: "from-violet-500 to-purple-600", bgGradient: "from-violet-50 to-purple-50", textColor: "text-violet-700", iconBg: "bg-violet-100", iconColor: "text-violet-600" };
 
 export default function Home() {
@@ -246,11 +246,13 @@ export default function Home() {
         <div className="p-3 flex items-center justify-between border-b border-white/[0.06]">
           {sidebarOpen && (
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-2 rounded-lg shadow-lg shadow-emerald-500/20 shrink-0">
-                <Droplets className="h-4 w-4 text-white" />
+              <div className="bg-gradient-to-br from-green-600 to-emerald-700 p-2 rounded-lg shadow-lg shadow-green-600/20 shrink-0">
+                <svg viewBox="0 0 24 24" className="h-4 w-4 text-white" fill="currentColor">
+                  <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z"/>
+                </svg>
               </div>
               <div className="min-w-0">
-                <h1 className="text-sm font-bold tracking-tight truncate">SIG Gharb</h1>
+                <h1 className="text-sm font-bold tracking-tight truncate">ORMVAG — SIG Gharb</h1>
                 <p className="text-[10px] text-slate-400 mt-0.5 truncate">Inondations 2026</p>
               </div>
             </div>
@@ -275,9 +277,9 @@ export default function Home() {
             const isActive = activeView === item.id;
             let activeBg = "from-emerald-600 to-teal-600";
             let activeShadow = "shadow-emerald-600/25";
-            if (item.id === "kenitra") { activeBg = "from-blue-600 to-cyan-600"; activeShadow = "shadow-blue-600/25"; }
-            if (item.id === "sidi-kacem") { activeBg = "from-red-600 to-rose-600"; activeShadow = "shadow-red-600/25"; }
-            if (item.id === "sidi-slimane") { activeBg = "from-emerald-600 to-green-600"; activeShadow = "shadow-emerald-600/25"; }
+            if (item.id === "kenitra") { activeBg = "from-amber-500 to-yellow-600"; activeShadow = "shadow-amber-500/25"; }
+            if (item.id === "sidi-kacem") { activeBg = "from-rose-500 to-pink-600"; activeShadow = "shadow-rose-500/25"; }
+            if (item.id === "sidi-slimane") { activeBg = "from-emerald-500 to-teal-600"; activeShadow = "shadow-emerald-500/25"; }
             if (item.id === "rapport") { activeBg = "from-amber-500 to-orange-600"; activeShadow = "shadow-amber-500/25"; }
             if (item.id === "suivi-avancement") { activeBg = "from-indigo-500 to-violet-600"; activeShadow = "shadow-indigo-500/25"; }
 
@@ -334,38 +336,46 @@ export default function Home() {
       {/* MAIN CONTENT */}
       <main className="flex-1 overflow-y-auto">
         {/* Page Header */}
-        <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 px-6 py-4 sticky top-0 z-20">
+        <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 px-6 py-3 sticky top-0 z-20">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                {activeView === "overview" ? (
-                  <>
-                    <LayoutDashboard className="h-5 w-5 text-blue-600" />
-                    ORMVAG - Tableau de bord
-                  </>
-                ) : activeView === "rapport" ? (
-                  <>
-                    <ClipboardCheck className="h-5 w-5 text-amber-600" />
-                    Rapport d&apos;analyse
-                  </>
-                ) : activeView === "suivi-avancement" ? (
-                  <>
-                    <Gauge className="h-5 w-5 text-indigo-600" />
-                    Suivi d&apos;avancement physique et financier
-                  </>
-                ) : (
-                  <>
-                    <Building2
-                      className="h-5 w-5"
-                      style={{ color: PROVINCE_COLORS[selectedProvince!] || "#6366f1" }}
-                    />
-                    Province de {selectedProvince}
-                  </>
-                )}
-              </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Projets d&apos;inondations - Région du Gharb - 2026
-              </p>
+            <div className="flex items-center gap-3">
+              {/* ORMVAG Logo */}
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-600 to-emerald-700 flex items-center justify-center shadow-md ring-1 ring-green-400/20">
+                <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="currentColor">
+                  <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z"/>
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                  {activeView === "overview" ? (
+                    <>
+                      <LayoutDashboard className="h-4 w-4 text-green-600" />
+                      ORMVAG — Tableau de bord
+                    </>
+                  ) : activeView === "rapport" ? (
+                    <>
+                      <ClipboardCheck className="h-4 w-4 text-amber-600" />
+                      Rapport d&apos;analyse
+                    </>
+                  ) : activeView === "suivi-avancement" ? (
+                    <>
+                      <Gauge className="h-4 w-4 text-indigo-600" />
+                      Suivi d&apos;avancement physique et financier
+                    </>
+                  ) : (
+                    <>
+                      <Building2
+                        className="h-4 w-4"
+                        style={{ color: PROVINCE_COLORS[selectedProvince!] || "#6366f1" }}
+                      />
+                      Province de {selectedProvince}
+                    </>
+                  )}
+                </h2>
+                <p className="text-[10px] text-slate-400 mt-0">
+                  Office Régional de Mise en Valeur Agricole du Gharb — Kénitra
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <a
@@ -529,6 +539,28 @@ export default function Home() {
                     <div className="bg-purple-50 rounded-xl p-4 border border-purple-200/60 text-center">
                       <p className="text-[9px] font-bold text-purple-600 uppercase tracking-widest mb-1">Secteurs</p>
                       <p className="text-2xl font-black text-purple-700">{Object.keys(data.bySecteur).length}</p>
+                    </div>
+                  </div>
+                  {/* ORMVAG Zone d'action map */}
+                  <div className="mt-4 rounded-xl overflow-hidden border border-amber-200/60 shadow-md">
+                    <div className="relative">
+                      <img
+                        src="/carte_ormvag.jpeg"
+                        alt="Carte ORMVAG - Découpage administratif des secteurs équipés"
+                        className="w-full h-auto max-h-[350px] object-contain bg-slate-50"
+                      />
+                      <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-md border border-amber-200/50">
+                        <p className="text-[10px] font-bold text-amber-700 uppercase tracking-widest">Zone d&apos;action ORMVAG</p>
+                        <p className="text-[9px] text-slate-500">Découpage administratif — Secteurs équipés</p>
+                      </div>
+                      <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                        {Object.entries(PROVINCE_COLORS).map(([name, color]) => (
+                          <div key={name} className="flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-md px-2 py-1 shadow-sm border border-slate-200/50">
+                            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+                            <span className="text-[9px] font-bold text-slate-700">{name}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -1247,6 +1279,46 @@ export default function Home() {
               {...getKpiColors(3)}
             />
           </div>
+
+          {/* ORMVAG Zone d'action banner - overview only */}
+          {activeView === "overview" && (
+            <Card className="overflow-hidden shadow-xl border-slate-200/60">
+              <div className="relative">
+                <img
+                  src="/carte_ormvag.jpeg"
+                  alt="Carte ORMVAG - Découpage administratif des secteurs équipés"
+                  className="w-full h-auto max-h-[420px] object-contain bg-slate-100"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent pointer-events-none" />
+                <div className="absolute bottom-0 left-0 right-0 p-5">
+                  <div className="flex items-end justify-between flex-wrap gap-3">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                        <span className="text-[10px] font-bold text-green-300 uppercase tracking-widest">Zone d&apos;action ORMVAG</span>
+                      </div>
+                      <h3 className="text-lg font-extrabold text-white drop-shadow-lg">Découpage Administratif — Secteurs Équipés</h3>
+                      <p className="text-xs text-slate-300 mt-0.5">Office Régional de Mise en Valeur Agricole du Gharb — Kénitra</p>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      {Object.entries(PROVINCE_COLORS).map(([name, color]) => {
+                        const provData = data.byProvince[name];
+                        return (
+                          <div key={name} className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/20">
+                            <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: color }} />
+                            <div>
+                              <p className="text-[10px] font-bold text-white">{name}</p>
+                              <p className="text-[9px] text-slate-300">{((provData?.cout_total ?? 0) / 1e6).toFixed(1)} MDH · {provData?.nb_projets ?? 0} projets</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
 
           {/* Convention PDF download */}
           {selectedProvince && CONVENTION_PDF[selectedProvince] && (
