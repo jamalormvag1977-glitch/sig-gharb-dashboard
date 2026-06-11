@@ -58,11 +58,8 @@ import {
   Calendar,
   ChevronDown,
   ChevronUp,
-  BarChart2,
   TrendingDown,
   Minus,
-  PanelRightOpen,
-  PanelRightClose,
 } from "lucide-react";
 
 const MapComponent = dynamic(
@@ -71,7 +68,7 @@ const MapComponent = dynamic(
 );
 
 
-type ViewType = "overview" | "kenitra" | "sidi-kacem" | "sidi-slimane" | "suivi-avancement" | "rapport";
+type ViewType = "overview" | "kenitra" | "sidi-kacem" | "sidi-slimane" | "suivi-avancement" | "suivi-kenitra" | "suivi-sidi-kacem" | "suivi-sidi-slimane" | "rapport";
 
 const NAV_ITEMS: { id: ViewType; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Vue d'ensemble", icon: LayoutDashboard },
@@ -79,6 +76,9 @@ const NAV_ITEMS: { id: ViewType; label: string; icon: React.ElementType }[] = [
   { id: "sidi-kacem", label: "Sidi Kacem", icon: Building2 },
   { id: "sidi-slimane", label: "Sidi Slimane", icon: Building2 },
   { id: "suivi-avancement", label: "Suivi Avancement", icon: Gauge },
+  { id: "suivi-kenitra", label: "Avancement Kénitra", icon: Gauge },
+  { id: "suivi-sidi-kacem", label: "Avancement Sidi Kacem", icon: Gauge },
+  { id: "suivi-sidi-slimane", label: "Avancement Sidi Slimane", icon: Gauge },
   { id: "rapport", label: "Rapport", icon: FileText },
 ];
 
@@ -88,6 +88,9 @@ const PROVINCE_MAP: Record<ViewType, string | null> = {
   "sidi-kacem": "Sidi Kacem",
   "sidi-slimane": "Sidi Slimane",
   "suivi-avancement": null,
+  "suivi-kenitra": "Kénitra",
+  "suivi-sidi-kacem": "Sidi Kacem",
+  "suivi-sidi-slimane": "Sidi Slimane",
   rapport: null,
 };
 
@@ -133,14 +136,10 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const communeRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // Suivi-avancement filters & right panel state
-  const [filterProvince, setFilterProvince] = useState<string>("all");
+  // Suivi-avancement filters
   const [filterSecteur, setFilterSecteur] = useState<string>("all");
   const [filterStatut, setFilterStatut] = useState<string>("all");
   const [filterCommune, setFilterCommune] = useState<string>("all");
-  const [filterSemaine, setFilterSemaine] = useState<string>("actuelle");
-  const [rightPanelOpen, setRightPanelOpen] = useState(true);
-  const [expandedProvinces, setExpandedProvinces] = useState<Record<string, boolean>>({ "Kénitra": true, "Sidi Kacem": true, "Sidi Slimane": true });
 
   // Trigger map resize when fullscreen toggles
   useEffect(() => {
@@ -148,15 +147,11 @@ export default function Home() {
     return () => clearTimeout(t);
   }, [mapFullscreen]);
 
-  // Reset suivi-avancement filters when leaving the view
+  // Reset filters when changing views
   useEffect(() => {
-    if (activeView !== "suivi-avancement") {
-      setFilterProvince("all");
-      setFilterSecteur("all");
-      setFilterStatut("all");
-      setFilterCommune("all");
-      setFilterSemaine("actuelle");
-    }
+    setFilterSecteur("all");
+    setFilterStatut("all");
+    setFilterCommune("all");
   }, [activeView]);
 
   useEffect(() => {
@@ -229,17 +224,14 @@ export default function Home() {
   // Suivi-avancement: computed filtered data
   const suiviCommunes = useMemo(() => {
     if (!data) return [] as string[];
-    let projects = data.projects;
-    if (filterProvince !== "all") projects = projects.filter(p => p.province === filterProvince);
-    const communes = [...new Set(projects.map(p => p.commune))].sort();
+    const communes = [...new Set(data.projects.map(p => p.commune))].sort();
     return communes;
-  }, [data, filterProvince]);
+  }, [data]);
 
   const suiviData = useMemo(() => {
     if (!data) return null;
     let projects = data.projects;
 
-    if (filterProvince !== "all") projects = projects.filter(p => p.province === filterProvince);
     if (filterSecteur !== "all") projects = projects.filter(p => (SECTEUR_SHORT[p.intitule_rubrique] || p.intitule_rubrique) === filterSecteur);
     if (filterStatut !== "all") projects = projects.filter(p => p.statut === filterStatut);
     if (filterCommune !== "all") projects = projects.filter(p => p.commune === filterCommune);
@@ -287,7 +279,7 @@ export default function Home() {
     });
 
     return { projects, byProvince, bySecteur, totalCost, totalProjects, totalPaye, totalOrdonne, avancementPhysiqueGlobal, avancementFinancierGlobal };
-  }, [data, filterProvince, filterSecteur, filterStatut, filterCommune, filterSemaine]);
+  }, [data, filterSecteur, filterStatut, filterCommune]);
 
   // Helper: get current week number
   const getCurrentWeek = () => {
@@ -311,6 +303,563 @@ export default function Home() {
       }
     }
     return result;
+  };
+
+  // Render a full province-specific suivi view
+  const renderProvinceSuivi = (province: string, provColor: string) => {
+    if (!data) return null;
+
+    // Get province projects with filters
+    let projects = data.projects.filter(p => p.province === province);
+    if (filterSecteur !== "all") projects = projects.filter(p => (SECTEUR_SHORT[p.intitule_rubrique] || p.intitule_rubrique) === filterSecteur);
+    if (filterStatut !== "all") projects = projects.filter(p => p.statut === filterStatut);
+    if (filterCommune !== "all") projects = projects.filter(p => p.commune === filterCommune);
+
+    // All communes for this province (for dropdown)
+    const allCommunes = [...new Set(data.projects.filter(p => p.province === province).map(p => p.commune))].sort();
+
+    // Compute metrics
+    const totalCost = projects.reduce((s, p) => s + p.cout, 0);
+    const totalProjects = projects.length;
+    const totalPaye = projects.reduce((s, p) => s + p.montant_paye, 0);
+    const totalOrdonne = projects.reduce((s, p) => s + p.montant_ordonne, 0);
+    const avancementPhysique = totalProjects > 0 ? projects.reduce((s, p) => s + p.avancement_physique, 0) / totalProjects : 0;
+    const avancementFinancier = totalProjects > 0 ? projects.reduce((s, p) => s + p.avancement_financier, 0) / totalProjects : 0;
+    const tauxOrdonnancement = totalCost > 0 ? (totalOrdonne / totalCost) * 100 : 0;
+    const tauxPaiement = totalCost > 0 ? (totalPaye / totalCost) * 100 : 0;
+
+    const termine = projects.filter(p => p.statut === "Terminé").length;
+    const enCours = projects.filter(p => p.statut === "En cours").length;
+    const nonDemarre = projects.filter(p => p.statut === "Non démarré").length;
+
+    const currentWeek = getCurrentWeek();
+    const weekPhys = getWeeklyData(avancementPhysique);
+    const weekFin = getWeeklyData(avancementFinancier);
+    const deltaPhys = weekPhys.length >= 2 ? weekPhys[weekPhys.length - 1] - weekPhys[weekPhys.length - 2] : 0;
+    const deltaFin = weekFin.length >= 2 ? weekFin[weekFin.length - 1] - weekFin[weekFin.length - 2] : 0;
+
+    // Sector breakdown
+    const bySecteur: Record<string, { nb: number; cout: number; ap: number; af: number; montant_paye: number; montant_ordonne: number }> = {};
+    projects.forEach(p => {
+      const key = p.intitule_rubrique;
+      if (!bySecteur[key]) bySecteur[key] = { nb: 0, cout: 0, ap: 0, af: 0, montant_paye: 0, montant_ordonne: 0 };
+      bySecteur[key].nb++;
+      bySecteur[key].cout += p.cout;
+      bySecteur[key].ap += p.avancement_physique;
+      bySecteur[key].af += p.avancement_financier;
+      bySecteur[key].montant_paye += p.montant_paye;
+      bySecteur[key].montant_ordonne += p.montant_ordonne;
+    });
+    Object.keys(bySecteur).forEach(k => {
+      bySecteur[k].ap = bySecteur[k].nb > 0 ? bySecteur[k].ap / bySecteur[k].nb : 0;
+      bySecteur[k].af = bySecteur[k].nb > 0 ? bySecteur[k].af / bySecteur[k].nb : 0;
+    });
+
+    // Commune breakdown
+    const byCommune: Record<string, { nb: number; cout: number; ap: number; af: number }> = {};
+    projects.forEach(p => {
+      const key = p.commune;
+      if (!byCommune[key]) byCommune[key] = { nb: 0, cout: 0, ap: 0, af: 0 };
+      byCommune[key].nb++;
+      byCommune[key].cout += p.cout;
+      byCommune[key].ap += p.avancement_physique;
+      byCommune[key].af += p.avancement_financier;
+    });
+    Object.keys(byCommune).forEach(k => {
+      byCommune[k].ap = byCommune[k].nb > 0 ? byCommune[k].ap / byCommune[k].nb : 0;
+      byCommune[k].af = byCommune[k].nb > 0 ? byCommune[k].af / byCommune[k].nb : 0;
+    });
+
+    // Alert projects
+    const alertProjects = projects
+      .filter(p => p.statut === "En cours" && Math.abs(p.avancement_financier - p.avancement_physique) > 20)
+      .sort((a, b) => Math.abs(b.avancement_financier - b.avancement_physique) - Math.abs(a.avancement_financier - a.avancement_physique))
+      .slice(0, 5);
+
+    const getStatusColor = (val: number) => val >= 75 ? "#10b981" : val >= 50 ? "#f59e0b" : val >= 25 ? "#f97316" : "#ef4444";
+
+    const statusConfig: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
+      "Terminé": { bg: "bg-emerald-100", text: "text-emerald-700", icon: CheckCircle2 },
+      "En cours": { bg: "bg-amber-100", text: "text-amber-700", icon: Clock },
+      "Non démarré": { bg: "bg-red-100", text: "text-red-700", icon: CircleDot },
+    };
+
+    const GaugeRing = ({ value, label, color, icon: Icon }: { value: number; label: string; color: string; icon: React.ElementType }) => {
+      const radius = 54;
+      const circ = 2 * Math.PI * radius;
+      const offset = circ - (value / 100) * circ;
+      return (
+        <div className="flex flex-col items-center gap-2">
+          <div className="relative w-32 h-32">
+            <svg className="w-32 h-32 -rotate-90" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="10" />
+              <circle cx="60" cy="60" r={radius} fill="none" stroke={color} strokeWidth="10" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset} className="transition-all duration-1000" />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <Icon className="h-4 w-4 mb-0.5" style={{ color }} />
+              <span className="text-2xl font-black" style={{ color }}>{value.toFixed(0)}%</span>
+            </div>
+          </div>
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">{label}</p>
+        </div>
+      );
+    };
+
+    return (
+      <div className="space-y-6">
+        {/* Filter bar */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl border shadow-md p-3" style={{ borderColor: provColor + "40" }}>
+          <div className="flex items-center gap-2 mb-2.5">
+            <Filter className="h-4 w-4" style={{ color: provColor }} />
+            <span className="text-xs font-extrabold text-slate-700">Filtres</span>
+            {(filterSecteur !== "all" || filterStatut !== "all" || filterCommune !== "all") && (
+              <button
+                onClick={() => { setFilterSecteur("all"); setFilterStatut("all"); setFilterCommune("all"); }}
+                className="text-[10px] font-bold hover:opacity-70 ml-auto flex items-center gap-1 transition-colors"
+                style={{ color: provColor }}
+              >
+                <XCircle className="h-3 w-3" /> Réinitialiser
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {/* Secteur filter */}
+            <div className="relative">
+              <select
+                value={filterSecteur}
+                onChange={e => setFilterSecteur(e.target.value)}
+                className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
+              >
+                <option value="all">Tous secteurs</option>
+                {Object.values(SECTEUR_SHORT).map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+            </div>
+            {/* Statut filter */}
+            <div className="relative">
+              <select
+                value={filterStatut}
+                onChange={e => setFilterStatut(e.target.value)}
+                className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
+              >
+                <option value="all">Tous statuts</option>
+                <option value="Terminé">Terminé</option>
+                <option value="En cours">En cours</option>
+                <option value="Non démarré">Non démarré</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+            </div>
+            {/* Commune filter */}
+            <div className="relative">
+              <select
+                value={filterCommune}
+                onChange={e => setFilterCommune(e.target.value)}
+                className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors max-w-[180px]"
+              >
+                <option value="all">Toutes communes</option>
+                {allCommunes.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+            </div>
+          </div>
+          {/* Active filter badges */}
+          {(filterSecteur !== "all" || filterStatut !== "all" || filterCommune !== "all") && (
+            <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-slate-100">
+              {filterSecteur !== "all" && (
+                <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: (SECTEUR_DOT_COLORS[filterSecteur] || "#94a3b8") + "15", color: SECTEUR_DOT_COLORS[filterSecteur] || "#94a3b8" }}>
+                  {filterSecteur} <button onClick={() => setFilterSecteur("all")} className="ml-1 hover:opacity-70">×</button>
+                </Badge>
+              )}
+              {filterStatut !== "all" && (
+                <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 bg-slate-100 text-slate-600">
+                  {filterStatut} <button onClick={() => setFilterStatut("all")} className="ml-1 hover:opacity-70">×</button>
+                </Badge>
+              )}
+              {filterCommune !== "all" && (
+                <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: provColor + "10", color: provColor }}>
+                  {filterCommune} <button onClick={() => setFilterCommune("all")} className="ml-1 hover:opacity-70">×</button>
+                </Badge>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Province header card */}
+        <Card className="overflow-hidden shadow-xl" style={{ borderColor: provColor + "60" }}>
+          <CardHeader className="py-5 px-6" style={{ background: `linear-gradient(135deg, ${provColor}, ${provColor}CC)` }}>
+            <CardTitle className="text-lg font-extrabold text-white flex items-center gap-3">
+              <Gauge className="h-6 w-6" style={{ color: provColor + "80" }} />
+              Suivi d&apos;Avancement — {province}
+            </CardTitle>
+            <p className="text-sm mt-1" style={{ color: provColor + "40" }}>Région du Gharb — ORMVAG — S{currentWeek}</p>
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            {/* Gauge rings */}
+            <div className="flex flex-wrap justify-center gap-8">
+              <GaugeRing value={avancementPhysique} label="Avancement physique" color={getStatusColor(avancementPhysique)} icon={Wrench} />
+              <GaugeRing value={avancementFinancier} label="Avancement financier" color={getStatusColor(avancementFinancier)} icon={Wallet} />
+              <GaugeRing value={tauxOrdonnancement} label="Taux d'ordonnancement" color={getStatusColor(tauxOrdonnancement)} icon={FileText} />
+              <GaugeRing value={tauxPaiement} label="Taux de paiement" color={getStatusColor(tauxPaiement)} icon={Wallet} />
+            </div>
+
+            {/* Budget summary */}
+            <div className="grid grid-cols-4 gap-3">
+              <div className="rounded-xl p-3 border text-center" style={{ backgroundColor: provColor + "08", borderColor: provColor + "20" }}>
+                <p className="text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: provColor }}>Budget total</p>
+                <p className="text-lg font-black" style={{ color: provColor }}>{(totalCost / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+              </div>
+              <div className="bg-violet-50 rounded-xl p-3 border border-violet-200/60 text-center">
+                <p className="text-[9px] font-bold text-violet-600 uppercase tracking-widest mb-1">Ordonnancé</p>
+                <p className="text-lg font-black text-violet-800">{(totalOrdonne / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+              </div>
+              <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-200/60 text-center">
+                <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Payé</p>
+                <p className="text-lg font-black text-emerald-800">{(totalPaye / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+              </div>
+              <div className="bg-amber-50 rounded-xl p-3 border border-amber-200/60 text-center">
+                <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest mb-1">Reste à payer</p>
+                <p className="text-lg font-black text-amber-800">{((totalCost - totalPaye) / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+              </div>
+            </div>
+
+            {/* Status distribution */}
+            <div>
+              <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+                <Activity className="h-4 w-4" style={{ color: provColor }} />
+                Répartition par statut
+              </h4>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { label: "Terminé", count: termine, color: "#10b981", icon: CheckCircle2, bg: "bg-emerald-50", border: "border-emerald-200/60" },
+                  { label: "En cours", count: enCours, color: "#f59e0b", icon: Clock, bg: "bg-amber-50", border: "border-amber-200/60" },
+                  { label: "Non démarré", count: nonDemarre, color: "#ef4444", icon: CircleDot, bg: "bg-red-50", border: "border-red-200/60" },
+                ].map((s) => (
+                  <div key={s.label} className={`${s.bg} rounded-xl p-4 border ${s.border} text-center`}>
+                    <s.icon className="h-5 w-5 mx-auto mb-1" style={{ color: s.color }} />
+                    <p className="text-2xl font-black" style={{ color: s.color }}>{s.count}</p>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{s.label}</p>
+                    <p className="text-[9px] text-slate-400 font-semibold mt-0.5">{totalProjects > 0 ? ((s.count / totalProjects) * 100).toFixed(0) : 0}% des projets</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Weekly tracking analysis */}
+            <div className="rounded-xl border p-4" style={{ borderColor: provColor + "25", backgroundColor: provColor + "06" }}>
+              <div className="flex items-center gap-2 mb-3">
+                <Calendar className="h-4 w-4" style={{ color: provColor }} />
+                <span className="text-sm font-extrabold text-slate-700">Suivi Hebdomadaire — S{currentWeek}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div className="bg-white rounded-lg p-3 border border-slate-100 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <span className="text-xs font-bold text-slate-600">Δ Physique</span>
+                    {deltaPhys > 0 ? <TrendingUp className="h-3.5 w-3.5 text-emerald-500" /> : deltaPhys < 0 ? <TrendingDown className="h-3.5 w-3.5 text-red-500" /> : <Minus className="h-3.5 w-3.5 text-slate-400" />}
+                  </div>
+                  <span className={`text-lg font-black ${deltaPhys > 0 ? "text-emerald-600" : deltaPhys < 0 ? "text-red-600" : "text-slate-500"}`}>{deltaPhys > 0 ? "+" : ""}{deltaPhys.toFixed(1)}pts</span>
+                </div>
+                <div className="bg-white rounded-lg p-3 border border-slate-100 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <span className="text-xs font-bold text-slate-600">Δ Financier</span>
+                    {deltaFin > 0 ? <TrendingUp className="h-3.5 w-3.5 text-emerald-500" /> : deltaFin < 0 ? <TrendingDown className="h-3.5 w-3.5 text-red-500" /> : <Minus className="h-3.5 w-3.5 text-slate-400" />}
+                  </div>
+                  <span className={`text-lg font-black ${deltaFin > 0 ? "text-emerald-600" : deltaFin < 0 ? "text-red-600" : "text-slate-500"}`}>{deltaFin > 0 ? "+" : ""}{deltaFin.toFixed(1)}pts</span>
+                </div>
+              </div>
+              {/* Sparkline bars */}
+              <div className="space-y-1 mb-3">
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Évolution 4 semaines</p>
+                <div className="flex items-end gap-1.5 h-12">
+                  {weekPhys.map((v, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
+                      <div className="w-full rounded-sm" style={{ height: `${Math.max(6, v * 0.48)}px`, backgroundColor: provColor, opacity: i === weekPhys.length - 1 ? 1 : 0.4 + i * 0.15 }} />
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-1.5">
+                  {weekPhys.map((_, i) => (
+                    <div key={i} className="flex-1 text-center">
+                      <span className="text-[8px] text-slate-400">S{currentWeek - (weekPhys.length - 1 - i)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* Weekly counts */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-emerald-50 rounded-lg p-2.5 text-center border border-emerald-100">
+                  <p className="text-[9px] font-bold text-emerald-600">Démarrés</p>
+                  <p className="text-lg font-black text-emerald-700">{enCours > 0 ? Math.min(2, enCours) : 0}</p>
+                </div>
+                <div className="bg-amber-50 rounded-lg p-2.5 text-center border border-amber-100">
+                  <p className="text-[9px] font-bold text-amber-600">Terminés</p>
+                  <p className="text-lg font-black text-amber-700">{termine > 0 ? Math.min(1, termine) : 0}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Sector breakdown */}
+            <div>
+              <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+                <Layers className="h-4 w-4" style={{ color: provColor }} />
+                Avancement par secteur
+              </h4>
+              <div className="space-y-2">
+                {Object.entries(bySecteur)
+                  .sort(([, a], [, b]) => b.cout - a.cout)
+                  .map(([name, d]) => {
+                    const shortName = SECTEUR_SHORT[name] || name;
+                    const dotColor = SECTEUR_DOT_COLORS[shortName] || "#94a3b8";
+                    return (
+                      <div key={name} className="rounded-xl border p-3" style={{ borderColor: dotColor + "25", backgroundColor: dotColor + "04" }}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full shadow" style={{ backgroundColor: dotColor }} />
+                            <span className="text-xs font-extrabold text-slate-800">{shortName}</span>
+                          </div>
+                          <div className="flex items-center gap-3 text-[10px] font-bold">
+                            <span style={{ color: dotColor }}>Phys. {d.ap.toFixed(0)}%</span>
+                            <span className="text-slate-300">|</span>
+                            <span style={{ color: dotColor }} className="opacity-70">Fin. {d.af.toFixed(0)}%</span>
+                            <span className="text-slate-300">|</span>
+                            <span className="text-violet-500">{(d.montant_ordonne / 1e6).toFixed(1)} MDH ord.</span>
+                            <span className="text-slate-300">|</span>
+                            <span className="text-emerald-500">{(d.montant_paye / 1e6).toFixed(1)} MDH payé</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-1.5 h-2.5">
+                          <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+                            <div className="h-full rounded-full" style={{ width: `${d.ap}%`, backgroundColor: dotColor }} />
+                          </div>
+                          <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+                            <div className="h-full rounded-full opacity-60" style={{ width: `${d.af}%`, backgroundColor: dotColor }} />
+                          </div>
+                        </div>
+                        <div className="flex justify-between mt-1 text-[9px] text-slate-400 font-semibold">
+                          <span>Physique</span>
+                          <span>Financier</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+
+            {/* Commune breakdown */}
+            <div>
+              <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+                <MapPin className="h-4 w-4" style={{ color: provColor }} />
+                Avancement par commune
+              </h4>
+              <div className="space-y-2">
+                {Object.entries(byCommune)
+                  .sort(([, a], [, b]) => b.cout - a.cout)
+                  .map(([name, d]) => {
+                    const commColor = communeColorMap[name] || provColor;
+                    return (
+                      <div key={name} className="rounded-xl border p-3" style={{ borderColor: commColor + "25", backgroundColor: commColor + "04" }}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full shadow" style={{ backgroundColor: commColor }} />
+                            <span className="text-xs font-extrabold text-slate-800">{name}</span>
+                            <Badge className="text-[8px] font-bold px-1.5 py-0 border-0" style={{ backgroundColor: commColor + "18", color: commColor }}>{d.nb}P</Badge>
+                          </div>
+                          <div className="flex items-center gap-3 text-[10px] font-bold">
+                            <span style={{ color: commColor }}>Phys. {d.ap.toFixed(0)}%</span>
+                            <span className="text-slate-300">|</span>
+                            <span style={{ color: commColor }} className="opacity-70">Fin. {d.af.toFixed(0)}%</span>
+                            <span className="text-slate-300">|</span>
+                            <span className="text-emerald-500">{(d.cout / 1e6).toFixed(2)} MDH</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-1.5 h-2.5">
+                          <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+                            <div className="h-full rounded-full" style={{ width: `${d.ap}%`, backgroundColor: commColor }} />
+                          </div>
+                          <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+                            <div className="h-full rounded-full opacity-60" style={{ width: `${d.af}%`, backgroundColor: commColor }} />
+                          </div>
+                        </div>
+                        <div className="flex justify-between mt-1 text-[9px] text-slate-400 font-semibold">
+                          <span>Physique</span>
+                          <span>Financier</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+
+            {/* Alert projects */}
+            {alertProjects.length > 0 && (
+              <div className="bg-red-50 rounded-xl p-4 border border-red-200/60">
+                <h4 className="text-xs font-bold text-red-800 mb-2 flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-red-500" />
+                  Projets en retard physique ({alertProjects.length} projets avec écart &gt; 20pts)
+                </h4>
+                <div className="space-y-1.5">
+                  {alertProjects.map((p, i) => {
+                    const ecart = p.avancement_financier - p.avancement_physique;
+                    return (
+                      <div key={i} className="flex items-center gap-2 text-[11px] text-red-700 bg-white rounded-lg px-3 py-2 border border-red-100">
+                        <ArrowDownRight className="h-3.5 w-3.5 text-red-500 shrink-0" />
+                        <span className="flex-1 truncate"><strong>{p.commune}</strong> — {p.consistance.substring(0, 60)}...</span>
+                        <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 bg-red-100 text-red-700">Phys. {p.avancement_physique}% vs Fin. {p.avancement_financier}%</Badge>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Detailed project table */}
+            <div>
+              <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+                <TableIcon className="h-4 w-4" style={{ color: provColor }} />
+                Détail de l&apos;avancement par projet
+              </h4>
+              <div className="rounded-2xl border-2 overflow-hidden shadow-lg" style={{ borderColor: provColor + "35" }}>
+                {/* Province header */}
+                <div className="px-5 py-3.5 flex items-center justify-between flex-wrap gap-2" style={{ background: `linear-gradient(135deg, ${provColor}18 0%, ${provColor}08 100%)` }}>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-4 h-4 rounded-full shadow-md ring-2 ring-white" style={{ backgroundColor: provColor }} />
+                    <span className="text-sm font-extrabold text-slate-800">Province de {province}</span>
+                    <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 shadow-sm" style={{ backgroundColor: provColor + "15", color: provColor }}>
+                      {totalProjects} projets
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: "#10b98120", color: "#10b981" }}>
+                      <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />{termine} Terminé
+                    </Badge>
+                    <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: "#f59e0b20", color: "#f59e0b" }}>
+                      <Clock className="h-2.5 w-2.5 mr-0.5" />{enCours} En cours
+                    </Badge>
+                    <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: "#ef444420", color: "#ef4444" }}>
+                      <CircleDot className="h-2.5 w-2.5 mr-0.5" />{nonDemarre} Non démarré
+                    </Badge>
+                    <span className="font-extrabold px-3 py-1 rounded-lg text-[11px] shadow-sm" style={{ backgroundColor: provColor + "10", color: provColor, border: `1px solid ${provColor}25` }}>
+                      {(totalCost / 1e6).toFixed(2)} MDH
+                    </span>
+                  </div>
+                </div>
+
+                {/* Progress bars */}
+                <div className="px-5 py-2.5 grid grid-cols-2 gap-3 bg-white/60 border-b" style={{ borderColor: provColor + "15" }}>
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Wrench className="h-3 w-3" /> Avancement Physique</span>
+                      <span className="text-[11px] font-black" style={{ color: provColor }}>{avancementPhysique.toFixed(0)}%</span>
+                    </div>
+                    <div className="w-full bg-slate-200/80 rounded-full h-2.5 overflow-hidden shadow-inner">
+                      <div className="h-full rounded-full transition-all duration-700" style={{ width: `${avancementPhysique}%`, backgroundColor: provColor }} />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Wallet className="h-3 w-3" /> Avancement Financier</span>
+                      <span className="text-[11px] font-black" style={{ color: provColor }}>{avancementFinancier.toFixed(0)}%</span>
+                    </div>
+                    <div className="w-full bg-slate-200/80 rounded-full h-2.5 overflow-hidden shadow-inner">
+                      <div className="h-full rounded-full transition-all duration-700 opacity-70" style={{ width: `${avancementFinancier}%`, backgroundColor: provColor }} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Project table */}
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow style={{ backgroundColor: provColor + "0A", borderBottomColor: provColor + "20" }}>
+                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3" style={{ color: provColor + "BB" }}>Commune</TableHead>
+                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3" style={{ color: provColor + "BB" }}>Projet</TableHead>
+                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-right" style={{ color: provColor + "BB" }}>Budget</TableHead>
+                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-right" style={{ color: provColor + "BB" }}>Ordonnancé</TableHead>
+                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-right" style={{ color: provColor + "BB" }}>Payé</TableHead>
+                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-center" style={{ color: provColor + "BB" }}>Phys.</TableHead>
+                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-center" style={{ color: provColor + "BB" }}>Fin.</TableHead>
+                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-center" style={{ color: provColor + "BB" }}>Statut</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {projects.map((p, i) => {
+                        const ecart = p.avancement_financier - p.avancement_physique;
+                        const sc = statusConfig[p.statut] || statusConfig["Non démarré"];
+                        const apColor = getStatusColor(p.avancement_physique);
+                        const afColor = getStatusColor(p.avancement_financier);
+                        return (
+                          <TableRow key={i} className={`border-b border-slate-100/80 ${i % 2 === 0 ? "bg-white" : "bg-slate-50/40"}`} style={{ borderLeftWidth: "3px", borderLeftColor: provColor + "30" }}>
+                            <TableCell className="py-2 px-3">
+                              <span className="text-[10px] font-bold text-slate-700 whitespace-nowrap">{p.commune}</span>
+                            </TableCell>
+                            <TableCell className="py-2 px-3 text-[10px] text-slate-600 max-w-[300px] leading-relaxed whitespace-normal">{p.consistance}</TableCell>
+                            <TableCell className="py-2 px-3 text-[10px] font-bold text-slate-700 text-right">{(p.cout / 1e6).toFixed(2)} M</TableCell>
+                            <TableCell className="py-2 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_ordonne > 0 ? "#8b5cf6" : "#94a3b8" }}>{(p.montant_ordonne / 1e6).toFixed(2)} M</TableCell>
+                            <TableCell className="py-2 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_paye > 0 ? "#10b981" : "#94a3b8" }}>{(p.montant_paye / 1e6).toFixed(2)} M</TableCell>
+                            <TableCell className="py-2 px-3 text-center">
+                              <div className="flex items-center justify-center gap-1">
+                                <div className="w-12 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+                                  <div className="h-full rounded-full" style={{ width: `${p.avancement_physique}%`, backgroundColor: apColor }} />
+                                </div>
+                                <span className="text-[10px] font-black" style={{ color: apColor }}>{p.avancement_physique}%</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="py-2 px-3 text-center">
+                              <div className="flex items-center justify-center gap-1">
+                                <div className="w-12 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+                                  <div className="h-full rounded-full" style={{ width: `${p.avancement_financier}%`, backgroundColor: afColor }} />
+                                </div>
+                                <span className="text-[10px] font-black" style={{ color: afColor }}>{p.avancement_financier}%</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="py-2 px-3 text-center">
+                              <Badge className={`${sc.bg} ${sc.text} text-[9px] font-bold px-2 py-0.5 border-0`}>
+                                <sc.icon className="h-2.5 w-2.5 mr-0.5" />
+                                {p.statut}
+                              </Badge>
+                              {Math.abs(ecart) > 15 && p.statut === "En cours" && (
+                                <span className="block text-[8px] font-bold text-red-500 mt-0.5">Écart {ecart > 0 ? "-" : "+"}{Math.abs(ecart)}pts</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                      {/* Total row */}
+                      <TableRow style={{ background: `linear-gradient(135deg, ${provColor}18, ${provColor}08)` }}>
+                        <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-slate-800" colSpan={2}>
+                          Total {province}
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-right" style={{ color: "#059669" }}>
+                          {(totalCost / 1e6).toFixed(2)} MDH
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-right" style={{ color: "#8b5cf6" }}>
+                          {(totalOrdonne / 1e6).toFixed(2)} MDH
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-right" style={{ color: "#10b981" }}>
+                          {(totalPaye / 1e6).toFixed(2)} MDH
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center">
+                          <span className="text-[10px] font-black" style={{ color: provColor }}>{avancementPhysique.toFixed(0)}%</span>
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center">
+                          <span className="text-[10px] font-black" style={{ color: provColor }}>{avancementFinancier.toFixed(0)}%</span>
+                        </TableCell>
+                        <TableCell className="py-2.5 px-3 text-center">
+                          <span className="text-[9px] font-bold text-slate-500">{totalProjects} projets</span>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   };
 
   const handleCommuneClick = useCallback((commune: string) => {
@@ -393,6 +942,9 @@ export default function Home() {
             if (item.id === "sidi-slimane") { activeBg = "from-emerald-500 to-teal-600"; activeShadow = "shadow-emerald-500/25"; }
             if (item.id === "rapport") { activeBg = "from-amber-500 to-orange-600"; activeShadow = "shadow-amber-500/25"; }
             if (item.id === "suivi-avancement") { activeBg = "from-indigo-500 to-violet-600"; activeShadow = "shadow-indigo-500/25"; }
+            if (item.id === "suivi-kenitra") { activeBg = "from-amber-500 to-yellow-600"; activeShadow = "shadow-amber-500/25"; }
+            if (item.id === "suivi-sidi-kacem") { activeBg = "from-rose-500 to-pink-600"; activeShadow = "shadow-rose-500/25"; }
+            if (item.id === "suivi-sidi-slimane") { activeBg = "from-emerald-500 to-teal-600"; activeShadow = "shadow-emerald-500/25"; }
 
             return (
               <button
@@ -445,8 +997,8 @@ export default function Home() {
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className={activeView === "suivi-avancement" ? "flex-1 overflow-hidden flex" : "flex-1 overflow-y-auto"}>
-        <div className={activeView === "suivi-avancement" ? "flex-1 overflow-y-auto min-w-0" : undefined}>
+      <main className="flex-1 overflow-y-auto">
+        <div>
         {/* Page Header */}
         <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 px-6 py-3 sticky top-0 z-20">
           <div className="flex items-center justify-between">
@@ -474,6 +1026,12 @@ export default function Home() {
                       <Gauge className="h-4 w-4 text-indigo-600" />
                       Suivi d&apos;avancement physique et financier
                     </>
+                  ) : activeView === "suivi-kenitra" ? (
+                    <><Gauge className="h-4 w-4 text-amber-600" /> Suivi Avancement — Kénitra</>
+                  ) : activeView === "suivi-sidi-kacem" ? (
+                    <><Gauge className="h-4 w-4 text-rose-600" /> Suivi Avancement — Sidi Kacem</>
+                  ) : activeView === "suivi-sidi-slimane" ? (
+                    <><Gauge className="h-4 w-4 text-emerald-600" /> Suivi Avancement — Sidi Slimane</>
                   ) : (
                     <>
                       <Building2
@@ -621,16 +1179,7 @@ export default function Home() {
                     </Badge>
                   );
                 })}
-              {activeView === "suivi-avancement" && (
-                <button
-                  onClick={() => setRightPanelOpen(!rightPanelOpen)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold border shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02] active:scale-95 ${rightPanelOpen ? "bg-indigo-100 text-indigo-700 border-indigo-200" : "bg-slate-100 text-slate-600 border-slate-200"}`}
-                  title={rightPanelOpen ? "Masquer les barres latérales" : "Afficher les barres latérales"}
-                >
-                  {rightPanelOpen ? <PanelRightClose className="h-3.5 w-3.5" /> : <PanelRightOpen className="h-3.5 w-3.5" />}
-                  {rightPanelOpen ? "Masquer latérales" : "Latérales"}
-                </button>
-              )}
+
             </div>
           </div>
         </div>
@@ -955,117 +1504,6 @@ export default function Home() {
             </div>
           ) : activeView === "suivi-avancement" ? (
             <div className="space-y-6">
-              {/* FILTER BAR */}
-              <div className="bg-white/90 backdrop-blur-sm rounded-xl border border-indigo-200/50 shadow-md p-3">
-                <div className="flex items-center gap-2 mb-2.5">
-                  <Filter className="h-4 w-4 text-indigo-500" />
-                  <span className="text-xs font-extrabold text-slate-700">Filtres</span>
-                  {(filterProvince !== "all" || filterSecteur !== "all" || filterStatut !== "all" || filterCommune !== "all") && (
-                    <button
-                      onClick={() => { setFilterProvince("all"); setFilterSecteur("all"); setFilterStatut("all"); setFilterCommune("all"); }}
-                      className="text-[10px] font-bold text-indigo-500 hover:text-indigo-700 ml-auto flex items-center gap-1 transition-colors"
-                    >
-                      <XCircle className="h-3 w-3" /> Réinitialiser
-                    </button>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {/* Province filter */}
-                  <div className="relative">
-                    <select
-                      value={filterProvince}
-                      onChange={e => { setFilterProvince(e.target.value); setFilterCommune("all"); }}
-                      className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
-                    >
-                      <option value="all">Toutes provinces</option>
-                      {Object.keys(PROVINCE_COLORS).map(p => (
-                        <option key={p} value={p}>{p}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
-                  </div>
-                  {/* Secteur filter */}
-                  <div className="relative">
-                    <select
-                      value={filterSecteur}
-                      onChange={e => setFilterSecteur(e.target.value)}
-                      className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
-                    >
-                      <option value="all">Tous secteurs</option>
-                      {Object.values(SECTEUR_SHORT).map(s => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
-                  </div>
-                  {/* Statut filter */}
-                  <div className="relative">
-                    <select
-                      value={filterStatut}
-                      onChange={e => setFilterStatut(e.target.value)}
-                      className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
-                    >
-                      <option value="all">Tous statuts</option>
-                      <option value="Terminé">Terminé</option>
-                      <option value="En cours">En cours</option>
-                      <option value="Non démarré">Non démarré</option>
-                    </select>
-                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
-                  </div>
-                  {/* Commune filter */}
-                  <div className="relative">
-                    <select
-                      value={filterCommune}
-                      onChange={e => setFilterCommune(e.target.value)}
-                      className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors max-w-[180px]"
-                    >
-                      <option value="all">Toutes communes</option>
-                      {suiviCommunes.map(c => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
-                  </div>
-                  {/* Semaine filter */}
-                  <div className="relative">
-                    <select
-                      value={filterSemaine}
-                      onChange={e => setFilterSemaine(e.target.value)}
-                      className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
-                    >
-                      <option value="actuelle">Semaine actuelle (S{getCurrentWeek()})</option>
-                      <option value="precedente">Semaine précédente (S{getCurrentWeek() - 1})</option>
-                    </select>
-                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
-                  </div>
-                </div>
-                {/* Active filter badges */}
-                {(filterProvince !== "all" || filterSecteur !== "all" || filterStatut !== "all" || filterCommune !== "all") && (
-                  <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-slate-100">
-                    {filterProvince !== "all" && (
-                      <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: (PROVINCE_COLORS[filterProvince] || "#6366f1") + "15", color: PROVINCE_COLORS[filterProvince] || "#6366f1" }}>
-                        {filterProvince} <button onClick={() => { setFilterProvince("all"); setFilterCommune("all"); }} className="ml-1 hover:opacity-70">×</button>
-                      </Badge>
-                    )}
-                    {filterSecteur !== "all" && (
-                      <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: (SECTEUR_DOT_COLORS[filterSecteur] || "#94a3b8") + "15", color: SECTEUR_DOT_COLORS[filterSecteur] || "#94a3b8" }}>
-                        {filterSecteur} <button onClick={() => setFilterSecteur("all")} className="ml-1 hover:opacity-70">×</button>
-                      </Badge>
-                    )}
-                    {filterStatut !== "all" && (
-                      <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 bg-slate-100 text-slate-600">
-                        {filterStatut} <button onClick={() => setFilterStatut("all")} className="ml-1 hover:opacity-70">×</button>
-                      </Badge>
-                    )}
-                    {filterCommune !== "all" && (
-                      <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 bg-indigo-50 text-indigo-600">
-                        {filterCommune} <button onClick={() => setFilterCommune("all")} className="ml-1 hover:opacity-70">×</button>
-                      </Badge>
-                    )}
-                  </div>
-                )}
-              </div>
-
               {/* Suivi Header */}
               <Card className="overflow-hidden shadow-xl border-indigo-200/60">
                 <CardHeader className="py-5 px-6 bg-gradient-to-r from-indigo-700 to-violet-700">
@@ -2350,244 +2788,17 @@ export default function Home() {
               </div>
             </div>
           )}
+
+          {/* Province-specific suivi views */}
+          {activeView === "suivi-kenitra" && renderProvinceSuivi("Kénitra", PROVINCE_COLORS["Kénitra"])}
+          {activeView === "suivi-sidi-kacem" && renderProvinceSuivi("Sidi Kacem", PROVINCE_COLORS["Sidi Kacem"])}
+          {activeView === "suivi-sidi-slimane" && renderProvinceSuivi("Sidi Slimane", PROVINCE_COLORS["Sidi Slimane"])}
+
           </>
           )}
         </div>
         </div>
 
-        {/* RIGHT PANEL — Suivi Avancement */}
-        {activeView === "suivi-avancement" && rightPanelOpen && (
-          <div className="shrink-0 border-l border-slate-200/60 overflow-y-auto bg-gradient-to-b from-slate-50/80 to-white/50" style={{ width: 288 }}>
-            {/* Panel header */}
-            <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm border-b border-slate-200/60 px-3 py-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <BarChart2 className="h-4 w-4 text-indigo-500" />
-                <span className="text-xs font-extrabold text-slate-800">Barres Latérales</span>
-              </div>
-              <button
-                onClick={() => setRightPanelOpen(false)}
-                className="p-1 rounded-md hover:bg-slate-200/70 transition-colors text-slate-400 hover:text-slate-700"
-                title="Fermer le panneau"
-              >
-                <PanelRightClose className="h-4 w-4" />
-              </button>
-            </div>
-
-            {/* 3 Province Sidebars */}
-            {Object.entries(PROVINCE_COLORS).map(([province, provColor]) => {
-              const provInfo = suiviData?.byProvince[province];
-              const provProjects = suiviData?.projects.filter(p => p.province === province) ?? [];
-              const isExpanded = expandedProvinces[province] ?? true;
-              const ap = provInfo?.avancement_physique_moyen ?? 0;
-              const af = provInfo?.avancement_financier_moyen ?? 0;
-              const termine = provProjects.filter(p => p.statut === "Terminé").length;
-              const enCours = provProjects.filter(p => p.statut === "En cours").length;
-              const nonDemarre = provProjects.filter(p => p.statut === "Non démarré").length;
-              const totalProj = provProjects.length;
-              const budgetTotal = provInfo?.cout_total ?? 0;
-              const payeTotal = provInfo?.montant_paye_total ?? 0;
-              const ordonneTotal = provInfo?.montant_ordonne_total ?? 0;
-              const resteAPayer = budgetTotal - payeTotal;
-
-              // Sector breakdown for this province
-              const sectorsByProvince: Record<string, { nb: number; ap: number; af: number }> = {};
-              provProjects.forEach(p => {
-                const short = SECTEUR_SHORT[p.intitule_rubrique] || p.intitule_rubrique;
-                if (!sectorsByProvince[short]) sectorsByProvince[short] = { nb: 0, ap: 0, af: 0 };
-                sectorsByProvince[short].nb++;
-                sectorsByProvince[short].ap += p.avancement_physique;
-                sectorsByProvince[short].af += p.avancement_financier;
-              });
-              Object.keys(sectorsByProvince).forEach(k => {
-                sectorsByProvince[k].ap = sectorsByProvince[k].nb > 0 ? sectorsByProvince[k].ap / sectorsByProvince[k].nb : 0;
-                sectorsByProvince[k].af = sectorsByProvince[k].nb > 0 ? sectorsByProvince[k].af / sectorsByProvince[k].nb : 0;
-              });
-
-              // Weekly simulated data
-              const weekPhys = getWeeklyData(ap);
-              const weekFin = getWeeklyData(af);
-              const currentWeek = getCurrentWeek();
-              const deltaPhys = weekPhys.length >= 2 ? weekPhys[weekPhys.length - 1] - weekPhys[weekPhys.length - 2] : 0;
-              const deltaFin = weekFin.length >= 2 ? weekFin[weekFin.length - 1] - weekFin[weekFin.length - 2] : 0;
-
-              const GaugeRingSmall = ({ value, color, icon: Icon }: { value: number; color: string; icon: React.ElementType }) => {
-                const radius = 28;
-                const circ = 2 * Math.PI * radius;
-                const offset = circ - (value / 100) * circ;
-                return (
-                  <div className="relative w-16 h-16">
-                    <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
-                      <circle cx="32" cy="32" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="5" />
-                      <circle cx="32" cy="32" r={radius} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset} className="transition-all duration-700" />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <Icon className="h-3 w-3" style={{ color }} />
-                      <span className="text-[10px] font-black" style={{ color }}>{value.toFixed(0)}%</span>
-                    </div>
-                  </div>
-                );
-              };
-
-              return (
-                <div key={province} className="border-b border-slate-200/40">
-                  {/* Province header */}
-                  <button
-                    onClick={() => setExpandedProvinces(prev => ({ ...prev, [province]: !prev[province] }))}
-                    className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-slate-100/60 transition-colors"
-                    style={{ borderLeft: `3px solid ${provColor}` }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: provColor }} />
-                      <span className="text-xs font-extrabold text-slate-800">{province}</span>
-                      <Badge className="text-[8px] font-bold px-1.5 py-0 border-0" style={{ backgroundColor: provColor + "18", color: provColor }}>{totalProj}P</Badge>
-                    </div>
-                    {isExpanded ? <ChevronUp className="h-3.5 w-3.5 text-slate-400" /> : <ChevronDown className="h-3.5 w-3.5 text-slate-400" />}
-                  </button>
-
-                  {isExpanded && (
-                    <div className="px-3 pb-3 space-y-3">
-                      {/* Circular gauges */}
-                      <div className="flex items-center justify-center gap-4">
-                        <div className="flex flex-col items-center gap-1">
-                          <GaugeRingSmall value={ap} color={provColor} icon={Wrench} />
-                          <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Physique</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-1">
-                          <GaugeRingSmall value={af} color={provColor} icon={Wallet} />
-                          <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Financier</span>
-                        </div>
-                      </div>
-
-                      {/* Sector progress bars */}
-                      <div className="space-y-1.5">
-                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Par secteur</p>
-                        {Object.entries(sectorsByProvince).sort(([, a], [, b]) => b.nb - a.nb).map(([sec, d]) => {
-                          const secColor = SECTEUR_DOT_COLORS[sec] || "#94a3b8";
-                          return (
-                            <div key={sec}>
-                              <div className="flex justify-between items-center mb-0.5">
-                                <span className="text-[9px] font-semibold text-slate-600 truncate" style={{ maxWidth: 120 }}>{sec}</span>
-                                <span className="text-[9px] font-bold" style={{ color: secColor }}>{d.ap.toFixed(0)}%</span>
-                              </div>
-                              <div className="w-full bg-slate-200/70 rounded-full h-1.5 overflow-hidden">
-                                <div className="h-full rounded-full" style={{ width: `${d.ap}%`, backgroundColor: secColor }} />
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Weekly tracking analysis */}
-                      <div className="rounded-lg border p-2.5" style={{ borderColor: provColor + "25", backgroundColor: provColor + "06" }}>
-                        <div className="flex items-center gap-1.5 mb-2">
-                          <Calendar className="h-3 w-3" style={{ color: provColor }} />
-                          <span className="text-[9px] font-extrabold text-slate-700">Suivi Hebdomadaire — S{currentWeek}</span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-1.5 mb-2">
-                          <div className="bg-white rounded-md p-1.5 border border-slate-100 text-center">
-                            <div className="flex items-center justify-center gap-0.5">
-                              <span className="text-[9px] font-bold text-slate-600">Δ Phys.</span>
-                              {deltaPhys > 0 ? <TrendingUp className="h-2.5 w-2.5 text-emerald-500" /> : deltaPhys < 0 ? <TrendingDown className="h-2.5 w-2.5 text-red-500" /> : <Minus className="h-2.5 w-2.5 text-slate-400" />}
-                            </div>
-                            <span className={`text-[10px] font-black ${deltaPhys > 0 ? "text-emerald-600" : deltaPhys < 0 ? "text-red-600" : "text-slate-500"}`}>{deltaPhys > 0 ? "+" : ""}{deltaPhys.toFixed(1)}pts</span>
-                          </div>
-                          <div className="bg-white rounded-md p-1.5 border border-slate-100 text-center">
-                            <div className="flex items-center justify-center gap-0.5">
-                              <span className="text-[9px] font-bold text-slate-600">Δ Fin.</span>
-                              {deltaFin > 0 ? <TrendingUp className="h-2.5 w-2.5 text-emerald-500" /> : deltaFin < 0 ? <TrendingDown className="h-2.5 w-2.5 text-red-500" /> : <Minus className="h-2.5 w-2.5 text-slate-400" />}
-                            </div>
-                            <span className={`text-[10px] font-black ${deltaFin > 0 ? "text-emerald-600" : deltaFin < 0 ? "text-red-600" : "text-slate-500"}`}>{deltaFin > 0 ? "+" : ""}{deltaFin.toFixed(1)}pts</span>
-                          </div>
-                        </div>
-                        {/* Mini sparkline bars */}
-                        <div className="space-y-1">
-                          <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Évolution 4 semaines</p>
-                          <div className="flex items-end gap-1 h-8">
-                            {weekPhys.map((v, i) => (
-                              <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
-                                <div className="w-full rounded-sm" style={{ height: `${Math.max(4, v * 0.32)}px`, backgroundColor: provColor, opacity: i === weekPhys.length - 1 ? 1 : 0.4 + i * 0.15 }} />
-                              </div>
-                            ))}
-                          </div>
-                          <div className="flex gap-1">
-                            {weekPhys.map((_, i) => (
-                              <div key={i} className="flex-1 text-center">
-                                <span className="text-[7px] text-slate-400">S{currentWeek - (weekPhys.length - 1 - i)}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        {/* Weekly counts */}
-                        <div className="grid grid-cols-2 gap-1.5 mt-2">
-                          <div className="bg-emerald-50 rounded-md p-1.5 text-center border border-emerald-100">
-                            <p className="text-[7px] font-bold text-emerald-600">Démarrés</p>
-                            <p className="text-[11px] font-black text-emerald-700">{enCours > 0 ? Math.min(2, enCours) : 0}</p>
-                          </div>
-                          <div className="bg-amber-50 rounded-md p-1.5 text-center border border-amber-100">
-                            <p className="text-[7px] font-bold text-amber-600">Terminés</p>
-                            <p className="text-[11px] font-black text-amber-700">{termine > 0 ? Math.min(1, termine) : 0}</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Status breakdown */}
-                      <div className="space-y-1.5">
-                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Répartition statuts</p>
-                        <div className="space-y-1">
-                          {[
-                            { label: "Terminé", count: termine, color: "#10b981" },
-                            { label: "En cours", count: enCours, color: "#f59e0b" },
-                            { label: "Non démarré", count: nonDemarre, color: "#ef4444" },
-                          ].map(s => (
-                            <div key={s.label} className="flex items-center gap-2">
-                              <span className="text-[9px] font-semibold text-slate-600 w-[60px]">{s.label}</span>
-                              <div className="flex-1 bg-slate-200/70 rounded-full h-1.5 overflow-hidden">
-                                <div className="h-full rounded-full" style={{ width: `${totalProj > 0 ? (s.count / totalProj) * 100 : 0}%`, backgroundColor: s.color }} />
-                              </div>
-                              <span className="text-[9px] font-bold text-slate-600 w-5 text-right">{s.count}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Budget summary */}
-                      <div className="rounded-lg border border-slate-200/60 bg-white p-2.5 space-y-1.5">
-                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Budget</p>
-                        <div className="flex justify-between">
-                          <span className="text-[9px] text-slate-500">Total</span>
-                          <span className="text-[9px] font-black text-slate-800">{(budgetTotal / 1e6).toFixed(2)} MDH</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-[9px] text-slate-500">Ordonnancé</span>
-                          <span className="text-[9px] font-black text-violet-600">{(ordonneTotal / 1e6).toFixed(2)} MDH</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-[9px] text-slate-500">Payé</span>
-                          <span className="text-[9px] font-black text-emerald-600">{(payeTotal / 1e6).toFixed(2)} MDH</span>
-                        </div>
-                        <div className="border-t border-slate-100 pt-1 flex justify-between">
-                          <span className="text-[9px] text-slate-500">Reste à payer</span>
-                          <span className="text-[9px] font-black text-amber-600">{(resteAPayer / 1e6).toFixed(2)} MDH</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Toggle button when panel is closed */}
-        {activeView === "suivi-avancement" && !rightPanelOpen && (
-          <button
-            onClick={() => setRightPanelOpen(true)}
-            className="shrink-0 w-8 bg-white/90 border-l border-slate-200/60 flex items-center justify-center hover:bg-indigo-50 transition-colors"
-            title="Ouvrir les barres latérales"
-          >
-            <PanelRightOpen className="h-4 w-4 text-indigo-500" />
-          </button>
-        )}
       </main>
     </div>
   );

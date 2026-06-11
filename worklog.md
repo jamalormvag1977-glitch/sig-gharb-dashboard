@@ -1,58 +1,70 @@
----
-Task ID: 1
-Agent: Main
-Task: Create weekly tracking workbook (canevas hebdomadaire) with physical indicators
+# Worklog — Province Suivi Views Implementation
 
-Work Log:
-- Loaded project data from dashboard_data.json (72 projects across 3 provinces)
-- Designed physical indicator system: Unité (ml, km, m², m³, U) + Qté Prévue per project
-- Auto-inferred units based on consistance descriptions: 38 ml, 12 km, 19 U, 3 m³
-- Built workbook with 7 sheets: Liste Projets, Guide, S01-S04, Récapitulatif
-- Avancement Physique % auto-calculated from quantities: = Qté Réalisée Cumul / Qté Prévue
-- Cross-sheet cumulative: Qté Cumul = Prev Week Cumul + This Week Realized
-- Financial indicators: Décaissé, Payé, Ordonné, Avancement Financier %
-- Écart Physique-Financier auto-calculated with conditional formatting
-- Protection with password, data validation, section color coding
-- Validated: 0 issues, 0 formula errors, 1992 formulas total
+## 2026-03-05: Added 3 Province-Specific Suivi Avancement Sidebar Views
 
-Stage Summary:
-- Output: /home/z/my-project/download/Canevas_Hebdomadaire_ORMVAG_Gharb.xlsx
-- Key innovation: Physical % now derived from real quantities instead of manual percentage
-- Units distribution: ml (38 projects), km (12), U (19), m³ (3)
+### Changes Made
 
----
-Task ID: 2
-Agent: Main
-Task: Add 3 Lateral Sidebar Progress Bars with Weekly Tracking Analyses and Filters
+#### 1. ViewType & Navigation Updates
+- Added 3 new `ViewType` entries: `"suivi-kenitra"`, `"suivi-sidi-kacem"`, `"suivi-sidi-slimane"`
+- Added 3 new `NAV_ITEMS` with Gauge icon and French labels ("Avancement Kénitra", etc.)
+- Added 3 new `PROVINCE_MAP` entries mapping each suivi view to its province name
+- Added color coding in sidebar for each new view (amber for Kénitra, rose for Sidi Kacem, emerald for Sidi Slimane)
 
-Work Log:
-- Added 5 filter state variables: filterProvince, filterSecteur, filterStatut, filterCommune, filterSemaine
-- Added rightPanelOpen and expandedProvinces state for sidebar toggle
-- Created suiviData useMemo for filtered project computation (province, secteur, statut, commune filters)
-- Created suiviCommunes useMemo for dynamic commune list based on province filter
-- Added getCurrentWeek() helper for week number calculation
-- Added getWeeklyData() helper for deterministic weekly sparkline simulation
-- Added Filter Bar at top of suivi-avancement view with 5 dropdowns (Province, Secteur, Statut, Commune, Semaine)
-- Added active filter badges with individual × dismiss buttons and global reset
-- Added 3 right-side lateral bars (Barres Latérales) for Kénitra, Sidi Kacem, Sidi Slimane
-- Each province sidebar contains:
-  - Color-coded header with collapse/expand toggle
-  - 2 circular gauges (avancement physique & financier)
-  - Sector progress bars with percentage
-  - Weekly tracking analysis (Suivi Hebdomadaire): current week, Δ physique/financier, sparkline, démarrés/terminés
-  - Status breakdown: Terminé/En cours/Non démarré with mini progress bars
-  - Budget summary: Total, Ordonnancé, Payé, Reste à payer
-- Added right panel toggle button in page header (visible only on suivi-avancement view)
-- Added collapsible panel button when sidebar is closed
-- Modified main layout to flex when on suivi-avancement view (left: scrollable content, right: fixed panel)
-- Updated suivi-avancement content to use filtered data (suiviData) instead of raw data
-- Added useEffect to reset filters when leaving suivi-avancement view
-- Added new icon imports: Filter, Calendar, ChevronDown, ChevronUp, BarChart2, TrendingDown, Minus, PanelRightOpen, PanelRightClose
-- Added ProvinceData, SecteurData type imports
+#### 2. State Variable Cleanup
+- Removed `filterProvince`, `filterSemaine`, `rightPanelOpen`, `expandedProvinces` state variables
+- Kept `filterSecteur`, `filterStatut`, `filterCommune` for the new province views
+- Updated filter reset `useEffect` to reset all 3 remaining filters on any view change
 
-Stage Summary:
-- File modified: /home/z/my-project/src/app/page.tsx (2148 → 2623 lines, +475 lines)
-- Key features: 3 collapsible province sidebars, 5 filters with active badges, weekly tracking analysis
-- Build verification: ✓ Compiled successfully, 0 TypeScript errors
-- All filters actually filter the displayed data (gauges, charts, tables, status distribution)
-- Right panel only visible on suivi-avancement view
+#### 3. Memo Updates
+- Updated `suiviCommunes` to remove `filterProvince` dependency (now computes all communes)
+- Updated `suiviData` to remove `filterProvince` and `filterSemaine` filtering conditions and dependencies
+
+#### 4. Layout & Header
+- Fixed `<main>` className — removed conditional flex layout for suivi-avancement
+- Fixed inner `<div>` — removed conditional className
+- Added header title entries for the 3 new views with province-colored Gauge icons
+- Removed right panel toggle button from header
+
+#### 5. Removed Suivi-Avancement Filter Bar
+- Removed the entire filter bar section (province, secteur, statut, commune, semaine filters + active filter badges) from the suivi-avancement view
+
+#### 6. Removed Right Panel
+- Removed the entire right panel (province sidebars with gauges, sector breakdowns, weekly tracking, status breakdown, budget summary)
+- Removed the toggle button for opening/closing the right panel
+
+#### 7. Added `renderProvinceSuivi` Helper Function
+- Comprehensive function that renders a full province-specific suivi view
+- Includes: filter bar (Secteur, Statut, Commune), province header card, 4 gauge rings, budget summary, status distribution, weekly tracking analysis (sparkline bars, delta trends, weekly counts), sector breakdown, commune breakdown, alert projects, detailed project table
+- Uses province color theme throughout
+- Applies `filterSecteur`, `filterStatut`, `filterCommune` filters scoped to the specific province
+
+#### 8. Added 3 Province Suivi Views
+- Added conditional blocks inside the existing `<>...</>` fragment:
+  - `activeView === "suivi-kenitra"` → `renderProvinceSuivi("Kénitra", PROVINCE_COLORS["Kénitra"])`
+  - `activeView === "suivi-sidi-kacem"` → `renderProvinceSuivi("Sidi Kacem", PROVINCE_COLORS["Sidi Kacem"])`
+  - `activeView === "suivi-sidi-slimane"` → `renderProvinceSuivi("Sidi Slimane", PROVINCE_COLORS["Sidi Slimane"])`
+
+#### 9. Import Cleanup
+- Removed `PanelRightOpen`, `PanelRightClose` (no longer used after right panel removal)
+- Removed `BarChart2` (no longer used after right panel removal)
+- Cleaned up blank lines in import section
+
+### Ternary Chain Structure Preserved
+The existing structure remains intact:
+```
+{activeView === "rapport" ? (
+  ...rapport...
+) : activeView === "suivi-avancement" ? (
+  ...suivi-avancement...
+) : (
+  <>
+    ...province views (kenitra, sidi-kacem, sidi-slimane, overview content)...
+    ...new suivi views (suivi-kenitra, suivi-sidi-kacem, suivi-sidi-slimane)...
+  </>
+)}
+```
+
+### Build Verification
+- `npx next build` passes successfully
+- No TypeScript errors
+- No references to removed variables remain
