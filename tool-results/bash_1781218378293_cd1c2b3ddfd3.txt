@@ -1,0 +1,494 @@
+=== Sheet: Liste Projets ===
+Dimensions: B2:K77
+Max row: 77, Max col: 11
+[None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Liste Référentielle des Projets - Indicateurs Physiques', None, None, None, None, None, None, None, None, None]
+[None, 'Identification', None, None, None, None, None, None, None, 'Indicateurs Physiques', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046]
+
+=== Sheet: Guide ===
+Dimensions: B2:F14
+Max row: 14, Max col: 6
+[None, None, None, None, None, None]
+[None, "Guide d'Utilisation du Canevas Hebdomadaire", None, None, None, None]
+[None, None, None, None, None, None]
+[None, 'CODE COULEUR', 'Jaune = Saisie | Vert = Formule auto inter-feuille | Noir = Formule calculée | Bleu = Valeur saisie', None, None, None]
+[None, 'SAISIE HEBDOMADAIRE', 'Dans les feuilles S01-S52, saisissez uniquement les cellules jaunes : Qté Réalisée Semaine, Montants, Avancement Financier %, Observations. Chaque feuille correspond à une semaine ISO de 2026 avec la date pré-remplie.', None, None, None]
+
+=== Sheet: S01 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 1 (29/12 - 04/01) — Décembre 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2025, 12, 29, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, '=L5', '=IFERROR(M5/K5,0)', 0, '=N5-O5', None, None, None, None, 0, '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S02 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 2 (05/01 - 11/01) — Janvier 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 1, 5, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S01'!M5+L5", '=IFERROR(M5/K5,0)', "='S01'!N5", '=N5-O5', None, None, None, None, "='S01'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S03 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 3 (12/01 - 18/01) — Janvier 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 1, 12, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S02'!M5+L5", '=IFERROR(M5/K5,0)', "='S02'!N5", '=N5-O5', None, None, None, None, "='S02'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S04 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 4 (19/01 - 25/01) — Janvier 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 1, 19, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S03'!M5+L5", '=IFERROR(M5/K5,0)', "='S03'!N5", '=N5-O5', None, None, None, None, "='S03'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S05 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 5 (26/01 - 01/02) — Janvier 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 1, 26, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S04'!M5+L5", '=IFERROR(M5/K5,0)', "='S04'!N5", '=N5-O5', None, None, None, None, "='S04'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S06 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 6 (02/02 - 08/02) — Février 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 2, 2, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S05'!M5+L5", '=IFERROR(M5/K5,0)', "='S05'!N5", '=N5-O5', None, None, None, None, "='S05'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S07 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 7 (09/02 - 15/02) — Février 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 2, 9, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S06'!M5+L5", '=IFERROR(M5/K5,0)', "='S06'!N5", '=N5-O5', None, None, None, None, "='S06'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S08 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 8 (16/02 - 22/02) — Février 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 2, 16, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S07'!M5+L5", '=IFERROR(M5/K5,0)', "='S07'!N5", '=N5-O5', None, None, None, None, "='S07'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S09 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 9 (23/02 - 01/03) — Février 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 2, 23, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S08'!M5+L5", '=IFERROR(M5/K5,0)', "='S08'!N5", '=N5-O5', None, None, None, None, "='S08'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S10 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 10 (02/03 - 08/03) — Mars 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 3, 2, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S09'!M5+L5", '=IFERROR(M5/K5,0)', "='S09'!N5", '=N5-O5', None, None, None, None, "='S09'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S11 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 11 (09/03 - 15/03) — Mars 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 3, 9, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S10'!M5+L5", '=IFERROR(M5/K5,0)', "='S10'!N5", '=N5-O5', None, None, None, None, "='S10'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S12 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 12 (16/03 - 22/03) — Mars 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 3, 16, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S11'!M5+L5", '=IFERROR(M5/K5,0)', "='S11'!N5", '=N5-O5', None, None, None, None, "='S11'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S13 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 13 (23/03 - 29/03) — Mars 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 3, 23, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S12'!M5+L5", '=IFERROR(M5/K5,0)', "='S12'!N5", '=N5-O5', None, None, None, None, "='S12'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S14 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 14 (30/03 - 05/04) — Mars 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 3, 30, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S13'!M5+L5", '=IFERROR(M5/K5,0)', "='S13'!N5", '=N5-O5', None, None, None, None, "='S13'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S15 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 15 (06/04 - 12/04) — Avril 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 4, 6, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S14'!M5+L5", '=IFERROR(M5/K5,0)', "='S14'!N5", '=N5-O5', None, None, None, None, "='S14'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S16 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 16 (13/04 - 19/04) — Avril 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 4, 13, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S15'!M5+L5", '=IFERROR(M5/K5,0)', "='S15'!N5", '=N5-O5', None, None, None, None, "='S15'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S17 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 17 (20/04 - 26/04) — Avril 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 4, 20, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S16'!M5+L5", '=IFERROR(M5/K5,0)', "='S16'!N5", '=N5-O5', None, None, None, None, "='S16'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S18 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 18 (27/04 - 03/05) — Avril 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 4, 27, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S17'!M5+L5", '=IFERROR(M5/K5,0)', "='S17'!N5", '=N5-O5', None, None, None, None, "='S17'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S19 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 19 (04/05 - 10/05) — Mai 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 5, 4, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S18'!M5+L5", '=IFERROR(M5/K5,0)', "='S18'!N5", '=N5-O5', None, None, None, None, "='S18'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S20 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 20 (11/05 - 17/05) — Mai 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 5, 11, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S19'!M5+L5", '=IFERROR(M5/K5,0)', "='S19'!N5", '=N5-O5', None, None, None, None, "='S19'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S21 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 21 (18/05 - 24/05) — Mai 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 5, 18, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S20'!M5+L5", '=IFERROR(M5/K5,0)', "='S20'!N5", '=N5-O5', None, None, None, None, "='S20'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S22 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 22 (25/05 - 31/05) — Mai 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 5, 25, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S21'!M5+L5", '=IFERROR(M5/K5,0)', "='S21'!N5", '=N5-O5', None, None, None, None, "='S21'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S23 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 23 (01/06 - 07/06) — Juin 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 6, 1, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S22'!M5+L5", '=IFERROR(M5/K5,0)', "='S22'!N5", '=N5-O5', None, None, None, None, "='S22'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S24 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 24 (08/06 - 14/06) — Juin 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 6, 8, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S23'!M5+L5", '=IFERROR(M5/K5,0)', "='S23'!N5", '=N5-O5', None, None, None, None, "='S23'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S25 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 25 (15/06 - 21/06) — Juin 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 6, 15, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S24'!M5+L5", '=IFERROR(M5/K5,0)', "='S24'!N5", '=N5-O5', None, None, None, None, "='S24'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S26 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 26 (22/06 - 28/06) — Juin 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 6, 22, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S25'!M5+L5", '=IFERROR(M5/K5,0)', "='S25'!N5", '=N5-O5', None, None, None, None, "='S25'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S27 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 27 (29/06 - 05/07) — Juin 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 6, 29, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S26'!M5+L5", '=IFERROR(M5/K5,0)', "='S26'!N5", '=N5-O5', None, None, None, None, "='S26'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S28 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 28 (06/07 - 12/07) — Juillet 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 7, 6, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S27'!M5+L5", '=IFERROR(M5/K5,0)', "='S27'!N5", '=N5-O5', None, None, None, None, "='S27'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S29 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 29 (13/07 - 19/07) — Juillet 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 7, 13, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S28'!M5+L5", '=IFERROR(M5/K5,0)', "='S28'!N5", '=N5-O5', None, None, None, None, "='S28'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S30 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 30 (20/07 - 26/07) — Juillet 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 7, 20, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S29'!M5+L5", '=IFERROR(M5/K5,0)', "='S29'!N5", '=N5-O5', None, None, None, None, "='S29'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S31 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 31 (27/07 - 02/08) — Juillet 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 7, 27, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S30'!M5+L5", '=IFERROR(M5/K5,0)', "='S30'!N5", '=N5-O5', None, None, None, None, "='S30'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S32 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 32 (03/08 - 09/08) — Août 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 8, 3, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S31'!M5+L5", '=IFERROR(M5/K5,0)', "='S31'!N5", '=N5-O5', None, None, None, None, "='S31'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S33 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 33 (10/08 - 16/08) — Août 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 8, 10, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S32'!M5+L5", '=IFERROR(M5/K5,0)', "='S32'!N5", '=N5-O5', None, None, None, None, "='S32'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S34 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 34 (17/08 - 23/08) — Août 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 8, 17, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S33'!M5+L5", '=IFERROR(M5/K5,0)', "='S33'!N5", '=N5-O5', None, None, None, None, "='S33'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S35 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 35 (24/08 - 30/08) — Août 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 8, 24, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S34'!M5+L5", '=IFERROR(M5/K5,0)', "='S34'!N5", '=N5-O5', None, None, None, None, "='S34'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S36 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 36 (31/08 - 06/09) — Août 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 8, 31, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S35'!M5+L5", '=IFERROR(M5/K5,0)', "='S35'!N5", '=N5-O5', None, None, None, None, "='S35'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S37 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 37 (07/09 - 13/09) — Septembre 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 9, 7, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S36'!M5+L5", '=IFERROR(M5/K5,0)', "='S36'!N5", '=N5-O5', None, None, None, None, "='S36'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S38 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 38 (14/09 - 20/09) — Septembre 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 9, 14, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S37'!M5+L5", '=IFERROR(M5/K5,0)', "='S37'!N5", '=N5-O5', None, None, None, None, "='S37'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S39 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 39 (21/09 - 27/09) — Septembre 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 9, 21, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S38'!M5+L5", '=IFERROR(M5/K5,0)', "='S38'!N5", '=N5-O5', None, None, None, None, "='S38'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S40 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 40 (28/09 - 04/10) — Septembre 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 9, 28, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S39'!M5+L5", '=IFERROR(M5/K5,0)', "='S39'!N5", '=N5-O5', None, None, None, None, "='S39'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S41 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 41 (05/10 - 11/10) — Octobre 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 10, 5, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S40'!M5+L5", '=IFERROR(M5/K5,0)', "='S40'!N5", '=N5-O5', None, None, None, None, "='S40'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S42 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 42 (12/10 - 18/10) — Octobre 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 10, 12, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S41'!M5+L5", '=IFERROR(M5/K5,0)', "='S41'!N5", '=N5-O5', None, None, None, None, "='S41'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S43 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 43 (19/10 - 25/10) — Octobre 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 10, 19, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S42'!M5+L5", '=IFERROR(M5/K5,0)', "='S42'!N5", '=N5-O5', None, None, None, None, "='S42'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S44 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 44 (26/10 - 01/11) — Octobre 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 10, 26, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S43'!M5+L5", '=IFERROR(M5/K5,0)', "='S43'!N5", '=N5-O5', None, None, None, None, "='S43'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S45 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 45 (02/11 - 08/11) — Novembre 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 11, 2, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S44'!M5+L5", '=IFERROR(M5/K5,0)', "='S44'!N5", '=N5-O5', None, None, None, None, "='S44'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S46 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 46 (09/11 - 15/11) — Novembre 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 11, 9, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S45'!M5+L5", '=IFERROR(M5/K5,0)', "='S45'!N5", '=N5-O5', None, None, None, None, "='S45'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S47 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 47 (16/11 - 22/11) — Novembre 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 11, 16, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S46'!M5+L5", '=IFERROR(M5/K5,0)', "='S46'!N5", '=N5-O5', None, None, None, None, "='S46'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S48 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 48 (23/11 - 29/11) — Novembre 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 11, 23, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S47'!M5+L5", '=IFERROR(M5/K5,0)', "='S47'!N5", '=N5-O5', None, None, None, None, "='S47'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S49 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 49 (30/11 - 06/12) — Novembre 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 11, 30, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S48'!M5+L5", '=IFERROR(M5/K5,0)', "='S48'!N5", '=N5-O5', None, None, None, None, "='S48'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S50 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 50 (07/12 - 13/12) — Décembre 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 12, 7, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S49'!M5+L5", '=IFERROR(M5/K5,0)', "='S49'!N5", '=N5-O5', None, None, None, None, "='S49'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S51 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 51 (14/12 - 20/12) — Décembre 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 12, 14, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S50'!M5+L5", '=IFERROR(M5/K5,0)', "='S50'!N5", '=N5-O5', None, None, None, None, "='S50'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: S52 ===
+Dimensions: B2:X77
+Max row: 77, Max col: 24
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Suivi Hebdomadaire - Semaine 52 (21/12 - 27/12) — Décembre 2026 - Exécution Physique et Financière', None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Date :', datetime.datetime(2026, 12, 21, 0, 0), None, 'IDENTIFICATION', None, None, None, None, 'INDICATEURS PHYSIQUES', None, None, None, None, None, None, 'INDICATEURS FINANCIERS', None, None, None, None, None, 'SYNTHÈSE', None]
+[None, 'N°', 'Province', 'Commune', 'Rubrique', 'Intitulé Rubrique', 'Projet', 'Consistance', 'Coût Total (DH)', 'Unité', 'Qté Prévue', 'Qté Réalisée Sem.', 'Qté Réalisée Cumul', 'Avancement Physique %', '% Phys. Sem. Préc.', 'Accroissement Phys. %', 'Montant Décaissé (DH)', 'Montant Payé (DH)', 'Montant Ordonné (DH)', 'Avancement Financier %', '% Fin. Sem. Préc.', 'Accroissement Fin. %', 'Écart Phys.-Fin.', 'Observations']
+[None, 1, 'Sidi Kacem', 'KHENICHET', '50-23', "Entretien et réparation du réseau d'assainissement et de drainage", 'Travaux de curage des canaux en terre', "Curage des collecteurs d'assainissement du secteur EST2", 2091568, 'ml', 1046, None, "='S51'!M5+L5", '=IFERROR(M5/K5,0)', "='S51'!N5", '=N5-O5', None, None, None, None, "='S51'!T5", '=T5-U5', '=N5-T5', None]
+
+=== Sheet: Récapitulatif ===
+Dimensions: B2:N99
+Max row: 99, Max col: 14
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, "Récapitulatif Hebdomadaire - Suivi d'Exécution 2026", None, None, None, None, None, None, None, None, None, None, None, None]
+[None, None, None, None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Indicateur', 'Valeur', None, None, None, None, None, None, None, None, None, None, None]
+[None, 'Total Projets', 72, None, None, None, None, None, None, None, None, None, None, None]

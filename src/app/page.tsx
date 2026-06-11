@@ -294,23 +294,23 @@ export default function Home() {
     return Math.ceil((diff / oneDay + start.getDay() + 1) / 7);
   };
 
-  // 2026 weeks and months constants for traceability
+  // 2026 weeks and months constants for traceability (Juin–Décembre 2026)
   const MONTHS_2026 = [
-    { value: "1", label: "Janvier 2026" }, { value: "2", label: "Février 2026" },
-    { value: "3", label: "Mars 2026" }, { value: "4", label: "Avril 2026" },
-    { value: "5", label: "Mai 2026" }, { value: "6", label: "Juin 2026" },
-    { value: "7", label: "Juillet 2026" }, { value: "8", label: "Août 2026" },
-    { value: "9", label: "Septembre 2026" }, { value: "10", label: "Octobre 2026" },
-    { value: "11", label: "Novembre 2026" }, { value: "12", label: "Décembre 2026" },
+    { value: "6", label: "Juin 2026" },
+    { value: "7", label: "Juillet 2026" },
+    { value: "8", label: "Août 2026" },
+    { value: "9", label: "Septembre 2026" },
+    { value: "10", label: "Octobre 2026" },
+    { value: "11", label: "Novembre 2026" },
+    { value: "12", label: "Décembre 2026" },
   ];
 
-  // Generate all 52/53 weeks of 2026 with date ranges
+  // Generate weeks of 2026 from Juin (week 23) to Décembre (week 52/53)
   const WEEKS_2026 = useMemo(() => {
     const weeks: { value: string; label: string; month: number }[] = [];
-    const yearStart = new Date(2026, 0, 1); // Jan 1, 2026 = Thursday
+    const juin1 = new Date(2026, 5, 1); // June 1, 2026
     // ISO week: first week contains the year's first Thursday
     for (let w = 1; w <= 53; w++) {
-      // Calculate the Thursday of week w
       const jan4 = new Date(2026, 0, 4); // Jan 4 is always in week 1
       const jan4Day = jan4.getDay() || 7; // Monday=1..Sunday=7
       const mondayW1 = new Date(jan4);
@@ -319,8 +319,9 @@ export default function Home() {
       mondayOfWeek.setDate(mondayW1.getDate() + (w - 1) * 7);
       const sundayOfWeek = new Date(mondayOfWeek);
       sundayOfWeek.setDate(mondayOfWeek.getDate() + 6);
-      // If sunday is in next year, skip
       if (mondayOfWeek.getFullYear() > 2026) break;
+      // Only include weeks whose Monday is on or after June 1, 2026
+      if (mondayOfWeek < juin1) continue;
       const month = mondayOfWeek.getMonth() + 1; // 1-12
       const fmt = (d: Date) => `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")}`;
       weeks.push({ value: w.toString(), label: `S${w} (${fmt(mondayOfWeek)} - ${fmt(sundayOfWeek)})`, month });
@@ -333,26 +334,33 @@ export default function Home() {
 
   // Simulate progress at a given week of 2026 (deterministic, traceable)
   // Projects progress from their current state back in time linearly
+  // Project starts in Juin 2026 (week 23)
+  const FIRST_WEEK_2026 = 23; // ISO week 23 = June 1, 2026
   const simulateProgressAtWeek = (currentValue: number, targetWeek: number): number => {
     const currentWeekNum = getCurrentWeek();
-    const totalWeeksIn2026 = 52;
     // If target is current or future week, show current value
     if (targetWeek >= currentWeekNum) return currentValue;
-    // Linear progression: assume projects started at ~5% in week 1
-    const startValue = 5;
-    const weeksElapsed = currentWeekNum - 1;
+    // If target is before project start, show starting value
+    if (targetWeek < FIRST_WEEK_2026) return 0;
+    // Linear progression: assume projects started at 0% in week 23
+    const startValue = 0;
+    const weeksElapsed = currentWeekNum - FIRST_WEEK_2026;
     if (weeksElapsed <= 0) return currentValue;
     const weeklyRate = (currentValue - startValue) / weeksElapsed;
     const weeksBeforeTarget = currentWeekNum - targetWeek;
     return Math.max(0, Math.min(100, currentValue - weeklyRate * weeksBeforeTarget));
   };
 
-  // Simulate progress at a given month of 2026
+  // Simulate progress at a given month of 2026 (Juin–Décembre)
+  const FIRST_MONTH_2026 = 6; // Juin
   const simulateProgressAtMonth = (currentValue: number, targetMonth: number): number => {
     const currentMonthNum = new Date().getMonth() + 1;
     if (targetMonth >= currentMonthNum) return currentValue;
-    const startValue = 5;
-    const monthsElapsed = currentMonthNum - 1;
+    // If target is before project start (Juin), show 0
+    if (targetMonth < FIRST_MONTH_2026) return 0;
+    // Linear progression from Juin (0%)
+    const startValue = 0;
+    const monthsElapsed = currentMonthNum - FIRST_MONTH_2026;
     if (monthsElapsed <= 0) return currentValue;
     const monthlyRate = (currentValue - startValue) / monthsElapsed;
     const monthsBeforeTarget = currentMonthNum - targetMonth;
@@ -547,7 +555,8 @@ export default function Home() {
             <div className="flex items-center justify-center gap-1 pt-1">
               <button
                 onClick={() => {
-                  const prev = Math.max(1, displayWeek - 1);
+                  const firstWeek = WEEKS_2026.length > 0 ? parseInt(WEEKS_2026[0].value) : 23;
+                  const prev = Math.max(firstWeek, displayWeek - 1);
                   setFilterSemaine(prev.toString());
                 }}
                 className="p-1.5 rounded-lg hover:bg-slate-200/60 transition-colors text-slate-500 hover:text-slate-700"
@@ -558,7 +567,8 @@ export default function Home() {
               <span className="text-[10px] font-bold text-slate-500 px-2">S{displayWeek}</span>
               <button
                 onClick={() => {
-                  const next = Math.min(WEEKS_2026.length, displayWeek + 1);
+                  const lastWeek = WEEKS_2026.length > 0 ? parseInt(WEEKS_2026[WEEKS_2026.length - 1].value) : 52;
+                  const next = Math.min(lastWeek, displayWeek + 1);
                   setFilterSemaine(next.toString());
                 }}
                 className="p-1.5 rounded-lg hover:bg-slate-200/60 transition-colors text-slate-500 hover:text-slate-700"
@@ -602,7 +612,7 @@ export default function Home() {
                 }}
                 className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
               >
-                <option value="all">Tous mois 2026</option>
+                <option value="all">Tous mois (Juin–Déc)</option>
                 {MONTHS_2026.map(m => (
                   <option key={m.value} value={m.value}>{m.label}</option>
                 ))}
@@ -616,7 +626,7 @@ export default function Home() {
                 onChange={e => setFilterSemaine(e.target.value)}
                 className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors max-w-[220px]"
               >
-                <option value="all">Toutes semaines 2026</option>
+                <option value="all">Toutes semaines (Juin–Déc)</option>
                 {filteredWeeks.map(w => (
                   <option key={w.value} value={w.value}>{w.label}</option>
                 ))}
