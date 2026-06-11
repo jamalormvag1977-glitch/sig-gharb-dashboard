@@ -1206,6 +1206,12 @@ export default function Home() {
                 </CardContent>
               </Card>
             </div>
+          ) : activeView === "suivi-kenitra" || activeView === "suivi-sidi-kacem" || activeView === "suivi-sidi-slimane" ? (
+            <>
+              {activeView === "suivi-kenitra" && renderProvinceSuivi("Kénitra", PROVINCE_COLORS["Kénitra"])}
+              {activeView === "suivi-sidi-kacem" && renderProvinceSuivi("Sidi Kacem", PROVINCE_COLORS["Sidi Kacem"])}
+              {activeView === "suivi-sidi-slimane" && renderProvinceSuivi("Sidi Slimane", PROVINCE_COLORS["Sidi Slimane"])}
+            </>
           ) : activeView === "suivi-avancement" ? (
             <div className="space-y-6">
               {/* Suivi Header */}
@@ -2492,11 +2498,6 @@ export default function Home() {
               </div>
             </div>
           )}
-
-          {/* Province-specific suivi views */}
-          {activeView === "suivi-kenitra" && renderProvinceSuivi("Kénitra", PROVINCE_COLORS["Kénitra"])}
-          {activeView === "suivi-sidi-kacem" && renderProvinceSuivi("Sidi Kacem", PROVINCE_COLORS["Sidi Kacem"])}
-          {activeView === "suivi-sidi-slimane" && renderProvinceSuivi("Sidi Slimane", PROVINCE_COLORS["Sidi Slimane"])}
 
           </>
           )}
