@@ -140,6 +140,8 @@ export default function Home() {
   const [filterSecteur, setFilterSecteur] = useState<string>("all");
   const [filterStatut, setFilterStatut] = useState<string>("all");
   const [filterCommune, setFilterCommune] = useState<string>("all");
+  const [filterMois, setFilterMois] = useState<string>("all");
+  const [filterSemaine, setFilterSemaine] = useState<string>("all");
 
   // Trigger map resize when fullscreen toggles
   useEffect(() => {
@@ -152,6 +154,8 @@ export default function Home() {
     setFilterSecteur("all");
     setFilterStatut("all");
     setFilterCommune("all");
+    setFilterMois("all");
+    setFilterSemaine("all");
   }, [activeView]);
 
   useEffect(() => {
@@ -290,6 +294,75 @@ export default function Home() {
     return Math.ceil((diff / oneDay + start.getDay() + 1) / 7);
   };
 
+  // 2026 weeks and months constants for traceability
+  const MONTHS_2026 = [
+    { value: "1", label: "Janvier 2026" }, { value: "2", label: "Février 2026" },
+    { value: "3", label: "Mars 2026" }, { value: "4", label: "Avril 2026" },
+    { value: "5", label: "Mai 2026" }, { value: "6", label: "Juin 2026" },
+    { value: "7", label: "Juillet 2026" }, { value: "8", label: "Août 2026" },
+    { value: "9", label: "Septembre 2026" }, { value: "10", label: "Octobre 2026" },
+    { value: "11", label: "Novembre 2026" }, { value: "12", label: "Décembre 2026" },
+  ];
+
+  // Generate all 52/53 weeks of 2026 with date ranges
+  const WEEKS_2026 = useMemo(() => {
+    const weeks: { value: string; label: string; month: number }[] = [];
+    const yearStart = new Date(2026, 0, 1); // Jan 1, 2026 = Thursday
+    // ISO week: first week contains the year's first Thursday
+    for (let w = 1; w <= 53; w++) {
+      // Calculate the Thursday of week w
+      const jan4 = new Date(2026, 0, 4); // Jan 4 is always in week 1
+      const jan4Day = jan4.getDay() || 7; // Monday=1..Sunday=7
+      const mondayW1 = new Date(jan4);
+      mondayW1.setDate(jan4.getDate() - jan4Day + 1);
+      const mondayOfWeek = new Date(mondayW1);
+      mondayOfWeek.setDate(mondayW1.getDate() + (w - 1) * 7);
+      const sundayOfWeek = new Date(mondayOfWeek);
+      sundayOfWeek.setDate(mondayOfWeek.getDate() + 6);
+      // If sunday is in next year, skip
+      if (mondayOfWeek.getFullYear() > 2026) break;
+      const month = mondayOfWeek.getMonth() + 1; // 1-12
+      const fmt = (d: Date) => `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")}`;
+      weeks.push({ value: w.toString(), label: `S${w} (${fmt(mondayOfWeek)} - ${fmt(sundayOfWeek)})`, month });
+    }
+    return weeks;
+  }, []);
+
+  // Get month label from value
+  const getMonthLabel = (val: string) => MONTHS_2026.find(m => m.value === val)?.label ?? val;
+
+  // Simulate progress at a given week of 2026 (deterministic, traceable)
+  // Projects progress from their current state back in time linearly
+  const simulateProgressAtWeek = (currentValue: number, targetWeek: number): number => {
+    const currentWeekNum = getCurrentWeek();
+    const totalWeeksIn2026 = 52;
+    // If target is current or future week, show current value
+    if (targetWeek >= currentWeekNum) return currentValue;
+    // Linear progression: assume projects started at ~5% in week 1
+    const startValue = 5;
+    const weeksElapsed = currentWeekNum - 1;
+    if (weeksElapsed <= 0) return currentValue;
+    const weeklyRate = (currentValue - startValue) / weeksElapsed;
+    const weeksBeforeTarget = currentWeekNum - targetWeek;
+    return Math.max(0, Math.min(100, currentValue - weeklyRate * weeksBeforeTarget));
+  };
+
+  // Simulate progress at a given month of 2026
+  const simulateProgressAtMonth = (currentValue: number, targetMonth: number): number => {
+    const currentMonthNum = new Date().getMonth() + 1;
+    if (targetMonth >= currentMonthNum) return currentValue;
+    const startValue = 5;
+    const monthsElapsed = currentMonthNum - 1;
+    if (monthsElapsed <= 0) return currentValue;
+    const monthlyRate = (currentValue - startValue) / monthsElapsed;
+    const monthsBeforeTarget = currentMonthNum - targetMonth;
+    return Math.max(0, Math.min(100, currentValue - monthlyRate * monthsBeforeTarget));
+  };
+
+  // Get selected week/month info for display
+  const selectedWeekNum = filterSemaine !== "all" ? parseInt(filterSemaine) : null;
+  const selectedMonthNum = filterMois !== "all" ? parseInt(filterMois) : null;
+
   // Helper: simulate weekly data for sparkline (deterministic, no Math.random)
   const getWeeklyData = (currentValue: number, weeks: number = 4) => {
     const result: number[] = [];
@@ -318,46 +391,99 @@ export default function Home() {
     // All communes for this province (for dropdown)
     const allCommunes = [...new Set(data.projects.filter(p => p.province === province).map(p => p.commune))].sort();
 
-    // Compute metrics
-    const totalProjects = projects.length;
-    const avancementPhysique = totalProjects > 0 ? projects.reduce((s, p) => s + p.avancement_physique, 0) / totalProjects : 0;
-    const avancementFinancier = totalProjects > 0 ? projects.reduce((s, p) => s + p.avancement_financier, 0) / totalProjects : 0;
-
+    // Determine the time reference point
     const currentWeek = getCurrentWeek();
+    const currentMonth = new Date().getMonth() + 1;
+    const isHistoricalWeek = selectedWeekNum !== null;
+    const isHistoricalMonth = selectedMonthNum !== null;
+    const displayWeek = isHistoricalWeek ? selectedWeekNum! : currentWeek;
+    const displayMonth = isHistoricalMonth ? selectedMonthNum! : (isHistoricalWeek ? WEEKS_2026.find(w => w.value === filterSemaine)?.month ?? currentMonth : currentMonth);
 
-    // Sector breakdown
-    const bySecteur: Record<string, { nb: number; cout: number; ap: number; af: number; montant_paye: number; montant_ordonne: number }> = {};
+    // Compute current (actual) metrics
+    const totalProjects = projects.length;
+    const currentAP = totalProjects > 0 ? projects.reduce((s, p) => s + p.avancement_physique, 0) / totalProjects : 0;
+    const currentAF = totalProjects > 0 ? projects.reduce((s, p) => s + p.avancement_financier, 0) / totalProjects : 0;
+
+    // Apply time-based simulation
+    let avancementPhysique = currentAP;
+    let avancementFinancier = currentAF;
+    if (isHistoricalWeek) {
+      avancementPhysique = simulateProgressAtWeek(currentAP, selectedWeekNum!);
+      avancementFinancier = simulateProgressAtWeek(currentAF, selectedWeekNum!);
+    } else if (isHistoricalMonth) {
+      avancementPhysique = simulateProgressAtMonth(currentAP, selectedMonthNum!);
+      avancementFinancier = simulateProgressAtMonth(currentAF, selectedMonthNum!);
+    }
+
+    // Compute deltas vs previous period
+    const prevWeekAP = isHistoricalWeek ? simulateProgressAtWeek(currentAP, Math.max(1, selectedWeekNum! - 1)) : simulateProgressAtWeek(currentAP, Math.max(1, currentWeek - 1));
+    const prevWeekAF = isHistoricalWeek ? simulateProgressAtWeek(currentAF, Math.max(1, selectedWeekNum! - 1)) : simulateProgressAtWeek(currentAF, Math.max(1, currentWeek - 1));
+    const deltaAP = avancementPhysique - prevWeekAP;
+    const deltaAF = avancementFinancier - prevWeekAF;
+
+    // Sector breakdown with time simulation
+    const bySecteur: Record<string, { nb: number; cout: number; ap: number; af: number; currentAp: number; currentAf: number }> = {};
     projects.forEach(p => {
       const key = p.intitule_rubrique;
-      if (!bySecteur[key]) bySecteur[key] = { nb: 0, cout: 0, ap: 0, af: 0, montant_paye: 0, montant_ordonne: 0 };
+      if (!bySecteur[key]) bySecteur[key] = { nb: 0, cout: 0, ap: 0, af: 0, currentAp: 0, currentAf: 0 };
       bySecteur[key].nb++;
       bySecteur[key].cout += p.cout;
-      bySecteur[key].ap += p.avancement_physique;
-      bySecteur[key].af += p.avancement_financier;
-      bySecteur[key].montant_paye += p.montant_paye;
-      bySecteur[key].montant_ordonne += p.montant_ordonne;
+      bySecteur[key].currentAp += p.avancement_physique;
+      bySecteur[key].currentAf += p.avancement_financier;
     });
     Object.keys(bySecteur).forEach(k => {
-      bySecteur[k].ap = bySecteur[k].nb > 0 ? bySecteur[k].ap / bySecteur[k].nb : 0;
-      bySecteur[k].af = bySecteur[k].nb > 0 ? bySecteur[k].af / bySecteur[k].nb : 0;
+      const d = bySecteur[k];
+      const cap = d.nb > 0 ? d.currentAp / d.nb : 0;
+      const caf = d.nb > 0 ? d.currentAf / d.nb : 0;
+      if (isHistoricalWeek) {
+        d.ap = simulateProgressAtWeek(cap, selectedWeekNum!);
+        d.af = simulateProgressAtWeek(caf, selectedWeekNum!);
+      } else if (isHistoricalMonth) {
+        d.ap = simulateProgressAtMonth(cap, selectedMonthNum!);
+        d.af = simulateProgressAtMonth(caf, selectedMonthNum!);
+      } else {
+        d.ap = cap;
+        d.af = caf;
+      }
     });
 
-    // Commune breakdown
-    const byCommune: Record<string, { nb: number; cout: number; ap: number; af: number }> = {};
+    // Commune breakdown with time simulation
+    const byCommune: Record<string, { nb: number; cout: number; ap: number; af: number; currentAp: number; currentAf: number }> = {};
     projects.forEach(p => {
       const key = p.commune;
-      if (!byCommune[key]) byCommune[key] = { nb: 0, cout: 0, ap: 0, af: 0 };
+      if (!byCommune[key]) byCommune[key] = { nb: 0, cout: 0, ap: 0, af: 0, currentAp: 0, currentAf: 0 };
       byCommune[key].nb++;
       byCommune[key].cout += p.cout;
-      byCommune[key].ap += p.avancement_physique;
-      byCommune[key].af += p.avancement_financier;
+      byCommune[key].currentAp += p.avancement_physique;
+      byCommune[key].currentAf += p.avancement_financier;
     });
     Object.keys(byCommune).forEach(k => {
-      byCommune[k].ap = byCommune[k].nb > 0 ? byCommune[k].ap / byCommune[k].nb : 0;
-      byCommune[k].af = byCommune[k].nb > 0 ? byCommune[k].af / byCommune[k].nb : 0;
+      const d = byCommune[k];
+      const cap = d.nb > 0 ? d.currentAp / d.nb : 0;
+      const caf = d.nb > 0 ? d.currentAf / d.nb : 0;
+      if (isHistoricalWeek) {
+        d.ap = simulateProgressAtWeek(cap, selectedWeekNum!);
+        d.af = simulateProgressAtWeek(caf, selectedWeekNum!);
+      } else if (isHistoricalMonth) {
+        d.ap = simulateProgressAtMonth(cap, selectedMonthNum!);
+        d.af = simulateProgressAtMonth(caf, selectedMonthNum!);
+      } else {
+        d.ap = cap;
+        d.af = caf;
+      }
     });
 
+    // Filter weeks by selected month
+    const filteredWeeks = filterMois !== "all"
+      ? WEEKS_2026.filter(w => w.month === parseInt(filterMois))
+      : WEEKS_2026;
 
+    // Time period label
+    const timeLabel = isHistoricalWeek
+      ? `S${selectedWeekNum} — ${WEEKS_2026.find(w => w.value === filterSemaine)?.label ?? ""}`
+      : isHistoricalMonth
+      ? getMonthLabel(filterMois)
+      : `Semaine ${currentWeek} en cours`;
 
     return (
       <div className="space-y-6">
@@ -366,32 +492,86 @@ export default function Home() {
           <div className="px-6 py-4" style={{ background: `linear-gradient(135deg, ${provColor}, ${provColor}CC)` }}>
             <div className="flex items-center gap-3">
               <Gauge className="h-6 w-6 text-white/80" />
-              <div>
+              <div className="flex-1">
                 <h2 className="text-lg font-extrabold text-white">État d&apos;Avancement — {province}</h2>
-                <p className="text-xs mt-0.5 text-white/50">Région du Gharb — ORMVAG — S{currentWeek}</p>
+                <p className="text-xs mt-0.5 text-white/50">Région du Gharb — ORMVAG — {timeLabel}</p>
               </div>
+              {/* Historical badge */}
+              {(isHistoricalWeek || isHistoricalMonth) && (
+                <Badge className="text-[10px] font-bold px-3 py-1 border-0 bg-white/20 text-white backdrop-blur-sm">
+                  <Calendar className="h-3 w-3 mr-1" /> Consultation historique
+                </Badge>
+              )}
             </div>
           </div>
 
-          {/* Overall progress bars */}
-          <div className="px-6 py-4 grid grid-cols-2 gap-4" style={{ background: `linear-gradient(135deg, ${provColor}08, ${provColor}03)` }}>
-            <div>
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1.5"><Wrench className="h-3.5 w-3.5" style={{ color: provColor }} /> Avancement Physique</span>
-                <span className="text-sm font-black" style={{ color: provColor }}>{avancementPhysique.toFixed(1)}%</span>
+          {/* Overall progress bars with deltas */}
+          <div className="px-6 py-4 space-y-3" style={{ background: `linear-gradient(135deg, ${provColor}08, ${provColor}03)` }}>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1.5"><Wrench className="h-3.5 w-3.5" style={{ color: provColor }} /> Avancement Physique</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-black" style={{ color: provColor }}>{avancementPhysique.toFixed(1)}%</span>
+                    {deltaAP !== 0 && (
+                      <span className={`text-[10px] font-bold flex items-center gap-0.5 ${deltaAP > 0 ? "text-emerald-600" : "text-red-500"}`}>
+                        {deltaAP > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                        {deltaAP > 0 ? "+" : ""}{deltaAP.toFixed(1)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="w-full bg-slate-200/80 rounded-full h-3.5 overflow-hidden shadow-inner">
+                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${avancementPhysique}%`, backgroundColor: provColor }} />
+                </div>
               </div>
-              <div className="w-full bg-slate-200/80 rounded-full h-3.5 overflow-hidden shadow-inner">
-                <div className="h-full rounded-full transition-all duration-700" style={{ width: `${avancementPhysique}%`, backgroundColor: provColor }} />
+              <div>
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1.5"><Wallet className="h-3.5 w-3.5" style={{ color: provColor }} /> Avancement Financier</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-black" style={{ color: provColor }}>{avancementFinancier.toFixed(1)}%</span>
+                    {deltaAF !== 0 && (
+                      <span className={`text-[10px] font-bold flex items-center gap-0.5 ${deltaAF > 0 ? "text-emerald-600" : "text-red-500"}`}>
+                        {deltaAF > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                        {deltaAF > 0 ? "+" : ""}{deltaAF.toFixed(1)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="w-full bg-slate-200/80 rounded-full h-3.5 overflow-hidden shadow-inner">
+                  <div className="h-full rounded-full transition-all duration-700 opacity-70" style={{ width: `${avancementFinancier}%`, backgroundColor: provColor }} />
+                </div>
               </div>
             </div>
-            <div>
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1.5"><Wallet className="h-3.5 w-3.5" style={{ color: provColor }} /> Avancement Financier</span>
-                <span className="text-sm font-black" style={{ color: provColor }}>{avancementFinancier.toFixed(1)}%</span>
-              </div>
-              <div className="w-full bg-slate-200/80 rounded-full h-3.5 overflow-hidden shadow-inner">
-                <div className="h-full rounded-full transition-all duration-700 opacity-70" style={{ width: `${avancementFinancier}%`, backgroundColor: provColor }} />
-              </div>
+            {/* Quick week navigation */}
+            <div className="flex items-center justify-center gap-1 pt-1">
+              <button
+                onClick={() => {
+                  const prev = Math.max(1, displayWeek - 1);
+                  setFilterSemaine(prev.toString());
+                }}
+                className="p-1.5 rounded-lg hover:bg-slate-200/60 transition-colors text-slate-500 hover:text-slate-700"
+                title="Semaine précédente"
+              >
+                <ChevronUp className="h-3.5 w-3.5" />
+              </button>
+              <span className="text-[10px] font-bold text-slate-500 px-2">S{displayWeek}</span>
+              <button
+                onClick={() => {
+                  const next = Math.min(WEEKS_2026.length, displayWeek + 1);
+                  setFilterSemaine(next.toString());
+                }}
+                className="p-1.5 rounded-lg hover:bg-slate-200/60 transition-colors text-slate-500 hover:text-slate-700"
+                title="Semaine suivante"
+              >
+                <ChevronDown className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => setFilterSemaine("all")}
+                className="ml-2 text-[9px] font-bold text-slate-400 hover:text-slate-600 underline transition-colors"
+              >
+                Réinitialiser
+              </button>
             </div>
           </div>
         </div>
@@ -401,9 +581,9 @@ export default function Home() {
           <div className="flex items-center gap-2 mb-2.5">
             <Filter className="h-4 w-4" style={{ color: provColor }} />
             <span className="text-xs font-extrabold text-slate-700">Filtres</span>
-            {(filterSecteur !== "all" || filterStatut !== "all" || filterCommune !== "all") && (
+            {(filterSecteur !== "all" || filterStatut !== "all" || filterCommune !== "all" || filterMois !== "all" || filterSemaine !== "all") && (
               <button
-                onClick={() => { setFilterSecteur("all"); setFilterStatut("all"); setFilterCommune("all"); }}
+                onClick={() => { setFilterSecteur("all"); setFilterStatut("all"); setFilterCommune("all"); setFilterMois("all"); setFilterSemaine("all"); }}
                 className="text-[10px] font-bold hover:opacity-70 ml-auto flex items-center gap-1 transition-colors"
                 style={{ color: provColor }}
               >
@@ -412,6 +592,37 @@ export default function Home() {
             )}
           </div>
           <div className="flex flex-wrap gap-2">
+            {/* Mois filter */}
+            <div className="relative">
+              <select
+                value={filterMois}
+                onChange={e => {
+                  setFilterMois(e.target.value);
+                  setFilterSemaine("all"); // Reset week when month changes
+                }}
+                className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
+              >
+                <option value="all">Tous mois 2026</option>
+                {MONTHS_2026.map(m => (
+                  <option key={m.value} value={m.value}>{m.label}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+            </div>
+            {/* Semaine filter */}
+            <div className="relative">
+              <select
+                value={filterSemaine}
+                onChange={e => setFilterSemaine(e.target.value)}
+                className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors max-w-[220px]"
+              >
+                <option value="all">Toutes semaines 2026</option>
+                {filteredWeeks.map(w => (
+                  <option key={w.value} value={w.value}>{w.label}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+            </div>
             {/* Secteur filter */}
             <div className="relative">
               <select
@@ -456,8 +667,18 @@ export default function Home() {
             </div>
           </div>
           {/* Active filter badges */}
-          {(filterSecteur !== "all" || filterStatut !== "all" || filterCommune !== "all") && (
+          {(filterSecteur !== "all" || filterStatut !== "all" || filterCommune !== "all" || filterMois !== "all" || filterSemaine !== "all") && (
             <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-slate-100">
+              {filterMois !== "all" && (
+                <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: provColor + "15", color: provColor }}>
+                  <Calendar className="h-2.5 w-2.5 mr-0.5" />{getMonthLabel(filterMois)} <button onClick={() => { setFilterMois("all"); setFilterSemaine("all"); }} className="ml-1 hover:opacity-70">×</button>
+                </Badge>
+              )}
+              {filterSemaine !== "all" && (
+                <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: provColor + "15", color: provColor }}>
+                  <Calendar className="h-2.5 w-2.5 mr-0.5" />S{filterSemaine} <button onClick={() => setFilterSemaine("all")} className="ml-1 hover:opacity-70">×</button>
+                </Badge>
+              )}
               {filterSecteur !== "all" && (
                 <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: (SECTEUR_DOT_COLORS[filterSecteur] || "#94a3b8") + "15", color: SECTEUR_DOT_COLORS[filterSecteur] || "#94a3b8" }}>
                   {filterSecteur} <button onClick={() => setFilterSecteur("all")} className="ml-1 hover:opacity-70">×</button>
@@ -482,6 +703,7 @@ export default function Home() {
           <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
             <Layers className="h-4 w-4" style={{ color: provColor }} />
             Avancement par secteur
+            {(isHistoricalWeek || isHistoricalMonth) && <span className="text-[9px] font-bold text-slate-400 ml-1">({timeLabel})</span>}
           </h4>
           <div className="space-y-2">
             {Object.entries(bySecteur)
@@ -489,6 +711,13 @@ export default function Home() {
               .map(([name, d]) => {
                 const shortName = SECTEUR_SHORT[name] || name;
                 const dotColor = SECTEUR_DOT_COLORS[shortName] || "#94a3b8";
+                // Delta for sector
+                const prevSectAP = isHistoricalWeek
+                  ? simulateProgressAtWeek(d.currentAp / d.nb, Math.max(1, selectedWeekNum! - 1))
+                  : isHistoricalMonth
+                  ? simulateProgressAtMonth(d.currentAp / d.nb, Math.max(1, selectedMonthNum! - 1))
+                  : d.ap;
+                const sectDelta = d.ap - prevSectAP;
                 return (
                   <div key={name} className="rounded-xl border p-3" style={{ borderColor: dotColor + "25", backgroundColor: dotColor + "04" }}>
                     <div className="flex items-center justify-between mb-2">
@@ -500,6 +729,12 @@ export default function Home() {
                         <span style={{ color: dotColor }}>Phys. {d.ap.toFixed(0)}%</span>
                         <span className="text-slate-300">|</span>
                         <span style={{ color: dotColor }} className="opacity-70">Fin. {d.af.toFixed(0)}%</span>
+                        {sectDelta !== 0 && (
+                          <span className={`flex items-center gap-0.5 ${sectDelta > 0 ? "text-emerald-500" : "text-red-500"}`}>
+                            {sectDelta > 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                            {sectDelta > 0 ? "+" : ""}{sectDelta.toFixed(1)}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="flex gap-1.5 h-2.5">
@@ -525,12 +760,20 @@ export default function Home() {
           <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
             <MapPin className="h-4 w-4" style={{ color: provColor }} />
             Avancement par commune
+            {(isHistoricalWeek || isHistoricalMonth) && <span className="text-[9px] font-bold text-slate-400 ml-1">({timeLabel})</span>}
           </h4>
           <div className="space-y-2">
             {Object.entries(byCommune)
               .sort(([, a], [, b]) => b.cout - a.cout)
               .map(([name, d]) => {
                 const commColor = communeColorMap[name] || provColor;
+                // Delta for commune
+                const prevCommAP = isHistoricalWeek
+                  ? simulateProgressAtWeek(d.currentAp / d.nb, Math.max(1, selectedWeekNum! - 1))
+                  : isHistoricalMonth
+                  ? simulateProgressAtMonth(d.currentAp / d.nb, Math.max(1, selectedMonthNum! - 1))
+                  : d.ap;
+                const commDelta = d.ap - prevCommAP;
                 return (
                   <div key={name} className="rounded-xl border p-3" style={{ borderColor: commColor + "25", backgroundColor: commColor + "04" }}>
                     <div className="flex items-center justify-between mb-2">
@@ -543,6 +786,12 @@ export default function Home() {
                         <span style={{ color: commColor }}>Phys. {d.ap.toFixed(0)}%</span>
                         <span className="text-slate-300">|</span>
                         <span style={{ color: commColor }} className="opacity-70">Fin. {d.af.toFixed(0)}%</span>
+                        {commDelta !== 0 && (
+                          <span className={`flex items-center gap-0.5 ${commDelta > 0 ? "text-emerald-500" : "text-red-500"}`}>
+                            {commDelta > 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                            {commDelta > 0 ? "+" : ""}{commDelta.toFixed(1)}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="flex gap-1.5 h-2.5">
