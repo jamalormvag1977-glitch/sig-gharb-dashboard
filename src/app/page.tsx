@@ -17,7 +17,7 @@ import {
   ProvinceBarChart,
 } from "@/components/dashboard/Charts";
 import { PROVINCE_COLORS, SECTEUR_SHORT } from "@/data/types";
-import type { DashboardData, CommuneSummary, Project } from "@/data/types";
+import type { DashboardData, CommuneSummary, Project, ProvinceData, SecteurData } from "@/data/types";
 
 import {
   LayoutDashboard,
@@ -54,6 +54,15 @@ import {
   Upload,
   CheckCircle,
   XCircle,
+  Filter,
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  BarChart2,
+  TrendingDown,
+  Minus,
+  PanelRightOpen,
+  PanelRightClose,
 } from "lucide-react";
 
 const MapComponent = dynamic(
@@ -124,11 +133,31 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const communeRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
+  // Suivi-avancement filters & right panel state
+  const [filterProvince, setFilterProvince] = useState<string>("all");
+  const [filterSecteur, setFilterSecteur] = useState<string>("all");
+  const [filterStatut, setFilterStatut] = useState<string>("all");
+  const [filterCommune, setFilterCommune] = useState<string>("all");
+  const [filterSemaine, setFilterSemaine] = useState<string>("actuelle");
+  const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  const [expandedProvinces, setExpandedProvinces] = useState<Record<string, boolean>>({ "Kénitra": true, "Sidi Kacem": true, "Sidi Slimane": true });
+
   // Trigger map resize when fullscreen toggles
   useEffect(() => {
     const t = setTimeout(() => window.dispatchEvent(new Event("resize")), 350);
     return () => clearTimeout(t);
   }, [mapFullscreen]);
+
+  // Reset suivi-avancement filters when leaving the view
+  useEffect(() => {
+    if (activeView !== "suivi-avancement") {
+      setFilterProvince("all");
+      setFilterSecteur("all");
+      setFilterStatut("all");
+      setFilterCommune("all");
+      setFilterSemaine("actuelle");
+    }
+  }, [activeView]);
 
   useEffect(() => {
     fetch("/api/dashboard")
@@ -196,6 +225,93 @@ export default function Home() {
     });
     return map;
   }, [projectsByCommune]);
+
+  // Suivi-avancement: computed filtered data
+  const suiviCommunes = useMemo(() => {
+    if (!data) return [] as string[];
+    let projects = data.projects;
+    if (filterProvince !== "all") projects = projects.filter(p => p.province === filterProvince);
+    const communes = [...new Set(projects.map(p => p.commune))].sort();
+    return communes;
+  }, [data, filterProvince]);
+
+  const suiviData = useMemo(() => {
+    if (!data) return null;
+    let projects = data.projects;
+
+    if (filterProvince !== "all") projects = projects.filter(p => p.province === filterProvince);
+    if (filterSecteur !== "all") projects = projects.filter(p => (SECTEUR_SHORT[p.intitule_rubrique] || p.intitule_rubrique) === filterSecteur);
+    if (filterStatut !== "all") projects = projects.filter(p => p.statut === filterStatut);
+    if (filterCommune !== "all") projects = projects.filter(p => p.commune === filterCommune);
+
+    const totalCost = projects.reduce((s, p) => s + p.cout, 0);
+    const totalProjects = projects.length;
+    const totalPaye = projects.reduce((s, p) => s + p.montant_paye, 0);
+    const totalOrdonne = projects.reduce((s, p) => s + p.montant_ordonne, 0);
+    const avancementPhysiqueGlobal = projects.length > 0 ? projects.reduce((s, p) => s + p.avancement_physique, 0) / projects.length : 0;
+    const avancementFinancierGlobal = projects.length > 0 ? projects.reduce((s, p) => s + p.avancement_financier, 0) / projects.length : 0;
+
+    const byProvince: Record<string, ProvinceData> = {};
+    projects.forEach(p => {
+      if (!byProvince[p.province]) {
+        byProvince[p.province] = { nb_projets: 0, cout_total: 0, communes: 0, avancement_physique_moyen: 0, avancement_financier_moyen: 0, montant_paye_total: 0, montant_ordonne_total: 0 };
+      }
+      byProvince[p.province].nb_projets++;
+      byProvince[p.province].cout_total += p.cout;
+      byProvince[p.province].montant_paye_total += p.montant_paye;
+      byProvince[p.province].montant_ordonne_total += p.montant_ordonne;
+    });
+    Object.keys(byProvince).forEach(prov => {
+      const provProjects = projects.filter(p => p.province === prov);
+      byProvince[prov].communes = new Set(provProjects.map(p => p.commune)).size;
+      byProvince[prov].avancement_physique_moyen = provProjects.length > 0 ? provProjects.reduce((s, p) => s + p.avancement_physique, 0) / provProjects.length : 0;
+      byProvince[prov].avancement_financier_moyen = provProjects.length > 0 ? provProjects.reduce((s, p) => s + p.avancement_financier, 0) / provProjects.length : 0;
+    });
+
+    const bySecteur: Record<string, SecteurData> = {};
+    projects.forEach(p => {
+      const key = p.intitule_rubrique;
+      if (!bySecteur[key]) {
+        bySecteur[key] = { nb_projets: 0, cout_total: 0, communes: 0, avancement_physique_moyen: 0, avancement_financier_moyen: 0, montant_paye_total: 0, montant_ordonne_total: 0 };
+      }
+      bySecteur[key].nb_projets++;
+      bySecteur[key].cout_total += p.cout;
+      bySecteur[key].montant_paye_total += p.montant_paye;
+      bySecteur[key].montant_ordonne_total += p.montant_ordonne;
+    });
+    Object.keys(bySecteur).forEach(sec => {
+      const secProjects = projects.filter(p => p.intitule_rubrique === sec);
+      bySecteur[sec].communes = new Set(secProjects.map(p => p.commune)).size;
+      bySecteur[sec].avancement_physique_moyen = secProjects.length > 0 ? secProjects.reduce((s, p) => s + p.avancement_physique, 0) / secProjects.length : 0;
+      bySecteur[sec].avancement_financier_moyen = secProjects.length > 0 ? secProjects.reduce((s, p) => s + p.avancement_financier, 0) / secProjects.length : 0;
+    });
+
+    return { projects, byProvince, bySecteur, totalCost, totalProjects, totalPaye, totalOrdonne, avancementPhysiqueGlobal, avancementFinancierGlobal };
+  }, [data, filterProvince, filterSecteur, filterStatut, filterCommune, filterSemaine]);
+
+  // Helper: get current week number
+  const getCurrentWeek = () => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 1);
+    const diff = now.getTime() - start.getTime();
+    const oneDay = 86400000;
+    return Math.ceil((diff / oneDay + start.getDay() + 1) / 7);
+  };
+
+  // Helper: simulate weekly data for sparkline (deterministic, no Math.random)
+  const getWeeklyData = (currentValue: number, weeks: number = 4) => {
+    const result: number[] = [];
+    for (let i = weeks - 1; i >= 0; i--) {
+      if (i === 0) {
+        result.push(currentValue);
+      } else {
+        // Deterministic: use a fixed step based on index
+        const step = 3 + (i * 1.5);
+        result.push(Math.max(0, currentValue - step * i));
+      }
+    }
+    return result;
+  };
 
   const handleCommuneClick = useCallback((commune: string) => {
     setSelectedCommune(commune);
@@ -329,7 +445,8 @@ export default function Home() {
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 overflow-y-auto">
+      <main className={activeView === "suivi-avancement" ? "flex-1 overflow-hidden flex" : "flex-1 overflow-y-auto"}>
+        <div className={activeView === "suivi-avancement" ? "flex-1 overflow-y-auto min-w-0" : undefined}>
         {/* Page Header */}
         <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 px-6 py-3 sticky top-0 z-20">
           <div className="flex items-center justify-between">
@@ -504,6 +621,16 @@ export default function Home() {
                     </Badge>
                   );
                 })}
+              {activeView === "suivi-avancement" && (
+                <button
+                  onClick={() => setRightPanelOpen(!rightPanelOpen)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold border shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02] active:scale-95 ${rightPanelOpen ? "bg-indigo-100 text-indigo-700 border-indigo-200" : "bg-slate-100 text-slate-600 border-slate-200"}`}
+                  title={rightPanelOpen ? "Masquer les barres latérales" : "Afficher les barres latérales"}
+                >
+                  {rightPanelOpen ? <PanelRightClose className="h-3.5 w-3.5" /> : <PanelRightOpen className="h-3.5 w-3.5" />}
+                  {rightPanelOpen ? "Masquer latérales" : "Latérales"}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -828,6 +955,117 @@ export default function Home() {
             </div>
           ) : activeView === "suivi-avancement" ? (
             <div className="space-y-6">
+              {/* FILTER BAR */}
+              <div className="bg-white/90 backdrop-blur-sm rounded-xl border border-indigo-200/50 shadow-md p-3">
+                <div className="flex items-center gap-2 mb-2.5">
+                  <Filter className="h-4 w-4 text-indigo-500" />
+                  <span className="text-xs font-extrabold text-slate-700">Filtres</span>
+                  {(filterProvince !== "all" || filterSecteur !== "all" || filterStatut !== "all" || filterCommune !== "all") && (
+                    <button
+                      onClick={() => { setFilterProvince("all"); setFilterSecteur("all"); setFilterStatut("all"); setFilterCommune("all"); }}
+                      className="text-[10px] font-bold text-indigo-500 hover:text-indigo-700 ml-auto flex items-center gap-1 transition-colors"
+                    >
+                      <XCircle className="h-3 w-3" /> Réinitialiser
+                    </button>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {/* Province filter */}
+                  <div className="relative">
+                    <select
+                      value={filterProvince}
+                      onChange={e => { setFilterProvince(e.target.value); setFilterCommune("all"); }}
+                      className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
+                    >
+                      <option value="all">Toutes provinces</option>
+                      {Object.keys(PROVINCE_COLORS).map(p => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+                  </div>
+                  {/* Secteur filter */}
+                  <div className="relative">
+                    <select
+                      value={filterSecteur}
+                      onChange={e => setFilterSecteur(e.target.value)}
+                      className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
+                    >
+                      <option value="all">Tous secteurs</option>
+                      {Object.values(SECTEUR_SHORT).map(s => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+                  </div>
+                  {/* Statut filter */}
+                  <div className="relative">
+                    <select
+                      value={filterStatut}
+                      onChange={e => setFilterStatut(e.target.value)}
+                      className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
+                    >
+                      <option value="all">Tous statuts</option>
+                      <option value="Terminé">Terminé</option>
+                      <option value="En cours">En cours</option>
+                      <option value="Non démarré">Non démarré</option>
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+                  </div>
+                  {/* Commune filter */}
+                  <div className="relative">
+                    <select
+                      value={filterCommune}
+                      onChange={e => setFilterCommune(e.target.value)}
+                      className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors max-w-[180px]"
+                    >
+                      <option value="all">Toutes communes</option>
+                      {suiviCommunes.map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+                  </div>
+                  {/* Semaine filter */}
+                  <div className="relative">
+                    <select
+                      value={filterSemaine}
+                      onChange={e => setFilterSemaine(e.target.value)}
+                      className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
+                    >
+                      <option value="actuelle">Semaine actuelle (S{getCurrentWeek()})</option>
+                      <option value="precedente">Semaine précédente (S{getCurrentWeek() - 1})</option>
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+                  </div>
+                </div>
+                {/* Active filter badges */}
+                {(filterProvince !== "all" || filterSecteur !== "all" || filterStatut !== "all" || filterCommune !== "all") && (
+                  <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-slate-100">
+                    {filterProvince !== "all" && (
+                      <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: (PROVINCE_COLORS[filterProvince] || "#6366f1") + "15", color: PROVINCE_COLORS[filterProvince] || "#6366f1" }}>
+                        {filterProvince} <button onClick={() => { setFilterProvince("all"); setFilterCommune("all"); }} className="ml-1 hover:opacity-70">×</button>
+                      </Badge>
+                    )}
+                    {filterSecteur !== "all" && (
+                      <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: (SECTEUR_DOT_COLORS[filterSecteur] || "#94a3b8") + "15", color: SECTEUR_DOT_COLORS[filterSecteur] || "#94a3b8" }}>
+                        {filterSecteur} <button onClick={() => setFilterSecteur("all")} className="ml-1 hover:opacity-70">×</button>
+                      </Badge>
+                    )}
+                    {filterStatut !== "all" && (
+                      <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 bg-slate-100 text-slate-600">
+                        {filterStatut} <button onClick={() => setFilterStatut("all")} className="ml-1 hover:opacity-70">×</button>
+                      </Badge>
+                    )}
+                    {filterCommune !== "all" && (
+                      <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 bg-indigo-50 text-indigo-600">
+                        {filterCommune} <button onClick={() => setFilterCommune("all")} className="ml-1 hover:opacity-70">×</button>
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* Suivi Header */}
               <Card className="overflow-hidden shadow-xl border-indigo-200/60">
                 <CardHeader className="py-5 px-6 bg-gradient-to-r from-indigo-700 to-violet-700">
@@ -840,12 +1078,13 @@ export default function Home() {
                 <CardContent className="p-6 space-y-6">
                   {/* Global progress gauges */}
                   {(() => {
-                    const ap = data.avancementPhysiqueGlobal;
-                    const af = data.avancementFinancierGlobal;
-                    const paye = data.totalPaye;
-                    const ordonne = data.totalOrdonne;
-                    const tauxPaiement = data.totalCost > 0 ? (paye / data.totalCost) * 100 : 0;
-                    const tauxOrdonnancement = data.totalCost > 0 ? (ordonne / data.totalCost) * 100 : 0;
+                    const sd = suiviData ?? data;
+                    const ap = sd.avancementPhysiqueGlobal;
+                    const af = sd.avancementFinancierGlobal;
+                    const paye = sd.totalPaye;
+                    const ordonne = sd.totalOrdonne;
+                    const tauxPaiement = sd.totalCost > 0 ? (paye / sd.totalCost) * 100 : 0;
+                    const tauxOrdonnancement = sd.totalCost > 0 ? (ordonne / sd.totalCost) * 100 : 0;
                     const getStatusColor = (val: number) => val >= 75 ? "#10b981" : val >= 50 ? "#f59e0b" : val >= 25 ? "#f97316" : "#ef4444";
                     const GaugeRing = ({ value, label, color, icon: Icon }: { value: number; label: string; color: string; icon: React.ElementType }) => {
                       const radius = 54;
@@ -878,7 +1117,7 @@ export default function Home() {
                         <div className="grid grid-cols-4 gap-3 mt-4">
                           <div className="bg-indigo-50 rounded-xl p-3 border border-indigo-200/60 text-center">
                             <p className="text-[9px] font-bold text-indigo-600 uppercase tracking-widest mb-1">Budget total</p>
-                            <p className="text-lg font-black text-indigo-800">{(data.totalCost / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+                            <p className="text-lg font-black text-indigo-800">{(sd.totalCost / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
                           </div>
                           <div className="bg-violet-50 rounded-xl p-3 border border-violet-200/60 text-center">
                             <p className="text-[9px] font-bold text-violet-600 uppercase tracking-widest mb-1">Ordonnancé</p>
@@ -890,7 +1129,7 @@ export default function Home() {
                           </div>
                           <div className="bg-amber-50 rounded-xl p-3 border border-amber-200/60 text-center">
                             <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest mb-1">Reste à payer</p>
-                            <p className="text-lg font-black text-amber-800">{((data.totalCost - paye) / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+                            <p className="text-lg font-black text-amber-800">{((sd.totalCost - paye) / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
                           </div>
                         </div>
                       </>
@@ -899,14 +1138,15 @@ export default function Home() {
 
                   {/* Status distribution */}
                   {(() => {
-                    const statuts = data.projects.reduce((acc, p) => {
+                    const sd = suiviData ?? data;
+                    const statuts = sd.projects.reduce((acc, p) => {
                       acc[p.statut] = (acc[p.statut] || 0) + 1;
                       return acc;
                     }, {} as Record<string, number>);
                     const termine = statuts["Terminé"] || 0;
                     const enCours = statuts["En cours"] || 0;
                     const nonDemarre = statuts["Non démarré"] || 0;
-                    const total = data.totalProjects;
+                    const total = sd.totalProjects;
                     const statusItems = [
                       { label: "Terminé", count: termine, color: "#10b981", icon: CheckCircle2, bg: "bg-emerald-50", border: "border-emerald-200/60" },
                       { label: "En cours", count: enCours, color: "#f59e0b", icon: Clock, bg: "bg-amber-50", border: "border-amber-200/60" },
@@ -939,7 +1179,7 @@ export default function Home() {
                       Avancement par province
                     </h4>
                     <div className="space-y-3">
-                      {Object.entries(data.byProvince).sort(([, a], [, b]) => b.cout_total - a.cout_total).map(([name, d]) => {
+                      {Object.entries((suiviData ?? data).byProvince).sort(([, a], [, b]) => b.cout_total - a.cout_total).map(([name, d]) => {
                         const provColor = PROVINCE_COLORS[name] || "#6366f1";
                         const ap = d.avancement_physique_moyen;
                         const af = d.avancement_financier_moyen;
@@ -993,7 +1233,7 @@ export default function Home() {
                       Avancement par secteur
                     </h4>
                     <div className="space-y-2">
-                      {Object.entries(data.bySecteur)
+                      {Object.entries((suiviData ?? data).bySecteur)
                         .sort(([, a], [, b]) => b.cout_total - a.cout_total)
                         .map(([name, d]) => {
                           const shortName = SECTEUR_SHORT[name] || name;
@@ -1037,7 +1277,7 @@ export default function Home() {
 
                   {/* Alert: projects behind schedule */}
                   {(() => {
-                    const alertProjects = data.projects
+                    const alertProjects = (suiviData ?? data).projects
                       .filter(p => p.statut === "En cours" && p.avancement_financier - p.avancement_physique > 20)
                       .sort((a, b) => (b.avancement_financier - b.avancement_physique) - (a.avancement_financier - a.avancement_physique))
                       .slice(0, 5);
@@ -1080,13 +1320,14 @@ export default function Home() {
                         const getApColor = (v: number) => v >= 75 ? "#10b981" : v >= 50 ? "#f59e0b" : v >= 25 ? "#f97316" : "#ef4444";
 
                         // Group projects by province, preserving PROVINCE_COLORS order
+                        const sd = suiviData ?? data;
                         const provinceOrder = Object.keys(PROVINCE_COLORS);
                         const projectsByProvince = provinceOrder.reduce<Record<string, Project[]>>((acc, prov) => {
-                          acc[prov] = data.projects.filter(p => p.province === prov);
+                          acc[prov] = sd.projects.filter(p => p.province === prov);
                           return acc;
                         }, {});
                         // Also add any provinces not in PROVINCE_COLORS
-                        data.projects.forEach(p => {
+                        sd.projects.forEach(p => {
                           if (!projectsByProvince[p.province]) projectsByProvince[p.province] = [];
                         });
 
@@ -2112,6 +2353,241 @@ export default function Home() {
           </>
           )}
         </div>
+        </div>
+
+        {/* RIGHT PANEL — Suivi Avancement */}
+        {activeView === "suivi-avancement" && rightPanelOpen && (
+          <div className="shrink-0 border-l border-slate-200/60 overflow-y-auto bg-gradient-to-b from-slate-50/80 to-white/50" style={{ width: 288 }}>
+            {/* Panel header */}
+            <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm border-b border-slate-200/60 px-3 py-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BarChart2 className="h-4 w-4 text-indigo-500" />
+                <span className="text-xs font-extrabold text-slate-800">Barres Latérales</span>
+              </div>
+              <button
+                onClick={() => setRightPanelOpen(false)}
+                className="p-1 rounded-md hover:bg-slate-200/70 transition-colors text-slate-400 hover:text-slate-700"
+                title="Fermer le panneau"
+              >
+                <PanelRightClose className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* 3 Province Sidebars */}
+            {Object.entries(PROVINCE_COLORS).map(([province, provColor]) => {
+              const provInfo = suiviData?.byProvince[province];
+              const provProjects = suiviData?.projects.filter(p => p.province === province) ?? [];
+              const isExpanded = expandedProvinces[province] ?? true;
+              const ap = provInfo?.avancement_physique_moyen ?? 0;
+              const af = provInfo?.avancement_financier_moyen ?? 0;
+              const termine = provProjects.filter(p => p.statut === "Terminé").length;
+              const enCours = provProjects.filter(p => p.statut === "En cours").length;
+              const nonDemarre = provProjects.filter(p => p.statut === "Non démarré").length;
+              const totalProj = provProjects.length;
+              const budgetTotal = provInfo?.cout_total ?? 0;
+              const payeTotal = provInfo?.montant_paye_total ?? 0;
+              const ordonneTotal = provInfo?.montant_ordonne_total ?? 0;
+              const resteAPayer = budgetTotal - payeTotal;
+
+              // Sector breakdown for this province
+              const sectorsByProvince: Record<string, { nb: number; ap: number; af: number }> = {};
+              provProjects.forEach(p => {
+                const short = SECTEUR_SHORT[p.intitule_rubrique] || p.intitule_rubrique;
+                if (!sectorsByProvince[short]) sectorsByProvince[short] = { nb: 0, ap: 0, af: 0 };
+                sectorsByProvince[short].nb++;
+                sectorsByProvince[short].ap += p.avancement_physique;
+                sectorsByProvince[short].af += p.avancement_financier;
+              });
+              Object.keys(sectorsByProvince).forEach(k => {
+                sectorsByProvince[k].ap = sectorsByProvince[k].nb > 0 ? sectorsByProvince[k].ap / sectorsByProvince[k].nb : 0;
+                sectorsByProvince[k].af = sectorsByProvince[k].nb > 0 ? sectorsByProvince[k].af / sectorsByProvince[k].nb : 0;
+              });
+
+              // Weekly simulated data
+              const weekPhys = getWeeklyData(ap);
+              const weekFin = getWeeklyData(af);
+              const currentWeek = getCurrentWeek();
+              const deltaPhys = weekPhys.length >= 2 ? weekPhys[weekPhys.length - 1] - weekPhys[weekPhys.length - 2] : 0;
+              const deltaFin = weekFin.length >= 2 ? weekFin[weekFin.length - 1] - weekFin[weekFin.length - 2] : 0;
+
+              const GaugeRingSmall = ({ value, color, icon: Icon }: { value: number; color: string; icon: React.ElementType }) => {
+                const radius = 28;
+                const circ = 2 * Math.PI * radius;
+                const offset = circ - (value / 100) * circ;
+                return (
+                  <div className="relative w-16 h-16">
+                    <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
+                      <circle cx="32" cy="32" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="5" />
+                      <circle cx="32" cy="32" r={radius} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset} className="transition-all duration-700" />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <Icon className="h-3 w-3" style={{ color }} />
+                      <span className="text-[10px] font-black" style={{ color }}>{value.toFixed(0)}%</span>
+                    </div>
+                  </div>
+                );
+              };
+
+              return (
+                <div key={province} className="border-b border-slate-200/40">
+                  {/* Province header */}
+                  <button
+                    onClick={() => setExpandedProvinces(prev => ({ ...prev, [province]: !prev[province] }))}
+                    className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-slate-100/60 transition-colors"
+                    style={{ borderLeft: `3px solid ${provColor}` }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: provColor }} />
+                      <span className="text-xs font-extrabold text-slate-800">{province}</span>
+                      <Badge className="text-[8px] font-bold px-1.5 py-0 border-0" style={{ backgroundColor: provColor + "18", color: provColor }}>{totalProj}P</Badge>
+                    </div>
+                    {isExpanded ? <ChevronUp className="h-3.5 w-3.5 text-slate-400" /> : <ChevronDown className="h-3.5 w-3.5 text-slate-400" />}
+                  </button>
+
+                  {isExpanded && (
+                    <div className="px-3 pb-3 space-y-3">
+                      {/* Circular gauges */}
+                      <div className="flex items-center justify-center gap-4">
+                        <div className="flex flex-col items-center gap-1">
+                          <GaugeRingSmall value={ap} color={provColor} icon={Wrench} />
+                          <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Physique</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                          <GaugeRingSmall value={af} color={provColor} icon={Wallet} />
+                          <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Financier</span>
+                        </div>
+                      </div>
+
+                      {/* Sector progress bars */}
+                      <div className="space-y-1.5">
+                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Par secteur</p>
+                        {Object.entries(sectorsByProvince).sort(([, a], [, b]) => b.nb - a.nb).map(([sec, d]) => {
+                          const secColor = SECTEUR_DOT_COLORS[sec] || "#94a3b8";
+                          return (
+                            <div key={sec}>
+                              <div className="flex justify-between items-center mb-0.5">
+                                <span className="text-[9px] font-semibold text-slate-600 truncate" style={{ maxWidth: 120 }}>{sec}</span>
+                                <span className="text-[9px] font-bold" style={{ color: secColor }}>{d.ap.toFixed(0)}%</span>
+                              </div>
+                              <div className="w-full bg-slate-200/70 rounded-full h-1.5 overflow-hidden">
+                                <div className="h-full rounded-full" style={{ width: `${d.ap}%`, backgroundColor: secColor }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Weekly tracking analysis */}
+                      <div className="rounded-lg border p-2.5" style={{ borderColor: provColor + "25", backgroundColor: provColor + "06" }}>
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <Calendar className="h-3 w-3" style={{ color: provColor }} />
+                          <span className="text-[9px] font-extrabold text-slate-700">Suivi Hebdomadaire — S{currentWeek}</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5 mb-2">
+                          <div className="bg-white rounded-md p-1.5 border border-slate-100 text-center">
+                            <div className="flex items-center justify-center gap-0.5">
+                              <span className="text-[9px] font-bold text-slate-600">Δ Phys.</span>
+                              {deltaPhys > 0 ? <TrendingUp className="h-2.5 w-2.5 text-emerald-500" /> : deltaPhys < 0 ? <TrendingDown className="h-2.5 w-2.5 text-red-500" /> : <Minus className="h-2.5 w-2.5 text-slate-400" />}
+                            </div>
+                            <span className={`text-[10px] font-black ${deltaPhys > 0 ? "text-emerald-600" : deltaPhys < 0 ? "text-red-600" : "text-slate-500"}`}>{deltaPhys > 0 ? "+" : ""}{deltaPhys.toFixed(1)}pts</span>
+                          </div>
+                          <div className="bg-white rounded-md p-1.5 border border-slate-100 text-center">
+                            <div className="flex items-center justify-center gap-0.5">
+                              <span className="text-[9px] font-bold text-slate-600">Δ Fin.</span>
+                              {deltaFin > 0 ? <TrendingUp className="h-2.5 w-2.5 text-emerald-500" /> : deltaFin < 0 ? <TrendingDown className="h-2.5 w-2.5 text-red-500" /> : <Minus className="h-2.5 w-2.5 text-slate-400" />}
+                            </div>
+                            <span className={`text-[10px] font-black ${deltaFin > 0 ? "text-emerald-600" : deltaFin < 0 ? "text-red-600" : "text-slate-500"}`}>{deltaFin > 0 ? "+" : ""}{deltaFin.toFixed(1)}pts</span>
+                          </div>
+                        </div>
+                        {/* Mini sparkline bars */}
+                        <div className="space-y-1">
+                          <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Évolution 4 semaines</p>
+                          <div className="flex items-end gap-1 h-8">
+                            {weekPhys.map((v, i) => (
+                              <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
+                                <div className="w-full rounded-sm" style={{ height: `${Math.max(4, v * 0.32)}px`, backgroundColor: provColor, opacity: i === weekPhys.length - 1 ? 1 : 0.4 + i * 0.15 }} />
+                              </div>
+                            ))}
+                          </div>
+                          <div className="flex gap-1">
+                            {weekPhys.map((_, i) => (
+                              <div key={i} className="flex-1 text-center">
+                                <span className="text-[7px] text-slate-400">S{currentWeek - (weekPhys.length - 1 - i)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        {/* Weekly counts */}
+                        <div className="grid grid-cols-2 gap-1.5 mt-2">
+                          <div className="bg-emerald-50 rounded-md p-1.5 text-center border border-emerald-100">
+                            <p className="text-[7px] font-bold text-emerald-600">Démarrés</p>
+                            <p className="text-[11px] font-black text-emerald-700">{enCours > 0 ? Math.min(2, enCours) : 0}</p>
+                          </div>
+                          <div className="bg-amber-50 rounded-md p-1.5 text-center border border-amber-100">
+                            <p className="text-[7px] font-bold text-amber-600">Terminés</p>
+                            <p className="text-[11px] font-black text-amber-700">{termine > 0 ? Math.min(1, termine) : 0}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Status breakdown */}
+                      <div className="space-y-1.5">
+                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Répartition statuts</p>
+                        <div className="space-y-1">
+                          {[
+                            { label: "Terminé", count: termine, color: "#10b981" },
+                            { label: "En cours", count: enCours, color: "#f59e0b" },
+                            { label: "Non démarré", count: nonDemarre, color: "#ef4444" },
+                          ].map(s => (
+                            <div key={s.label} className="flex items-center gap-2">
+                              <span className="text-[9px] font-semibold text-slate-600 w-[60px]">{s.label}</span>
+                              <div className="flex-1 bg-slate-200/70 rounded-full h-1.5 overflow-hidden">
+                                <div className="h-full rounded-full" style={{ width: `${totalProj > 0 ? (s.count / totalProj) * 100 : 0}%`, backgroundColor: s.color }} />
+                              </div>
+                              <span className="text-[9px] font-bold text-slate-600 w-5 text-right">{s.count}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Budget summary */}
+                      <div className="rounded-lg border border-slate-200/60 bg-white p-2.5 space-y-1.5">
+                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Budget</p>
+                        <div className="flex justify-between">
+                          <span className="text-[9px] text-slate-500">Total</span>
+                          <span className="text-[9px] font-black text-slate-800">{(budgetTotal / 1e6).toFixed(2)} MDH</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[9px] text-slate-500">Ordonnancé</span>
+                          <span className="text-[9px] font-black text-violet-600">{(ordonneTotal / 1e6).toFixed(2)} MDH</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[9px] text-slate-500">Payé</span>
+                          <span className="text-[9px] font-black text-emerald-600">{(payeTotal / 1e6).toFixed(2)} MDH</span>
+                        </div>
+                        <div className="border-t border-slate-100 pt-1 flex justify-between">
+                          <span className="text-[9px] text-slate-500">Reste à payer</span>
+                          <span className="text-[9px] font-black text-amber-600">{(resteAPayer / 1e6).toFixed(2)} MDH</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Toggle button when panel is closed */}
+        {activeView === "suivi-avancement" && !rightPanelOpen && (
+          <button
+            onClick={() => setRightPanelOpen(true)}
+            className="shrink-0 w-8 bg-white/90 border-l border-slate-200/60 flex items-center justify-center hover:bg-indigo-50 transition-colors"
+            title="Ouvrir les barres latérales"
+          >
+            <PanelRightOpen className="h-4 w-4 text-indigo-500" />
+          </button>
+        )}
       </main>
     </div>
   );
