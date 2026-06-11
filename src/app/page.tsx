@@ -565,7 +565,7 @@ export default function Home() {
     // Status donut data
     const statusDonutData = [
       { name: "Terminé", count: statusCounts.termine, color: "#10b981" },
-      { name: "En cours", count: statusCounts.enCours, color: "#f59e0b" },
+      { name: "En cours", count: statusCounts.enCours, color: "#3b82f6" },
       { name: "Non démarré", count: statusCounts.nonDemarre, color: "#ef4444" },
     ].filter(d => d.count > 0);
 
@@ -936,8 +936,8 @@ export default function Home() {
                     const dotColor = SECTEUR_DOT_COLORS[shortName] || "#94a3b8";
                     const ecart = d.ap - d.af;
                     const avgPct = (d.ap + d.af) / 2;
-                    const statusColor = avgPct > 75 ? "#10b981" : avgPct > 25 ? "#f59e0b" : "#ef4444";
-                    const statusLabel = avgPct > 75 ? "Bon" : avgPct > 25 ? "Moyen" : "Faible";
+                    const statusColor = avgPct > 75 ? "#10b981" : avgPct > 50 ? "#3b82f6" : avgPct > 25 ? "#8b5cf6" : "#ef4444";
+                    const statusLabel = avgPct > 75 ? "Bon" : avgPct > 50 ? "Bon" : avgPct > 25 ? "Moyen" : "Faible";
                     return (
                       <tr key={name} className={`border-b transition-colors duration-150 ${idx % 2 === 0 ? "bg-white" : ""} hover:shadow-sm`} style={{ borderColor: dotColor + "15", background: idx % 2 !== 0 ? `${dotColor}06` : undefined }}>
                         <td className="py-2.5 pr-2 pl-3">
@@ -1071,7 +1071,7 @@ export default function Home() {
                   };
                   const statusConfig: Record<string, { bg: string; text: string; border: string; icon: React.ElementType }> = {
                     "Terminé": { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", icon: CheckCircle2 },
-                    "En cours": { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", icon: Clock },
+                    "En cours": { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200", icon: Clock },
                     "Non démarré": { bg: "bg-red-50", text: "text-red-600", border: "border-red-200", icon: CircleDot },
                   };
                   const sc = statusConfig[p.statut] || statusConfig["Non démarré"];
@@ -1101,7 +1101,7 @@ export default function Home() {
                             <Badge className="text-[7px] font-bold px-1.5 py-0.5 border-0 shadow-sm" style={{ backgroundColor: "#10b98120", color: "#059669" }}>Lancé</Badge>
                           </div>
                         ) : (
-                          <Badge className={`text-[7px] font-bold px-1.5 py-0.5 border-0 ${oscStatus === "pending" ? "bg-amber-50 text-amber-700 border border-amber-200" : "bg-slate-50 text-slate-400"}`}>
+                          <Badge className={`text-[7px] font-bold px-1.5 py-0.5 border-0 ${oscStatus === "pending" ? "bg-blue-50 text-blue-700 border border-blue-200" : "bg-slate-50 text-slate-400"}`}>
                             {oscStatus === "pending" ? "En attente OSC" : "Non lancé"}
                           </Badge>
                         )}
@@ -1742,7 +1742,7 @@ export default function Home() {
                     const kpis = [
                       { label: "Coût moyen / commune", value: `${(avgCostPerCommune / 1e6).toFixed(2)} MDH`, color: "#3b82f6", icon: LandPlot },
                       { label: "Coût moyen / projet", value: `${(avgCostPerProject / 1e6).toFixed(2)} MDH`, color: "#10b981", icon: Hash },
-                      { label: "Projets / commune", value: (data.totalProjects / nbCommunes).toFixed(1), color: "#f59e0b", icon: MapPin },
+                      { label: "Projets / commune", value: (data.totalProjects / nbCommunes).toFixed(1), color: "#3b82f6", icon: MapPin },
                       { label: "Ratio max/min (commune)", value: `×${maxMinRatio.toFixed(1)}`, color: "#ef4444", icon: AlertTriangle },
                       { label: "Couverture sectorielle", value: `${nbSecteurs} secteurs`, color: "#8b5cf6", icon: Layers },
                       { label: "Densité investissement", value: `${(data.totalCost / 1e6 / nbCommunes).toFixed(2)} MDH/commune`, color: "#06b6d4", icon: Activity },
@@ -1956,7 +1956,7 @@ export default function Home() {
                     }
                     const tauxPaiement = totalCostFiltered > 0 ? (payeFiltered / totalCostFiltered) * 100 : 0;
                     const tauxOrdonnancement = totalCostFiltered > 0 ? (ordonneFiltered / totalCostFiltered) * 100 : 0;
-                    const getStatusColor = (val: number) => val >= 75 ? "#10b981" : val >= 50 ? "#f59e0b" : val >= 25 ? "#f97316" : "#ef4444";
+                    const getStatusColor = (val: number) => val >= 75 ? "#10b981" : val >= 50 ? "#3b82f6" : val >= 25 ? "#8b5cf6" : "#ef4444";
                     const GaugeRing = ({ value, label, color, icon: Icon }: { value: number; label: string; color: string; icon: React.ElementType }) => {
                       const radius = 54;
                       const circ = 2 * Math.PI * radius;
@@ -2027,7 +2027,7 @@ export default function Home() {
                     const total = filteredProjects.length;
                     const statusItems = [
                       { label: "Terminé", count: termine, color: "#10b981", icon: CheckCircle2, bg: "bg-emerald-50", border: "border-emerald-200/60" },
-                      { label: "En cours", count: enCours, color: "#f59e0b", icon: Clock, bg: "bg-amber-50", border: "border-amber-200/60" },
+                      { label: "En cours", count: enCours, color: "#3b82f6", icon: Clock, bg: "bg-blue-50", border: "border-blue-200/60" },
                       { label: "Non démarré", count: nonDemarre, color: "#ef4444", icon: CircleDot, bg: "bg-red-50", border: "border-red-200/60" },
                     ];
                     return (
@@ -2083,7 +2083,7 @@ export default function Home() {
                           const cout = provProjects.reduce((s, p) => s + p.cout, 0);
                           const ecart = ap - af;
                           const ecartLabel = ecart > 0 ? `Physique +${ecart.toFixed(0)}pts` : ecart < 0 ? `Financier +${Math.abs(ecart).toFixed(0)}pts` : "Équilibré";
-                          const ecartColor = Math.abs(ecart) <= 5 ? "#10b981" : Math.abs(ecart) <= 15 ? "#f59e0b" : "#ef4444";
+                          const ecartColor = Math.abs(ecart) <= 5 ? "#10b981" : Math.abs(ecart) <= 15 ? "#8b5cf6" : "#ef4444";
                           const nbCommunes = new Set(provProjects.map(p => p.commune)).size;
                           return (
                             <div key={name} className="rounded-xl border-2 p-4 space-y-3" style={{ borderColor: provColor + "30", backgroundColor: provColor + "06" }}>
@@ -2246,10 +2246,10 @@ export default function Home() {
                       {(() => {
                         const statusConfig: Record<string, { bg: string; text: string; border: string; icon: React.ElementType }> = {
                           "Terminé": { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", icon: CheckCircle2 },
-                          "En cours": { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", icon: Clock },
+                          "En cours": { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200", icon: Clock },
                           "Non démarré": { bg: "bg-red-50", text: "text-red-600", border: "border-red-200", icon: CircleDot },
                         };
-                        const getApColor = (v: number) => v >= 75 ? "#10b981" : v >= 50 ? "#f59e0b" : v >= 25 ? "#f97316" : "#ef4444";
+                        const getApColor = (v: number) => v >= 75 ? "#10b981" : v >= 50 ? "#3b82f6" : v >= 25 ? "#8b5cf6" : "#ef4444";
 
                         // Get filtered projects
                         const sd = suiviData ?? data;
@@ -2291,7 +2291,7 @@ export default function Home() {
                                   <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: "#10b98120", color: "#10b981" }}>
                                     <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />{termine} Terminé
                                   </Badge>
-                                  <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: "#f59e0b20", color: "#f59e0b" }}>
+                                  <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: "#3b82f620", color: "#3b82f6" }}>
                                     <Clock className="h-2.5 w-2.5 mr-0.5" />{enCours} En cours
                                   </Badge>
                                   <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: "#ef444420", color: "#ef4444" }}>
@@ -2379,7 +2379,7 @@ export default function Home() {
                                                 <Badge className="text-[6px] font-bold px-1 py-0 border-0 shadow-sm" style={{ backgroundColor: "#10b98120", color: "#059669" }}>Lancé</Badge>
                                               </div>
                                             ) : (
-                                              <Badge className={`text-[6px] font-bold px-1 py-0 border-0 ${p.date_jugement ? "bg-amber-50 text-amber-700" : "bg-slate-50 text-slate-400"}`}>
+                                              <Badge className={`text-[6px] font-bold px-1 py-0 border-0 ${p.date_jugement ? "bg-blue-50 text-blue-700" : "bg-slate-50 text-slate-400"}`}>
                                                 {p.date_jugement ? "Attente" : "—"}
                                               </Badge>
                                             )}
