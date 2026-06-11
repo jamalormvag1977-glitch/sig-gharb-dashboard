@@ -920,14 +920,14 @@ export default function Home() {
             <div className="overflow-x-auto px-2 pb-3">
               <table className="w-full text-[11px]">
                 <thead>
-                  <tr style={{ background: `linear-gradient(135deg, ${provColor}15, ${provColor}05)` }}>
-                    <th className="text-left font-extrabold pb-2.5 pt-2 pr-2 pl-3 rounded-tl-lg" style={{ color: provColor + "CC" }}>Secteur</th>
-                    <th className="text-center font-extrabold pb-2.5 pt-2 px-1" style={{ color: provColor + "CC" }}>Nb</th>
-                    <th className="text-right font-extrabold pb-2.5 pt-2 px-1" style={{ color: provColor + "CC" }}>Budget</th>
-                    <th className="text-center font-extrabold pb-2.5 pt-2 px-1" style={{ color: provColor + "CC" }}>Phys.</th>
-                    <th className="text-center font-extrabold pb-2.5 pt-2 px-1" style={{ color: provColor + "CC" }}>Fin.</th>
-                    <th className="text-center font-extrabold pb-2.5 pt-2 px-1" style={{ color: provColor + "CC" }}>Écart</th>
-                    <th className="text-center font-extrabold pb-2.5 pt-2 pl-1 pr-3 rounded-tr-lg" style={{ color: provColor + "CC" }}>Statut</th>
+                  <tr style={{ background: `linear-gradient(135deg, #1e293b, #334155)` }}>
+                    <th className="text-left font-extrabold pb-2.5 pt-2 pr-2 pl-3 rounded-tl-lg text-slate-200">Secteur</th>
+                    <th className="text-center font-extrabold pb-2.5 pt-2 px-1 text-slate-200">Nb</th>
+                    <th className="text-right font-extrabold pb-2.5 pt-2 px-1 text-emerald-300">Budget</th>
+                    <th className="text-center font-extrabold pb-2.5 pt-2 px-1 text-slate-200">Phys.</th>
+                    <th className="text-center font-extrabold pb-2.5 pt-2 px-1 text-slate-200">Fin.</th>
+                    <th className="text-center font-extrabold pb-2.5 pt-2 px-1 text-slate-200">Écart</th>
+                    <th className="text-center font-extrabold pb-2.5 pt-2 pl-1 pr-3 rounded-tr-lg text-slate-200">Statut</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1050,16 +1050,16 @@ export default function Home() {
           <div className="overflow-x-auto rounded-xl border shadow-md" style={{ borderColor: provColor + "25" }}>
             <Table>
               <TableHeader>
-                <TableRow style={{ background: `linear-gradient(135deg, ${provColor}18, ${provColor}08)`, borderBottom: `2px solid ${provColor}30` }}>
-                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5" style={{ color: provColor }}>N° Cons.</TableHead>
-                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5" style={{ color: provColor }}>Projet</TableHead>
-                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5" style={{ color: provColor }}>Société Titulaire</TableHead>
-                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-center" style={{ color: provColor }}>Ouv. Plis</TableHead>
-                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-center" style={{ color: provColor }}>Jugement</TableHead>
-                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-center" style={{ color: provColor }}>OSC</TableHead>
-                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-center" style={{ color: provColor }}>Délai</TableHead>
-                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-center" style={{ color: provColor }}>Récept. Prov.</TableHead>
-                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-center" style={{ color: provColor }}>Statut</TableHead>
+                <TableRow style={{ background: `linear-gradient(135deg, #1e293b, #334155)`, borderBottom: `2px solid ${provColor}50` }}>
+                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-slate-200">N° Cons.</TableHead>
+                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-slate-200">Projet</TableHead>
+                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-slate-200">Société Titulaire</TableHead>
+                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-center text-slate-200">Ouv. Plis</TableHead>
+                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-center text-slate-200">Jugement</TableHead>
+                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-center text-slate-200">OSC</TableHead>
+                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-center text-slate-200">Délai</TableHead>
+                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-center text-slate-200">Récept. Prov.</TableHead>
+                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-center text-slate-200">Statut</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -2329,18 +2329,18 @@ export default function Home() {
                               <div className="overflow-x-auto rounded-lg border" style={{ borderColor: provColor + "20" }}>
                                 <Table>
                                   <TableHeader>
-                                    <TableRow style={{ background: `linear-gradient(135deg, ${provColor}18, ${provColor}08)`, borderBottom: `2px solid ${provColor}30` }}>
-                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5" style={{ color: provColor }}>Commune</TableHead>
-                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5" style={{ color: provColor }}>Projet</TableHead>
-                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-right" style={{ color: provColor }}>Budget</TableHead>
-                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5" style={{ color: provColor }}>Société</TableHead>
-                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center" style={{ color: provColor }}>Ouv. Plis</TableHead>
-                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center" style={{ color: provColor }}>Jugement</TableHead>
-                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center" style={{ color: provColor }}>OSC</TableHead>
-                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center" style={{ color: provColor }}>Délai</TableHead>
-                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center" style={{ color: provColor }}>Phys.</TableHead>
-                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center" style={{ color: provColor }}>Fin.</TableHead>
-                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center" style={{ color: provColor }}>Statut</TableHead>
+                                    <TableRow style={{ background: `linear-gradient(135deg, #1e293b, #334155)`, borderBottom: `2px solid ${provColor}50` }}>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-slate-200">Commune</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-slate-200">Projet</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-right text-emerald-300">Budget</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-slate-200">Société</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center text-slate-200">Ouv. Plis</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center text-slate-200">Jugement</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center text-slate-200">OSC</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center text-slate-200">Délai</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center text-slate-200">Phys.</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center text-slate-200">Fin.</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center text-slate-200">Statut</TableHead>
                                     </TableRow>
                                   </TableHeader>
                                   <TableBody>
@@ -2769,20 +2769,20 @@ export default function Home() {
                           <div className="overflow-x-auto">
                             <Table>
                               <TableHeader>
-                                <TableRow style={{ backgroundColor: commColor + "10", borderBottomColor: commColor + "25" }}>
-                                  <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[18%]" style={{ color: commColor + "CC" }}>
+                                <TableRow style={{ background: `linear-gradient(135deg, #1e293b, #334155)`, borderBottom: `2px solid ${commColor}50` }}>
+                                  <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[18%] text-slate-200">
                                     Rubrique
                                   </TableHead>
-                                  <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[25%]" style={{ color: commColor + "CC" }}>
+                                  <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[25%] text-slate-200">
                                     Projet
                                   </TableHead>
-                                  <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[27%]" style={{ color: commColor + "CC" }}>
+                                  <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[27%] text-slate-200">
                                     Consistance
                                   </TableHead>
-                                  <TableHead className="text-[10px] font-extrabold uppercase tracking-wider text-right w-[13%]" style={{ color: commColor + "CC" }}>
+                                  <TableHead className="text-[10px] font-extrabold uppercase tracking-wider text-right w-[13%] text-emerald-300">
                                     Coût (DH)
                                   </TableHead>
-                                  <TableHead className="text-[10px] font-extrabold uppercase tracking-wider text-right w-[17%]" style={{ color: commColor + "CC" }}>
+                                  <TableHead className="text-[10px] font-extrabold uppercase tracking-wider text-right w-[17%] text-slate-200">
                                     Répartition
                                   </TableHead>
                                 </TableRow>
@@ -3006,12 +3006,12 @@ export default function Home() {
                             <div className="overflow-x-auto rounded-lg border border-slate-200/60">
                               <Table>
                                 <TableHeader>
-                                  <TableRow style={{ backgroundColor: dotColor + "10", borderBottomColor: dotColor + "25" }}>
-                                    <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[18%]" style={{ color: dotColor + "CC" }}>Commune</TableHead>
-                                    <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[25%]" style={{ color: dotColor + "CC" }}>Projet</TableHead>
-                                    <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[35%]" style={{ color: dotColor + "CC" }}>Consistance</TableHead>
-                                    <TableHead className="text-[10px] font-extrabold uppercase tracking-wider text-right w-[12%]" style={{ color: dotColor + "CC" }}>Coût (DH)</TableHead>
-                                    <TableHead className="text-[10px] font-extrabold uppercase tracking-wider text-right w-[10%]" style={{ color: dotColor + "CC" }}>Répart.</TableHead>
+                                  <TableRow style={{ background: `linear-gradient(135deg, #1e293b, #334155)`, borderBottom: `2px solid ${dotColor}50` }}>
+                                    <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[18%] text-slate-200">Commune</TableHead>
+                                    <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[25%] text-slate-200">Projet</TableHead>
+                                    <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[35%] text-slate-200">Consistance</TableHead>
+                                    <TableHead className="text-[10px] font-extrabold uppercase tracking-wider text-right w-[12%] text-emerald-300">Coût (DH)</TableHead>
+                                    <TableHead className="text-[10px] font-extrabold uppercase tracking-wider text-right w-[10%] text-slate-200">Répart.</TableHead>
                                   </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -3239,12 +3239,12 @@ export default function Home() {
                                 <div className="overflow-x-auto rounded-lg border border-slate-200/60">
                                   <Table>
                                     <TableHeader>
-                                      <TableRow style={{ backgroundColor: dotColor + "10", borderBottomColor: dotColor + "25" }}>
-                                        <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[18%]" style={{ color: dotColor + "CC" }}>Commune</TableHead>
-                                        <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[25%]" style={{ color: dotColor + "CC" }}>Projet</TableHead>
-                                        <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[35%]" style={{ color: dotColor + "CC" }}>Consistance</TableHead>
-                                        <TableHead className="text-[10px] font-extrabold uppercase tracking-wider text-right w-[12%]" style={{ color: dotColor + "CC" }}>Coût (DH)</TableHead>
-                                        <TableHead className="text-[10px] font-extrabold uppercase tracking-wider text-right w-[10%]" style={{ color: dotColor + "CC" }}>Répart.</TableHead>
+                                      <TableRow style={{ background: `linear-gradient(135deg, #1e293b, #334155)`, borderBottom: `2px solid ${dotColor}50` }}>
+                                        <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[18%] text-slate-200">Commune</TableHead>
+                                        <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[25%] text-slate-200">Projet</TableHead>
+                                        <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[35%] text-slate-200">Consistance</TableHead>
+                                        <TableHead className="text-[10px] font-extrabold uppercase tracking-wider text-right w-[12%] text-emerald-300">Coût (DH)</TableHead>
+                                        <TableHead className="text-[10px] font-extrabold uppercase tracking-wider text-right w-[10%] text-slate-200">Répart.</TableHead>
                                       </TableRow>
                                     </TableHeader>
                                     <TableBody>
