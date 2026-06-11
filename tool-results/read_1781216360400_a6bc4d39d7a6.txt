@@ -1,0 +1,2002 @@
+     1→"use client";
+     2→
+     3→import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+     4→import dynamic from "next/dynamic";
+     5→import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+     6→import { Badge } from "@/components/ui/badge";
+     7→import {
+     8→  Table,
+     9→  TableBody,
+    10→  TableCell,
+    11→  TableHead,
+    12→  TableHeader,
+    13→  TableRow,
+    14→} from "@/components/ui/table";
+    15→import {
+    16→  CostByCommuneChart,
+    17→  ProvinceBarChart,
+    18→} from "@/components/dashboard/Charts";
+    19→import { PROVINCE_COLORS, SECTEUR_SHORT } from "@/data/types";
+    20→import type { DashboardData, CommuneSummary, Project, ProvinceData, SecteurData } from "@/data/types";
+    21→
+    22→import {
+    23→  LayoutDashboard,
+    24→  Map,
+    25→  BarChart3,
+    26→  Droplets,
+    27→  Building2,
+    28→  TableIcon,
+    29→  ChevronRight,
+    30→  FileText,
+    31→  PanelLeftClose,
+    32→  PanelLeftOpen,
+    33→  TrendingUp,
+    34→  Hash,
+    35→  LandPlot,
+    36→  Layers,
+    37→  MapPin,
+    38→  Maximize,
+    39→  Minimize,
+    40→  FileDown,
+    41→  ClipboardCheck,
+    42→  AlertTriangle,
+    43→  Target,
+    44→  ArrowUpRight,
+    45→  ArrowDownRight,
+    46→  Activity,
+    47→  PieChart as PieChartIcon,
+    48→  CheckCircle2,
+    49→  Clock,
+    50→  CircleDot,
+    51→  Gauge,
+    52→  Wallet,
+    53→  Wrench,
+    54→  Upload,
+    55→  CheckCircle,
+    56→  XCircle,
+    57→  Filter,
+    58→  Calendar,
+    59→  ChevronDown,
+    60→  ChevronUp,
+    61→  TrendingDown,
+    62→  Minus,
+    63→} from "lucide-react";
+    64→
+    65→const MapComponent = dynamic(
+    66→  () => import("@/components/dashboard/MapComponent"),
+    67→  { ssr: false }
+    68→);
+    69→
+    70→
+    71→type ViewType = "overview" | "kenitra" | "sidi-kacem" | "sidi-slimane" | "suivi-avancement" | "suivi-kenitra" | "suivi-sidi-kacem" | "suivi-sidi-slimane" | "rapport";
+    72→
+    73→const NAV_ITEMS: { id: ViewType; label: string; icon: React.ElementType }[] = [
+    74→  { id: "overview", label: "Vue d'ensemble", icon: LayoutDashboard },
+    75→  { id: "kenitra", label: "Kénitra", icon: Building2 },
+    76→  { id: "sidi-kacem", label: "Sidi Kacem", icon: Building2 },
+    77→  { id: "sidi-slimane", label: "Sidi Slimane", icon: Building2 },
+    78→  { id: "suivi-avancement", label: "Suivi Avancement", icon: Gauge },
+    79→  { id: "suivi-kenitra", label: "Avancement Kénitra", icon: Gauge },
+    80→  { id: "suivi-sidi-kacem", label: "Avancement Sidi Kacem", icon: Gauge },
+    81→  { id: "suivi-sidi-slimane", label: "Avancement Sidi Slimane", icon: Gauge },
+    82→  { id: "rapport", label: "Rapport", icon: FileText },
+    83→];
+    84→
+    85→const PROVINCE_MAP: Record<ViewType, string | null> = {
+    86→  overview: null,
+    87→  kenitra: "Kénitra",
+    88→  "sidi-kacem": "Sidi Kacem",
+    89→  "sidi-slimane": "Sidi Slimane",
+    90→  "suivi-avancement": null,
+    91→  "suivi-kenitra": "Kénitra",
+    92→  "suivi-sidi-kacem": "Sidi Kacem",
+    93→  "suivi-sidi-slimane": "Sidi Slimane",
+    94→  rapport: null,
+    95→};
+    96→
+    97→const SECTEUR_DOT_COLORS: Record<string, string> = {
+    98→  "Assainissement & Drainage": "#ef4444",
+    99→  "Pistes agricoles": "#3b82f6",
+   100→  "Stations de pompage": "#f59e0b",
+   101→  "Réhabilitation équipements": "#10b981",
+   102→  "Génie civil": "#8b5cf6",
+   103→};
+   104→
+   105→const CONVENTION_PDF: Record<string, string> = {
+   106→  "Kénitra": "/conventions/convention-kenitra.pdf",
+   107→  "Sidi Kacem": "/conventions/convention-sidi-kacem.pdf",
+   108→  "Sidi Slimane": "/conventions/convention-sidi-slimane.pdf",
+   109→};
+   110→
+   111→// 30-color palette for communes (same as MapComponent)
+   112→const COMMUNE_PALETTE = [
+   113→  "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6",
+   114→  "#ec4899", "#06b6d4", "#f97316", "#14b8a6", "#6366f1",
+   115→  "#84cc16", "#e11d48", "#0ea5e9", "#d946ef", "#65a30d",
+   116→  "#dc2626", "#0891b2", "#c026d3", "#059669", "#ea580c",
+   117→  "#2563eb", "#db2777", "#0d9488", "#9333ea", "#ca8a04",
+   118→  "#7c3aed", "#16a34a", "#e4d214", "#4f46e5", "#a21caf",
+   119→];
+   120→
+   121→// Province-matched KPI colors (matching ORMVAG official map)
+   122→const KENITRA_COLOR = { gradient: "from-amber-500 to-yellow-600", bgGradient: "from-amber-50 to-yellow-50", textColor: "text-amber-700", iconBg: "bg-amber-100", iconColor: "text-amber-600" };
+   123→const SIDI_KACEM_COLOR = { gradient: "from-rose-500 to-pink-600", bgGradient: "from-rose-50 to-pink-50", textColor: "text-rose-700", iconBg: "bg-rose-100", iconColor: "text-rose-600" };
+   124→const SIDI_SLIMANE_COLOR = { gradient: "from-emerald-500 to-teal-600", bgGradient: "from-emerald-50 to-teal-50", textColor: "text-emerald-700", iconBg: "bg-emerald-100", iconColor: "text-emerald-600" };
+   125→const DEFAULT_KPI = { gradient: "from-violet-500 to-purple-600", bgGradient: "from-violet-50 to-purple-50", textColor: "text-violet-700", iconBg: "bg-violet-100", iconColor: "text-violet-600" };
+   126→
+   127→export default function Home() {
+   128→  const [data, setData] = useState<DashboardData | null>(null);
+   129→  const [geojsonData, setGeojsonData] = useState<GeoJSON.FeatureCollection | null>(null);
+   130→  const [activeView, setActiveView] = useState<ViewType>("overview");
+   131→  const [sidebarOpen, setSidebarOpen] = useState(true);
+   132→  const [mapFullscreen, setMapFullscreen] = useState(false);
+   133→  const [selectedCommune, setSelectedCommune] = useState<string | null>(null);
+   134→  const [importStatus, setImportStatus] = useState<"idle" | "success" | "error">("idle");
+   135→  const [importMessage, setImportMessage] = useState("");
+   136→  const fileInputRef = useRef<HTMLInputElement>(null);
+   137→  const communeRefs = useRef<Record<string, HTMLDivElement | null>>({});
+   138→
+   139→  // Suivi-avancement filters
+   140→  const [filterSecteur, setFilterSecteur] = useState<string>("all");
+   141→  const [filterStatut, setFilterStatut] = useState<string>("all");
+   142→  const [filterCommune, setFilterCommune] = useState<string>("all");
+   143→
+   144→  // Trigger map resize when fullscreen toggles
+   145→  useEffect(() => {
+   146→    const t = setTimeout(() => window.dispatchEvent(new Event("resize")), 350);
+   147→    return () => clearTimeout(t);
+   148→  }, [mapFullscreen]);
+   149→
+   150→  // Reset filters when changing views
+   151→  useEffect(() => {
+   152→    setFilterSecteur("all");
+   153→    setFilterStatut("all");
+   154→    setFilterCommune("all");
+   155→  }, [activeView]);
+   156→
+   157→  useEffect(() => {
+   158→    fetch("/api/dashboard")
+   159→      .then((res) => res.json())
+   160→      .then(setData)
+   161→      .catch(console.error);
+   162→    fetch("/api/geojson")
+   163→      .then((res) => res.json())
+   164→      .then(setGeojsonData)
+   165→      .catch(console.error);
+   166→  }, []);
+   167→
+   168→  const selectedProvince = PROVINCE_MAP[activeView];
+   169→
+   170→  const filteredSummary = useMemo(() => {
+   171→    if (!data) return {} as Record<string, CommuneSummary>;
+   172→    return Object.entries(data.summary)
+   173→      .filter(([, d]) => !selectedProvince || d.province === selectedProvince)
+   174→      .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {} as Record<string, CommuneSummary>);
+   175→  }, [data, selectedProvince]);
+   176→
+   177→  const filteredProjects = useMemo(() => {
+   178→    if (!data) return [] as Project[];
+   179→    return data.projects.filter(
+   180→      (p) => !selectedProvince || p.province === selectedProvince
+   181→    );
+   182→  }, [data, selectedProvince]);
+   183→
+   184→  const totalCost = data
+   185→    ? (selectedProvince
+   186→        ? data.byProvince[selectedProvince]?.cout_total ?? data.totalCost
+   187→        : data.totalCost)
+   188→    : 0;
+   189→
+   190→  const totalProjects = data
+   191→    ? (selectedProvince
+   192→        ? data.byProvince[selectedProvince]?.nb_projets ?? data.totalProjects
+   193→        : data.totalProjects)
+   194→    : 0;
+   195→
+   196→  const totalCommunes = data
+   197→    ? (selectedProvince
+   198→        ? data.byProvince[selectedProvince]?.communes ?? Object.keys(data.summary).length
+   199→        : Object.keys(data.summary).length)
+   200→    : 0;
+   201→
+   202→  const projectsByCommune = useMemo(() => {
+   203→    return filteredProjects.reduce<Record<string, Project[]>>((acc, p) => {
+   204→      const key = p.commune;
+   205→      if (!acc[key]) acc[key] = [];
+   206→      acc[key].push(p);
+   207→      return acc;
+   208→    }, {});
+   209→  }, [filteredProjects]);
+   210→
+   211→  const communeColorMap = useMemo(() => {
+   212→    const map: Record<string, string> = {};
+   213→    const sortedNames = Object.keys(projectsByCommune).sort((a, b) => {
+   214→      const totalA = projectsByCommune[a].reduce((s, p) => s + p.cout, 0);
+   215→      const totalB = projectsByCommune[b].reduce((s, p) => s + p.cout, 0);
+   216→      return totalB - totalA;
+   217→    });
+   218→    sortedNames.forEach((name, i) => {
+   219→      map[name] = COMMUNE_PALETTE[i % COMMUNE_PALETTE.length];
+   220→    });
+   221→    return map;
+   222→  }, [projectsByCommune]);
+   223→
+   224→  // Suivi-avancement: computed filtered data
+   225→  const suiviCommunes = useMemo(() => {
+   226→    if (!data) return [] as string[];
+   227→    const communes = [...new Set(data.projects.map(p => p.commune))].sort();
+   228→    return communes;
+   229→  }, [data]);
+   230→
+   231→  const suiviData = useMemo(() => {
+   232→    if (!data) return null;
+   233→    let projects = data.projects;
+   234→
+   235→    if (filterSecteur !== "all") projects = projects.filter(p => (SECTEUR_SHORT[p.intitule_rubrique] || p.intitule_rubrique) === filterSecteur);
+   236→    if (filterStatut !== "all") projects = projects.filter(p => p.statut === filterStatut);
+   237→    if (filterCommune !== "all") projects = projects.filter(p => p.commune === filterCommune);
+   238→
+   239→    const totalCost = projects.reduce((s, p) => s + p.cout, 0);
+   240→    const totalProjects = projects.length;
+   241→    const totalPaye = projects.reduce((s, p) => s + p.montant_paye, 0);
+   242→    const totalOrdonne = projects.reduce((s, p) => s + p.montant_ordonne, 0);
+   243→    const avancementPhysiqueGlobal = projects.length > 0 ? projects.reduce((s, p) => s + p.avancement_physique, 0) / projects.length : 0;
+   244→    const avancementFinancierGlobal = projects.length > 0 ? projects.reduce((s, p) => s + p.avancement_financier, 0) / projects.length : 0;
+   245→
+   246→    const byProvince: Record<string, ProvinceData> = {};
+   247→    projects.forEach(p => {
+   248→      if (!byProvince[p.province]) {
+   249→        byProvince[p.province] = { nb_projets: 0, cout_total: 0, communes: 0, avancement_physique_moyen: 0, avancement_financier_moyen: 0, montant_paye_total: 0, montant_ordonne_total: 0 };
+   250→      }
+   251→      byProvince[p.province].nb_projets++;
+   252→      byProvince[p.province].cout_total += p.cout;
+   253→      byProvince[p.province].montant_paye_total += p.montant_paye;
+   254→      byProvince[p.province].montant_ordonne_total += p.montant_ordonne;
+   255→    });
+   256→    Object.keys(byProvince).forEach(prov => {
+   257→      const provProjects = projects.filter(p => p.province === prov);
+   258→      byProvince[prov].communes = new Set(provProjects.map(p => p.commune)).size;
+   259→      byProvince[prov].avancement_physique_moyen = provProjects.length > 0 ? provProjects.reduce((s, p) => s + p.avancement_physique, 0) / provProjects.length : 0;
+   260→      byProvince[prov].avancement_financier_moyen = provProjects.length > 0 ? provProjects.reduce((s, p) => s + p.avancement_financier, 0) / provProjects.length : 0;
+   261→    });
+   262→
+   263→    const bySecteur: Record<string, SecteurData> = {};
+   264→    projects.forEach(p => {
+   265→      const key = p.intitule_rubrique;
+   266→      if (!bySecteur[key]) {
+   267→        bySecteur[key] = { nb_projets: 0, cout_total: 0, communes: 0, avancement_physique_moyen: 0, avancement_financier_moyen: 0, montant_paye_total: 0, montant_ordonne_total: 0 };
+   268→      }
+   269→      bySecteur[key].nb_projets++;
+   270→      bySecteur[key].cout_total += p.cout;
+   271→      bySecteur[key].montant_paye_total += p.montant_paye;
+   272→      bySecteur[key].montant_ordonne_total += p.montant_ordonne;
+   273→    });
+   274→    Object.keys(bySecteur).forEach(sec => {
+   275→      const secProjects = projects.filter(p => p.intitule_rubrique === sec);
+   276→      bySecteur[sec].communes = new Set(secProjects.map(p => p.commune)).size;
+   277→      bySecteur[sec].avancement_physique_moyen = secProjects.length > 0 ? secProjects.reduce((s, p) => s + p.avancement_physique, 0) / secProjects.length : 0;
+   278→      bySecteur[sec].avancement_financier_moyen = secProjects.length > 0 ? secProjects.reduce((s, p) => s + p.avancement_financier, 0) / secProjects.length : 0;
+   279→    });
+   280→
+   281→    return { projects, byProvince, bySecteur, totalCost, totalProjects, totalPaye, totalOrdonne, avancementPhysiqueGlobal, avancementFinancierGlobal };
+   282→  }, [data, filterSecteur, filterStatut, filterCommune]);
+   283→
+   284→  // Helper: get current week number
+   285→  const getCurrentWeek = () => {
+   286→    const now = new Date();
+   287→    const start = new Date(now.getFullYear(), 0, 1);
+   288→    const diff = now.getTime() - start.getTime();
+   289→    const oneDay = 86400000;
+   290→    return Math.ceil((diff / oneDay + start.getDay() + 1) / 7);
+   291→  };
+   292→
+   293→  // Helper: simulate weekly data for sparkline (deterministic, no Math.random)
+   294→  const getWeeklyData = (currentValue: number, weeks: number = 4) => {
+   295→    const result: number[] = [];
+   296→    for (let i = weeks - 1; i >= 0; i--) {
+   297→      if (i === 0) {
+   298→        result.push(currentValue);
+   299→      } else {
+   300→        // Deterministic: use a fixed step based on index
+   301→        const step = 3 + (i * 1.5);
+   302→        result.push(Math.max(0, currentValue - step * i));
+   303→      }
+   304→    }
+   305→    return result;
+   306→  };
+   307→
+   308→  // Render a full province-specific suivi view
+   309→  const renderProvinceSuivi = (province: string, provColor: string) => {
+   310→    if (!data) return null;
+   311→
+   312→    // Get province projects with filters
+   313→    let projects = data.projects.filter(p => p.province === province);
+   314→    if (filterSecteur !== "all") projects = projects.filter(p => (SECTEUR_SHORT[p.intitule_rubrique] || p.intitule_rubrique) === filterSecteur);
+   315→    if (filterStatut !== "all") projects = projects.filter(p => p.statut === filterStatut);
+   316→    if (filterCommune !== "all") projects = projects.filter(p => p.commune === filterCommune);
+   317→
+   318→    // All communes for this province (for dropdown)
+   319→    const allCommunes = [...new Set(data.projects.filter(p => p.province === province).map(p => p.commune))].sort();
+   320→
+   321→    // Compute metrics
+   322→    const totalCost = projects.reduce((s, p) => s + p.cout, 0);
+   323→    const totalProjects = projects.length;
+   324→    const totalPaye = projects.reduce((s, p) => s + p.montant_paye, 0);
+   325→    const totalOrdonne = projects.reduce((s, p) => s + p.montant_ordonne, 0);
+   326→    const avancementPhysique = totalProjects > 0 ? projects.reduce((s, p) => s + p.avancement_physique, 0) / totalProjects : 0;
+   327→    const avancementFinancier = totalProjects > 0 ? projects.reduce((s, p) => s + p.avancement_financier, 0) / totalProjects : 0;
+   328→    const tauxOrdonnancement = totalCost > 0 ? (totalOrdonne / totalCost) * 100 : 0;
+   329→    const tauxPaiement = totalCost > 0 ? (totalPaye / totalCost) * 100 : 0;
+   330→
+   331→    const termine = projects.filter(p => p.statut === "Terminé").length;
+   332→    const enCours = projects.filter(p => p.statut === "En cours").length;
+   333→    const nonDemarre = projects.filter(p => p.statut === "Non démarré").length;
+   334→
+   335→    const currentWeek = getCurrentWeek();
+   336→    const weekPhys = getWeeklyData(avancementPhysique);
+   337→    const weekFin = getWeeklyData(avancementFinancier);
+   338→    const deltaPhys = weekPhys.length >= 2 ? weekPhys[weekPhys.length - 1] - weekPhys[weekPhys.length - 2] : 0;
+   339→    const deltaFin = weekFin.length >= 2 ? weekFin[weekFin.length - 1] - weekFin[weekFin.length - 2] : 0;
+   340→
+   341→    // Sector breakdown
+   342→    const bySecteur: Record<string, { nb: number; cout: number; ap: number; af: number; montant_paye: number; montant_ordonne: number }> = {};
+   343→    projects.forEach(p => {
+   344→      const key = p.intitule_rubrique;
+   345→      if (!bySecteur[key]) bySecteur[key] = { nb: 0, cout: 0, ap: 0, af: 0, montant_paye: 0, montant_ordonne: 0 };
+   346→      bySecteur[key].nb++;
+   347→      bySecteur[key].cout += p.cout;
+   348→      bySecteur[key].ap += p.avancement_physique;
+   349→      bySecteur[key].af += p.avancement_financier;
+   350→      bySecteur[key].montant_paye += p.montant_paye;
+   351→      bySecteur[key].montant_ordonne += p.montant_ordonne;
+   352→    });
+   353→    Object.keys(bySecteur).forEach(k => {
+   354→      bySecteur[k].ap = bySecteur[k].nb > 0 ? bySecteur[k].ap / bySecteur[k].nb : 0;
+   355→      bySecteur[k].af = bySecteur[k].nb > 0 ? bySecteur[k].af / bySecteur[k].nb : 0;
+   356→    });
+   357→
+   358→    // Commune breakdown
+   359→    const byCommune: Record<string, { nb: number; cout: number; ap: number; af: number }> = {};
+   360→    projects.forEach(p => {
+   361→      const key = p.commune;
+   362→      if (!byCommune[key]) byCommune[key] = { nb: 0, cout: 0, ap: 0, af: 0 };
+   363→      byCommune[key].nb++;
+   364→      byCommune[key].cout += p.cout;
+   365→      byCommune[key].ap += p.avancement_physique;
+   366→      byCommune[key].af += p.avancement_financier;
+   367→    });
+   368→    Object.keys(byCommune).forEach(k => {
+   369→      byCommune[k].ap = byCommune[k].nb > 0 ? byCommune[k].ap / byCommune[k].nb : 0;
+   370→      byCommune[k].af = byCommune[k].nb > 0 ? byCommune[k].af / byCommune[k].nb : 0;
+   371→    });
+   372→
+   373→    // Alert projects
+   374→    const alertProjects = projects
+   375→      .filter(p => p.statut === "En cours" && Math.abs(p.avancement_financier - p.avancement_physique) > 20)
+   376→      .sort((a, b) => Math.abs(b.avancement_financier - b.avancement_physique) - Math.abs(a.avancement_financier - a.avancement_physique))
+   377→      .slice(0, 5);
+   378→
+   379→    const getStatusColor = (val: number) => val >= 75 ? "#10b981" : val >= 50 ? "#f59e0b" : val >= 25 ? "#f97316" : "#ef4444";
+   380→
+   381→    const statusConfig: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
+   382→      "Terminé": { bg: "bg-emerald-100", text: "text-emerald-700", icon: CheckCircle2 },
+   383→      "En cours": { bg: "bg-amber-100", text: "text-amber-700", icon: Clock },
+   384→      "Non démarré": { bg: "bg-red-100", text: "text-red-700", icon: CircleDot },
+   385→    };
+   386→
+   387→    const GaugeRing = ({ value, label, color, icon: Icon }: { value: number; label: string; color: string; icon: React.ElementType }) => {
+   388→      const radius = 54;
+   389→      const circ = 2 * Math.PI * radius;
+   390→      const offset = circ - (value / 100) * circ;
+   391→      return (
+   392→        <div className="flex flex-col items-center gap-2">
+   393→          <div className="relative w-32 h-32">
+   394→            <svg className="w-32 h-32 -rotate-90" viewBox="0 0 120 120">
+   395→              <circle cx="60" cy="60" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="10" />
+   396→              <circle cx="60" cy="60" r={radius} fill="none" stroke={color} strokeWidth="10" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset} className="transition-all duration-1000" />
+   397→            </svg>
+   398→            <div className="absolute inset-0 flex flex-col items-center justify-center">
+   399→              <Icon className="h-4 w-4 mb-0.5" style={{ color }} />
+   400→              <span className="text-2xl font-black" style={{ color }}>{value.toFixed(0)}%</span>
+   401→            </div>
+   402→          </div>
+   403→          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">{label}</p>
+   404→        </div>
+   405→      );
+   406→    };
+   407→
+   408→    return (
+   409→      <div className="space-y-6">
+   410→        {/* Filter bar */}
+   411→        <div className="bg-white/90 backdrop-blur-sm rounded-xl border shadow-md p-3" style={{ borderColor: provColor + "40" }}>
+   412→          <div className="flex items-center gap-2 mb-2.5">
+   413→            <Filter className="h-4 w-4" style={{ color: provColor }} />
+   414→            <span className="text-xs font-extrabold text-slate-700">Filtres</span>
+   415→            {(filterSecteur !== "all" || filterStatut !== "all" || filterCommune !== "all") && (
+   416→              <button
+   417→                onClick={() => { setFilterSecteur("all"); setFilterStatut("all"); setFilterCommune("all"); }}
+   418→                className="text-[10px] font-bold hover:opacity-70 ml-auto flex items-center gap-1 transition-colors"
+   419→                style={{ color: provColor }}
+   420→              >
+   421→                <XCircle className="h-3 w-3" /> Réinitialiser
+   422→              </button>
+   423→            )}
+   424→          </div>
+   425→          <div className="flex flex-wrap gap-2">
+   426→            {/* Secteur filter */}
+   427→            <div className="relative">
+   428→              <select
+   429→                value={filterSecteur}
+   430→                onChange={e => setFilterSecteur(e.target.value)}
+   431→                className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
+   432→              >
+   433→                <option value="all">Tous secteurs</option>
+   434→                {Object.values(SECTEUR_SHORT).map(s => (
+   435→                  <option key={s} value={s}>{s}</option>
+   436→                ))}
+   437→              </select>
+   438→              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+   439→            </div>
+   440→            {/* Statut filter */}
+   441→            <div className="relative">
+   442→              <select
+   443→                value={filterStatut}
+   444→                onChange={e => setFilterStatut(e.target.value)}
+   445→                className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
+   446→              >
+   447→                <option value="all">Tous statuts</option>
+   448→                <option value="Terminé">Terminé</option>
+   449→                <option value="En cours">En cours</option>
+   450→                <option value="Non démarré">Non démarré</option>
+   451→              </select>
+   452→              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+   453→            </div>
+   454→            {/* Commune filter */}
+   455→            <div className="relative">
+   456→              <select
+   457→                value={filterCommune}
+   458→                onChange={e => setFilterCommune(e.target.value)}
+   459→                className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors max-w-[180px]"
+   460→              >
+   461→                <option value="all">Toutes communes</option>
+   462→                {allCommunes.map(c => (
+   463→                  <option key={c} value={c}>{c}</option>
+   464→                ))}
+   465→              </select>
+   466→              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+   467→            </div>
+   468→          </div>
+   469→          {/* Active filter badges */}
+   470→          {(filterSecteur !== "all" || filterStatut !== "all" || filterCommune !== "all") && (
+   471→            <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-slate-100">
+   472→              {filterSecteur !== "all" && (
+   473→                <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: (SECTEUR_DOT_COLORS[filterSecteur] || "#94a3b8") + "15", color: SECTEUR_DOT_COLORS[filterSecteur] || "#94a3b8" }}>
+   474→                  {filterSecteur} <button onClick={() => setFilterSecteur("all")} className="ml-1 hover:opacity-70">×</button>
+   475→                </Badge>
+   476→              )}
+   477→              {filterStatut !== "all" && (
+   478→                <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 bg-slate-100 text-slate-600">
+   479→                  {filterStatut} <button onClick={() => setFilterStatut("all")} className="ml-1 hover:opacity-70">×</button>
+   480→                </Badge>
+   481→              )}
+   482→              {filterCommune !== "all" && (
+   483→                <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: provColor + "10", color: provColor }}>
+   484→                  {filterCommune} <button onClick={() => setFilterCommune("all")} className="ml-1 hover:opacity-70">×</button>
+   485→                </Badge>
+   486→              )}
+   487→            </div>
+   488→          )}
+   489→        </div>
+   490→
+   491→        {/* Province header card */}
+   492→        <Card className="overflow-hidden shadow-xl" style={{ borderColor: provColor + "60" }}>
+   493→          <CardHeader className="py-5 px-6" style={{ background: `linear-gradient(135deg, ${provColor}, ${provColor}CC)` }}>
+   494→            <CardTitle className="text-lg font-extrabold text-white flex items-center gap-3">
+   495→              <Gauge className="h-6 w-6" style={{ color: provColor + "80" }} />
+   496→              Suivi d&apos;Avancement — {province}
+   497→            </CardTitle>
+   498→            <p className="text-sm mt-1" style={{ color: provColor + "40" }}>Région du Gharb — ORMVAG — S{currentWeek}</p>
+   499→          </CardHeader>
+   500→          <CardContent className="p-6 space-y-6">
+   501→            {/* Gauge rings */}
+   502→            <div className="flex flex-wrap justify-center gap-8">
+   503→              <GaugeRing value={avancementPhysique} label="Avancement physique" color={getStatusColor(avancementPhysique)} icon={Wrench} />
+   504→              <GaugeRing value={avancementFinancier} label="Avancement financier" color={getStatusColor(avancementFinancier)} icon={Wallet} />
+   505→              <GaugeRing value={tauxOrdonnancement} label="Taux d'ordonnancement" color={getStatusColor(tauxOrdonnancement)} icon={FileText} />
+   506→              <GaugeRing value={tauxPaiement} label="Taux de paiement" color={getStatusColor(tauxPaiement)} icon={Wallet} />
+   507→            </div>
+   508→
+   509→            {/* Budget summary */}
+   510→            <div className="grid grid-cols-4 gap-3">
+   511→              <div className="rounded-xl p-3 border text-center" style={{ backgroundColor: provColor + "08", borderColor: provColor + "20" }}>
+   512→                <p className="text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: provColor }}>Budget total</p>
+   513→                <p className="text-lg font-black" style={{ color: provColor }}>{(totalCost / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+   514→              </div>
+   515→              <div className="bg-violet-50 rounded-xl p-3 border border-violet-200/60 text-center">
+   516→                <p className="text-[9px] font-bold text-violet-600 uppercase tracking-widest mb-1">Ordonnancé</p>
+   517→                <p className="text-lg font-black text-violet-800">{(totalOrdonne / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+   518→              </div>
+   519→              <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-200/60 text-center">
+   520→                <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Payé</p>
+   521→                <p className="text-lg font-black text-emerald-800">{(totalPaye / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+   522→              </div>
+   523→              <div className="bg-amber-50 rounded-xl p-3 border border-amber-200/60 text-center">
+   524→                <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest mb-1">Reste à payer</p>
+   525→                <p className="text-lg font-black text-amber-800">{((totalCost - totalPaye) / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+   526→              </div>
+   527→            </div>
+   528→
+   529→            {/* Status distribution */}
+   530→            <div>
+   531→              <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+   532→                <Activity className="h-4 w-4" style={{ color: provColor }} />
+   533→                Répartition par statut
+   534→              </h4>
+   535→              <div className="grid grid-cols-3 gap-3">
+   536→                {[
+   537→                  { label: "Terminé", count: termine, color: "#10b981", icon: CheckCircle2, bg: "bg-emerald-50", border: "border-emerald-200/60" },
+   538→                  { label: "En cours", count: enCours, color: "#f59e0b", icon: Clock, bg: "bg-amber-50", border: "border-amber-200/60" },
+   539→                  { label: "Non démarré", count: nonDemarre, color: "#ef4444", icon: CircleDot, bg: "bg-red-50", border: "border-red-200/60" },
+   540→                ].map((s) => (
+   541→                  <div key={s.label} className={`${s.bg} rounded-xl p-4 border ${s.border} text-center`}>
+   542→                    <s.icon className="h-5 w-5 mx-auto mb-1" style={{ color: s.color }} />
+   543→                    <p className="text-2xl font-black" style={{ color: s.color }}>{s.count}</p>
+   544→                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{s.label}</p>
+   545→                    <p className="text-[9px] text-slate-400 font-semibold mt-0.5">{totalProjects > 0 ? ((s.count / totalProjects) * 100).toFixed(0) : 0}% des projets</p>
+   546→                  </div>
+   547→                ))}
+   548→              </div>
+   549→            </div>
+   550→
+   551→            {/* Weekly tracking analysis */}
+   552→            <div className="rounded-xl border p-4" style={{ borderColor: provColor + "25", backgroundColor: provColor + "06" }}>
+   553→              <div className="flex items-center gap-2 mb-3">
+   554→                <Calendar className="h-4 w-4" style={{ color: provColor }} />
+   555→                <span className="text-sm font-extrabold text-slate-700">Suivi Hebdomadaire — S{currentWeek}</span>
+   556→              </div>
+   557→              <div className="grid grid-cols-2 gap-3 mb-3">
+   558→                <div className="bg-white rounded-lg p-3 border border-slate-100 text-center">
+   559→                  <div className="flex items-center justify-center gap-1">
+   560→                    <span className="text-xs font-bold text-slate-600">Δ Physique</span>
+   561→                    {deltaPhys > 0 ? <TrendingUp className="h-3.5 w-3.5 text-emerald-500" /> : deltaPhys < 0 ? <TrendingDown className="h-3.5 w-3.5 text-red-500" /> : <Minus className="h-3.5 w-3.5 text-slate-400" />}
+   562→                  </div>
+   563→                  <span className={`text-lg font-black ${deltaPhys > 0 ? "text-emerald-600" : deltaPhys < 0 ? "text-red-600" : "text-slate-500"}`}>{deltaPhys > 0 ? "+" : ""}{deltaPhys.toFixed(1)}pts</span>
+   564→                </div>
+   565→                <div className="bg-white rounded-lg p-3 border border-slate-100 text-center">
+   566→                  <div className="flex items-center justify-center gap-1">
+   567→                    <span className="text-xs font-bold text-slate-600">Δ Financier</span>
+   568→                    {deltaFin > 0 ? <TrendingUp className="h-3.5 w-3.5 text-emerald-500" /> : deltaFin < 0 ? <TrendingDown className="h-3.5 w-3.5 text-red-500" /> : <Minus className="h-3.5 w-3.5 text-slate-400" />}
+   569→                  </div>
+   570→                  <span className={`text-lg font-black ${deltaFin > 0 ? "text-emerald-600" : deltaFin < 0 ? "text-red-600" : "text-slate-500"}`}>{deltaFin > 0 ? "+" : ""}{deltaFin.toFixed(1)}pts</span>
+   571→                </div>
+   572→              </div>
+   573→              {/* Sparkline bars */}
+   574→              <div className="space-y-1 mb-3">
+   575→                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Évolution 4 semaines</p>
+   576→                <div className="flex items-end gap-1.5 h-12">
+   577→                  {weekPhys.map((v, i) => (
+   578→                    <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
+   579→                      <div className="w-full rounded-sm" style={{ height: `${Math.max(6, v * 0.48)}px`, backgroundColor: provColor, opacity: i === weekPhys.length - 1 ? 1 : 0.4 + i * 0.15 }} />
+   580→                    </div>
+   581→                  ))}
+   582→                </div>
+   583→                <div className="flex gap-1.5">
+   584→                  {weekPhys.map((_, i) => (
+   585→                    <div key={i} className="flex-1 text-center">
+   586→                      <span className="text-[8px] text-slate-400">S{currentWeek - (weekPhys.length - 1 - i)}</span>
+   587→                    </div>
+   588→                  ))}
+   589→                </div>
+   590→              </div>
+   591→              {/* Weekly counts */}
+   592→              <div className="grid grid-cols-2 gap-3">
+   593→                <div className="bg-emerald-50 rounded-lg p-2.5 text-center border border-emerald-100">
+   594→                  <p className="text-[9px] font-bold text-emerald-600">Démarrés</p>
+   595→                  <p className="text-lg font-black text-emerald-700">{enCours > 0 ? Math.min(2, enCours) : 0}</p>
+   596→                </div>
+   597→                <div className="bg-amber-50 rounded-lg p-2.5 text-center border border-amber-100">
+   598→                  <p className="text-[9px] font-bold text-amber-600">Terminés</p>
+   599→                  <p className="text-lg font-black text-amber-700">{termine > 0 ? Math.min(1, termine) : 0}</p>
+   600→                </div>
+   601→              </div>
+   602→            </div>
+   603→
+   604→            {/* Sector breakdown */}
+   605→            <div>
+   606→              <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+   607→                <Layers className="h-4 w-4" style={{ color: provColor }} />
+   608→                Avancement par secteur
+   609→              </h4>
+   610→              <div className="space-y-2">
+   611→                {Object.entries(bySecteur)
+   612→                  .sort(([, a], [, b]) => b.cout - a.cout)
+   613→                  .map(([name, d]) => {
+   614→                    const shortName = SECTEUR_SHORT[name] || name;
+   615→                    const dotColor = SECTEUR_DOT_COLORS[shortName] || "#94a3b8";
+   616→                    return (
+   617→                      <div key={name} className="rounded-xl border p-3" style={{ borderColor: dotColor + "25", backgroundColor: dotColor + "04" }}>
+   618→                        <div className="flex items-center justify-between mb-2">
+   619→                          <div className="flex items-center gap-2">
+   620→                            <div className="w-3 h-3 rounded-full shadow" style={{ backgroundColor: dotColor }} />
+   621→                            <span className="text-xs font-extrabold text-slate-800">{shortName}</span>
+   622→                          </div>
+   623→                          <div className="flex items-center gap-3 text-[10px] font-bold">
+   624→                            <span style={{ color: dotColor }}>Phys. {d.ap.toFixed(0)}%</span>
+   625→                            <span className="text-slate-300">|</span>
+   626→                            <span style={{ color: dotColor }} className="opacity-70">Fin. {d.af.toFixed(0)}%</span>
+   627→                            <span className="text-slate-300">|</span>
+   628→                            <span className="text-violet-500">{(d.montant_ordonne / 1e6).toFixed(1)} MDH ord.</span>
+   629→                            <span className="text-slate-300">|</span>
+   630→                            <span className="text-emerald-500">{(d.montant_paye / 1e6).toFixed(1)} MDH payé</span>
+   631→                          </div>
+   632→                        </div>
+   633→                        <div className="flex gap-1.5 h-2.5">
+   634→                          <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+   635→                            <div className="h-full rounded-full" style={{ width: `${d.ap}%`, backgroundColor: dotColor }} />
+   636→                          </div>
+   637→                          <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+   638→                            <div className="h-full rounded-full opacity-60" style={{ width: `${d.af}%`, backgroundColor: dotColor }} />
+   639→                          </div>
+   640→                        </div>
+   641→                        <div className="flex justify-between mt-1 text-[9px] text-slate-400 font-semibold">
+   642→                          <span>Physique</span>
+   643→                          <span>Financier</span>
+   644→                        </div>
+   645→                      </div>
+   646→                    );
+   647→                  })}
+   648→              </div>
+   649→            </div>
+   650→
+   651→            {/* Commune breakdown */}
+   652→            <div>
+   653→              <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+   654→                <MapPin className="h-4 w-4" style={{ color: provColor }} />
+   655→                Avancement par commune
+   656→              </h4>
+   657→              <div className="space-y-2">
+   658→                {Object.entries(byCommune)
+   659→                  .sort(([, a], [, b]) => b.cout - a.cout)
+   660→                  .map(([name, d]) => {
+   661→                    const commColor = communeColorMap[name] || provColor;
+   662→                    return (
+   663→                      <div key={name} className="rounded-xl border p-3" style={{ borderColor: commColor + "25", backgroundColor: commColor + "04" }}>
+   664→                        <div className="flex items-center justify-between mb-2">
+   665→                          <div className="flex items-center gap-2">
+   666→                            <div className="w-3 h-3 rounded-full shadow" style={{ backgroundColor: commColor }} />
+   667→                            <span className="text-xs font-extrabold text-slate-800">{name}</span>
+   668→                            <Badge className="text-[8px] font-bold px-1.5 py-0 border-0" style={{ backgroundColor: commColor + "18", color: commColor }}>{d.nb}P</Badge>
+   669→                          </div>
+   670→                          <div className="flex items-center gap-3 text-[10px] font-bold">
+   671→                            <span style={{ color: commColor }}>Phys. {d.ap.toFixed(0)}%</span>
+   672→                            <span className="text-slate-300">|</span>
+   673→                            <span style={{ color: commColor }} className="opacity-70">Fin. {d.af.toFixed(0)}%</span>
+   674→                            <span className="text-slate-300">|</span>
+   675→                            <span className="text-emerald-500">{(d.cout / 1e6).toFixed(2)} MDH</span>
+   676→                          </div>
+   677→                        </div>
+   678→                        <div className="flex gap-1.5 h-2.5">
+   679→                          <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+   680→                            <div className="h-full rounded-full" style={{ width: `${d.ap}%`, backgroundColor: commColor }} />
+   681→                          </div>
+   682→                          <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+   683→                            <div className="h-full rounded-full opacity-60" style={{ width: `${d.af}%`, backgroundColor: commColor }} />
+   684→                          </div>
+   685→                        </div>
+   686→                        <div className="flex justify-between mt-1 text-[9px] text-slate-400 font-semibold">
+   687→                          <span>Physique</span>
+   688→                          <span>Financier</span>
+   689→                        </div>
+   690→                      </div>
+   691→                    );
+   692→                  })}
+   693→              </div>
+   694→            </div>
+   695→
+   696→            {/* Alert projects */}
+   697→            {alertProjects.length > 0 && (
+   698→              <div className="bg-red-50 rounded-xl p-4 border border-red-200/60">
+   699→                <h4 className="text-xs font-bold text-red-800 mb-2 flex items-center gap-2">
+   700→                  <AlertTriangle className="h-4 w-4 text-red-500" />
+   701→                  Projets en retard physique ({alertProjects.length} projets avec écart &gt; 20pts)
+   702→                </h4>
+   703→                <div className="space-y-1.5">
+   704→                  {alertProjects.map((p, i) => {
+   705→                    const ecart = p.avancement_financier - p.avancement_physique;
+   706→                    return (
+   707→                      <div key={i} className="flex items-center gap-2 text-[11px] text-red-700 bg-white rounded-lg px-3 py-2 border border-red-100">
+   708→                        <ArrowDownRight className="h-3.5 w-3.5 text-red-500 shrink-0" />
+   709→                        <span className="flex-1 truncate"><strong>{p.commune}</strong> — {p.consistance.substring(0, 60)}...</span>
+   710→                        <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 bg-red-100 text-red-700">Phys. {p.avancement_physique}% vs Fin. {p.avancement_financier}%</Badge>
+   711→                      </div>
+   712→                    );
+   713→                  })}
+   714→                </div>
+   715→              </div>
+   716→            )}
+   717→
+   718→            {/* Detailed project table */}
+   719→            <div>
+   720→              <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+   721→                <TableIcon className="h-4 w-4" style={{ color: provColor }} />
+   722→                Détail de l&apos;avancement par projet
+   723→              </h4>
+   724→              <div className="rounded-2xl border-2 overflow-hidden shadow-lg" style={{ borderColor: provColor + "35" }}>
+   725→                {/* Province header */}
+   726→                <div className="px-5 py-3.5 flex items-center justify-between flex-wrap gap-2" style={{ background: `linear-gradient(135deg, ${provColor}18 0%, ${provColor}08 100%)` }}>
+   727→                  <div className="flex items-center gap-2.5">
+   728→                    <div className="w-4 h-4 rounded-full shadow-md ring-2 ring-white" style={{ backgroundColor: provColor }} />
+   729→                    <span className="text-sm font-extrabold text-slate-800">Province de {province}</span>
+   730→                    <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 shadow-sm" style={{ backgroundColor: provColor + "15", color: provColor }}>
+   731→                      {totalProjects} projets
+   732→                    </Badge>
+   733→                  </div>
+   734→                  <div className="flex items-center gap-2 flex-wrap">
+   735→                    <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: "#10b98120", color: "#10b981" }}>
+   736→                      <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />{termine} Terminé
+   737→                    </Badge>
+   738→                    <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: "#f59e0b20", color: "#f59e0b" }}>
+   739→                      <Clock className="h-2.5 w-2.5 mr-0.5" />{enCours} En cours
+   740→                    </Badge>
+   741→                    <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: "#ef444420", color: "#ef4444" }}>
+   742→                      <CircleDot className="h-2.5 w-2.5 mr-0.5" />{nonDemarre} Non démarré
+   743→                    </Badge>
+   744→                    <span className="font-extrabold px-3 py-1 rounded-lg text-[11px] shadow-sm" style={{ backgroundColor: provColor + "10", color: provColor, border: `1px solid ${provColor}25` }}>
+   745→                      {(totalCost / 1e6).toFixed(2)} MDH
+   746→                    </span>
+   747→                  </div>
+   748→                </div>
+   749→
+   750→                {/* Progress bars */}
+   751→                <div className="px-5 py-2.5 grid grid-cols-2 gap-3 bg-white/60 border-b" style={{ borderColor: provColor + "15" }}>
+   752→                  <div>
+   753→                    <div className="flex justify-between items-center mb-1">
+   754→                      <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Wrench className="h-3 w-3" /> Avancement Physique</span>
+   755→                      <span className="text-[11px] font-black" style={{ color: provColor }}>{avancementPhysique.toFixed(0)}%</span>
+   756→                    </div>
+   757→                    <div className="w-full bg-slate-200/80 rounded-full h-2.5 overflow-hidden shadow-inner">
+   758→                      <div className="h-full rounded-full transition-all duration-700" style={{ width: `${avancementPhysique}%`, backgroundColor: provColor }} />
+   759→                    </div>
+   760→                  </div>
+   761→                  <div>
+   762→                    <div className="flex justify-between items-center mb-1">
+   763→                      <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Wallet className="h-3 w-3" /> Avancement Financier</span>
+   764→                      <span className="text-[11px] font-black" style={{ color: provColor }}>{avancementFinancier.toFixed(0)}%</span>
+   765→                    </div>
+   766→                    <div className="w-full bg-slate-200/80 rounded-full h-2.5 overflow-hidden shadow-inner">
+   767→                      <div className="h-full rounded-full transition-all duration-700 opacity-70" style={{ width: `${avancementFinancier}%`, backgroundColor: provColor }} />
+   768→                    </div>
+   769→                  </div>
+   770→                </div>
+   771→
+   772→                {/* Project table */}
+   773→                <div className="overflow-x-auto">
+   774→                  <Table>
+   775→                    <TableHeader>
+   776→                      <TableRow style={{ backgroundColor: provColor + "0A", borderBottomColor: provColor + "20" }}>
+   777→                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3" style={{ color: provColor + "BB" }}>Commune</TableHead>
+   778→                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3" style={{ color: provColor + "BB" }}>Projet</TableHead>
+   779→                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-right" style={{ color: provColor + "BB" }}>Budget</TableHead>
+   780→                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-right" style={{ color: provColor + "BB" }}>Ordonnancé</TableHead>
+   781→                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-right" style={{ color: provColor + "BB" }}>Payé</TableHead>
+   782→                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-center" style={{ color: provColor + "BB" }}>Phys.</TableHead>
+   783→                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-center" style={{ color: provColor + "BB" }}>Fin.</TableHead>
+   784→                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-center" style={{ color: provColor + "BB" }}>Statut</TableHead>
+   785→                      </TableRow>
+   786→                    </TableHeader>
+   787→                    <TableBody>
+   788→                      {projects.map((p, i) => {
+   789→                        const ecart = p.avancement_financier - p.avancement_physique;
+   790→                        const sc = statusConfig[p.statut] || statusConfig["Non démarré"];
+   791→                        const apColor = getStatusColor(p.avancement_physique);
+   792→                        const afColor = getStatusColor(p.avancement_financier);
+   793→                        return (
+   794→                          <TableRow key={i} className={`border-b border-slate-100/80 ${i % 2 === 0 ? "bg-white" : "bg-slate-50/40"}`} style={{ borderLeftWidth: "3px", borderLeftColor: provColor + "30" }}>
+   795→                            <TableCell className="py-2 px-3">
+   796→                              <span className="text-[10px] font-bold text-slate-700 whitespace-nowrap">{p.commune}</span>
+   797→                            </TableCell>
+   798→                            <TableCell className="py-2 px-3 text-[10px] text-slate-600 max-w-[300px] leading-relaxed whitespace-normal">{p.consistance}</TableCell>
+   799→                            <TableCell className="py-2 px-3 text-[10px] font-bold text-slate-700 text-right">{(p.cout / 1e6).toFixed(2)} M</TableCell>
+   800→                            <TableCell className="py-2 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_ordonne > 0 ? "#8b5cf6" : "#94a3b8" }}>{(p.montant_ordonne / 1e6).toFixed(2)} M</TableCell>
+   801→                            <TableCell className="py-2 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_paye > 0 ? "#10b981" : "#94a3b8" }}>{(p.montant_paye / 1e6).toFixed(2)} M</TableCell>
+   802→                            <TableCell className="py-2 px-3 text-center">
+   803→                              <div className="flex items-center justify-center gap-1">
+   804→                                <div className="w-12 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+   805→                                  <div className="h-full rounded-full" style={{ width: `${p.avancement_physique}%`, backgroundColor: apColor }} />
+   806→                                </div>
+   807→                                <span className="text-[10px] font-black" style={{ color: apColor }}>{p.avancement_physique}%</span>
+   808→                              </div>
+   809→                            </TableCell>
+   810→                            <TableCell className="py-2 px-3 text-center">
+   811→                              <div className="flex items-center justify-center gap-1">
+   812→                                <div className="w-12 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+   813→                                  <div className="h-full rounded-full" style={{ width: `${p.avancement_financier}%`, backgroundColor: afColor }} />
+   814→                                </div>
+   815→                                <span className="text-[10px] font-black" style={{ color: afColor }}>{p.avancement_financier}%</span>
+   816→                              </div>
+   817→                            </TableCell>
+   818→                            <TableCell className="py-2 px-3 text-center">
+   819→                              <Badge className={`${sc.bg} ${sc.text} text-[9px] font-bold px-2 py-0.5 border-0`}>
+   820→                                <sc.icon className="h-2.5 w-2.5 mr-0.5" />
+   821→                                {p.statut}
+   822→                              </Badge>
+   823→                              {Math.abs(ecart) > 15 && p.statut === "En cours" && (
+   824→                                <span className="block text-[8px] font-bold text-red-500 mt-0.5">Écart {ecart > 0 ? "-" : "+"}{Math.abs(ecart)}pts</span>
+   825→                              )}
+   826→                            </TableCell>
+   827→                          </TableRow>
+   828→                        );
+   829→                      })}
+   830→                      {/* Total row */}
+   831→                      <TableRow style={{ background: `linear-gradient(135deg, ${provColor}18, ${provColor}08)` }}>
+   832→                        <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-slate-800" colSpan={2}>
+   833→                          Total {province}
+   834→                        </TableCell>
+   835→                        <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-right" style={{ color: "#059669" }}>
+   836→                          {(totalCost / 1e6).toFixed(2)} MDH
+   837→                        </TableCell>
+   838→                        <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-right" style={{ color: "#8b5cf6" }}>
+   839→                          {(totalOrdonne / 1e6).toFixed(2)} MDH
+   840→                        </TableCell>
+   841→                        <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-right" style={{ color: "#10b981" }}>
+   842→                          {(totalPaye / 1e6).toFixed(2)} MDH
+   843→                        </TableCell>
+   844→                        <TableCell className="py-2.5 px-3 text-center">
+   845→                          <span className="text-[10px] font-black" style={{ color: provColor }}>{avancementPhysique.toFixed(0)}%</span>
+   846→                        </TableCell>
+   847→                        <TableCell className="py-2.5 px-3 text-center">
+   848→                          <span className="text-[10px] font-black" style={{ color: provColor }}>{avancementFinancier.toFixed(0)}%</span>
+   849→                        </TableCell>
+   850→                        <TableCell className="py-2.5 px-3 text-center">
+   851→                          <span className="text-[9px] font-bold text-slate-500">{totalProjects} projets</span>
+   852→                        </TableCell>
+   853→                      </TableRow>
+   854→                    </TableBody>
+   855→                  </Table>
+   856→                </div>
+   857→              </div>
+   858→            </div>
+   859→          </CardContent>
+   860→        </Card>
+   861→      </div>
+   862→    );
+   863→  };
+   864→
+   865→  const handleCommuneClick = useCallback((commune: string) => {
+   866→    setSelectedCommune(commune);
+   867→    setTimeout(() => {
+   868→      setSelectedCommune(null);
+   869→    }, 4000);
+   870→  }, []);
+   871→
+   872→  if (!data) {
+   873→    return (
+   874→      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+   875→        <div className="text-center">
+   876→          <div className="relative">
+   877→            <Droplets className="h-14 w-14 text-blue-500 mx-auto animate-pulse" />
+   878→            <div className="absolute -inset-4 bg-blue-400/20 rounded-full blur-xl animate-pulse" />
+   879→          </div>
+   880→          <p className="mt-6 text-lg font-semibold text-gray-700">
+   881→            Chargement du dashboard...
+   882→          </p>
+   883→          <p className="mt-1 text-sm text-gray-400">SIG Gharb - Projets Inondations</p>
+   884→        </div>
+   885→      </div>
+   886→    );
+   887→  }
+   888→
+   889→  const getKpiColors = (index: number) => {
+   890→    if (selectedProvince) {
+   891→      if (selectedProvince === "Kénitra") return [KENITRA_COLOR, KENITRA_COLOR, KENITRA_COLOR, KENITRA_COLOR][index];
+   892→      if (selectedProvince === "Sidi Kacem") return [SIDI_KACEM_COLOR, SIDI_KACEM_COLOR, SIDI_KACEM_COLOR, SIDI_KACEM_COLOR][index];
+   893→      if (selectedProvince === "Sidi Slimane") return [SIDI_SLIMANE_COLOR, SIDI_SLIMANE_COLOR, SIDI_SLIMANE_COLOR, SIDI_SLIMANE_COLOR][index];
+   894→    }
+   895→    return [KENITRA_COLOR, SIDI_KACEM_COLOR, SIDI_SLIMANE_COLOR, DEFAULT_KPI][index];
+   896→  };
+   897→
+   898→  return (
+   899→    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
+   900→      {/* SIDEBAR */}
+   901→      <aside
+   902→        className={`${
+   903→          sidebarOpen ? "w-72" : "w-[68px]"
+   904→        } bg-gradient-to-b from-[#0c1222] via-[#111a2e] to-[#0c1222] text-white flex flex-col shrink-0 border-r border-white/[0.06] transition-all duration-300 ease-in-out relative`}
+   905→      >
+   906→        <div className="p-3 flex items-center justify-between border-b border-white/[0.06]">
+   907→          {sidebarOpen && (
+   908→            <div className="flex items-center gap-2.5 min-w-0">
+   909→              <div className="bg-gradient-to-br from-green-600 to-emerald-700 p-2 rounded-lg shadow-lg shadow-green-600/20 shrink-0">
+   910→                <svg viewBox="0 0 24 24" className="h-4 w-4 text-white" fill="currentColor">
+   911→                  <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z"/>
+   912→                </svg>
+   913→              </div>
+   914→              <div className="min-w-0">
+   915→                <h1 className="text-sm font-bold tracking-tight truncate">ORMVAG — SIG Gharb</h1>
+   916→                <p className="text-[10px] text-slate-400 mt-0.5 truncate">Inondations 2026</p>
+   917→              </div>
+   918→            </div>
+   919→          )}
+   920→          <button
+   921→            onClick={() => setSidebarOpen(!sidebarOpen)}
+   922→            className={`${
+   923→              sidebarOpen ? "ml-auto" : "mx-auto"
+   924→            } p-1.5 rounded-lg hover:bg-white/10 transition-colors text-slate-400 hover:text-white shrink-0`}
+   925→            title={sidebarOpen ? "Fermer la barre latérale" : "Ouvrir la barre latérale"}
+   926→          >
+   927→            {sidebarOpen ? (
+   928→              <PanelLeftClose className="h-4 w-4" />
+   929→            ) : (
+   930→              <PanelLeftOpen className="h-4 w-4" />
+   931→            )}
+   932→          </button>
+   933→        </div>
+   934→
+   935→        <nav className="flex-1 p-2 space-y-0.5">
+   936→          {NAV_ITEMS.map((item) => {
+   937→            const isActive = activeView === item.id;
+   938→            let activeBg = "from-emerald-600 to-teal-600";
+   939→            let activeShadow = "shadow-emerald-600/25";
+   940→            if (item.id === "kenitra") { activeBg = "from-amber-500 to-yellow-600"; activeShadow = "shadow-amber-500/25"; }
+   941→            if (item.id === "sidi-kacem") { activeBg = "from-rose-500 to-pink-600"; activeShadow = "shadow-rose-500/25"; }
+   942→            if (item.id === "sidi-slimane") { activeBg = "from-emerald-500 to-teal-600"; activeShadow = "shadow-emerald-500/25"; }
+   943→            if (item.id === "rapport") { activeBg = "from-amber-500 to-orange-600"; activeShadow = "shadow-amber-500/25"; }
+   944→            if (item.id === "suivi-avancement") { activeBg = "from-indigo-500 to-violet-600"; activeShadow = "shadow-indigo-500/25"; }
+   945→            if (item.id === "suivi-kenitra") { activeBg = "from-amber-500 to-yellow-600"; activeShadow = "shadow-amber-500/25"; }
+   946→            if (item.id === "suivi-sidi-kacem") { activeBg = "from-rose-500 to-pink-600"; activeShadow = "shadow-rose-500/25"; }
+   947→            if (item.id === "suivi-sidi-slimane") { activeBg = "from-emerald-500 to-teal-600"; activeShadow = "shadow-emerald-500/25"; }
+   948→
+   949→            return (
+   950→              <button
+   951→                key={item.id}
+   952→                onClick={() => setActiveView(item.id)}
+   953→                title={!sidebarOpen ? item.label : undefined}
+   954→                className={`w-full flex items-center gap-2.5 ${
+   955→                  sidebarOpen ? "px-3" : "px-0 justify-center"
+   956→                } py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200 ${
+   957→                  isActive
+   958→                    ? `bg-gradient-to-r ${activeBg} text-white shadow-lg ${activeShadow}`
+   959→                    : "text-slate-400 hover:bg-white/[0.06] hover:text-slate-200"
+   960→                }`}
+   961→              >
+   962→                <item.icon className="h-4 w-4 shrink-0" />
+   963→                {sidebarOpen && (
+   964→                  <>
+   965→                    <span className="flex-1 text-left truncate">{item.label}</span>
+   966→                    {isActive && <ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-70" />}
+   967→                  </>
+   968→                )}
+   969→              </button>
+   970→            );
+   971→          })}
+   972→        </nav>
+   973→
+   974→        <div className="p-3 border-t border-white/[0.06]">
+   975→          {sidebarOpen ? (
+   976→            <div className="bg-gradient-to-r from-emerald-600/20 to-teal-600/10 rounded-xl p-3 text-center border border-emerald-500/10">
+   977→              <p className="text-[9px] text-emerald-400/80 uppercase tracking-widest font-bold">
+   978→                Total Gharb
+   979→              </p>
+   980→              <p className="text-2xl font-black text-emerald-400 mt-1">
+   981→                {(totalCost / 1e6).toFixed(1)}
+   982→                <span className="text-sm font-bold ml-0.5">MDH</span>
+   983→              </p>
+   984→              <p className="text-[10px] text-slate-400 mt-0.5">
+   985→                {totalProjects} projets / {totalCommunes} communes
+   986→              </p>
+   987→            </div>
+   988→          ) : (
+   989→            <div className="text-center">
+   990→              <p className="text-[9px] text-emerald-400/60 font-bold">Total</p>
+   991→              <p className="text-xs font-black text-emerald-400 mt-0.5">
+   992→                {(totalCost / 1e6).toFixed(0)}M
+   993→              </p>
+   994→            </div>
+   995→          )}
+   996→        </div>
+   997→      </aside>
+   998→
+   999→      {/* MAIN CONTENT */}
+  1000→      <main className="flex-1 overflow-y-auto">
+  1001→        <div>
+  1002→        {/* Page Header */}
+  1003→        <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 px-6 py-3 sticky top-0 z-20">
+  1004→          <div className="flex items-center justify-between">
+  1005→            <div className="flex items-center gap-3">
+  1006→              {/* ORMVAG Logo */}
+  1007→              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-600 to-emerald-700 flex items-center justify-center shadow-md ring-1 ring-green-400/20">
+  1008→                <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="currentColor">
+  1009→                  <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z"/>
+  1010→                </svg>
+  1011→              </div>
+  1012→              <div>
+  1013→                <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
+  1014→                  {activeView === "overview" ? (
+  1015→                    <>
+  1016→                      <LayoutDashboard className="h-4 w-4 text-green-600" />
+  1017→                      ORMVAG — Tableau de bord
+  1018→                    </>
+  1019→                  ) : activeView === "rapport" ? (
+  1020→                    <>
+  1021→                      <ClipboardCheck className="h-4 w-4 text-amber-600" />
+  1022→                      Rapport d&apos;analyse
+  1023→                    </>
+  1024→                  ) : activeView === "suivi-avancement" ? (
+  1025→                    <>
+  1026→                      <Gauge className="h-4 w-4 text-indigo-600" />
+  1027→                      Suivi d&apos;avancement physique et financier
+  1028→                    </>
+  1029→                  ) : activeView === "suivi-kenitra" ? (
+  1030→                    <><Gauge className="h-4 w-4 text-amber-600" /> Suivi Avancement — Kénitra</>
+  1031→                  ) : activeView === "suivi-sidi-kacem" ? (
+  1032→                    <><Gauge className="h-4 w-4 text-rose-600" /> Suivi Avancement — Sidi Kacem</>
+  1033→                  ) : activeView === "suivi-sidi-slimane" ? (
+  1034→                    <><Gauge className="h-4 w-4 text-emerald-600" /> Suivi Avancement — Sidi Slimane</>
+  1035→                  ) : (
+  1036→                    <>
+  1037→                      <Building2
+  1038→                        className="h-4 w-4"
+  1039→                        style={{ color: PROVINCE_COLORS[selectedProvince!] || "#6366f1" }}
+  1040→                      />
+  1041→                      Province de {selectedProvince}
+  1042→                    </>
+  1043→                  )}
+  1044→                </h2>
+  1045→                <p className="text-[10px] text-slate-400 mt-0">
+  1046→                  Office Régional de Mise en Valeur Agricole du Gharb — Kénitra
+  1047→                </p>
+  1048→              </div>
+  1049→            </div>
+  1050→            <div className="flex items-center gap-2">
+  1051→              <a
+  1052→                href="/Canevas_Hebdomadaire_ORMVAG_Gharb.xlsx"
+  1053→                download
+  1054→                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.03] active:scale-95 bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-emerald-400/30 hover:from-emerald-600 hover:to-teal-700"
+  1055→                title="Télécharger le canevas hebdomadaire avec indicateurs physiques et financiers"
+  1056→              >
+  1057→                <FileDown className="h-4 w-4" />
+  1058→                Canevas Hebdomadaire
+  1059→              </a>
+  1060→              <input
+  1061→                ref={fileInputRef}
+  1062→                type="file"
+  1063→                accept=".xlsx,.xls"
+  1064→                className="hidden"
+  1065→                onChange={async (e) => {
+  1066→                  const file = e.target.files?.[0];
+  1067→                  if (!file) return;
+  1068→                  try {
+  1069→                    const XLSX = await import("xlsx");
+  1070→                    const arrayBuffer = await file.arrayBuffer();
+  1071→                    const workbook = XLSX.read(arrayBuffer, { type: "array" });
+  1072→                    // Try to find the latest weekly sheet (S04, S03, S02, S01) or fallback to first sheet
+  1073→                    const weekSheetNames = ["S04", "S03", "S02", "S01"];
+  1074→                    let sheetName = weekSheetNames.find(n => workbook.SheetNames.includes(n)) || workbook.SheetNames[0];
+  1075→                    const sheet = workbook.Sheets[sheetName];
+  1076→                    const rows: Record<string, unknown>[] = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+  1077→
+  1078→                    if (!data) return;
+  1079→
+  1080→                    const updatedProjects = [...data.projects];
+  1081→                    let matchedCount = 0;
+  1082→
+  1083→                    rows.forEach((row) => {
+  1084→                      // Match by project number (N° column)
+  1085→                      const num = row["N°"] ?? row["N°"];
+  1086→                      const projectIndex = typeof num === "number" ? num - 1 : -1;
+  1087→                      if (projectIndex < 0 || projectIndex >= updatedProjects.length) return;
+  1088→
+  1089→                      // New canevas: "Avancement Physique %" is auto-calculated from quantities
+  1090→                      const avPhys = row["Avancement Physique %"] ?? row["Avancement Physique Sem. Act. (%)"] ?? row["Avancement Physique (%)"];
+  1091→                      const avFin = row["Avancement Financier %"] ?? row["Avancement Financier Sem. Act. (%)"] ?? row["Avancement Financier (%)"];
+  1092→                      const decaisse = row["Montant Décaissé (DH)"] ?? row["Montant Décaissé Cumulé (DH)"];
+  1093→                      const paye = row["Montant Payé (DH)"];
+  1094→                      const ordonne = row["Montant Ordonné (DH)"];
+  1095→
+  1096→                      if (avPhys !== undefined && avPhys !== "") {
+  1097→                        updatedProjects[projectIndex] = {
+  1098→                          ...updatedProjects[projectIndex],
+  1099→                          avancement_physique: typeof avPhys === "number" ? Math.round(avPhys * 100) : Number(avPhys) || updatedProjects[projectIndex].avancement_physique,
+  1100→                        };
+  1101→                      }
+  1102→                      if (avFin !== undefined && avFin !== "") {
+  1103→                        updatedProjects[projectIndex] = {
+  1104→                          ...updatedProjects[projectIndex],
+  1105→                          avancement_financier: typeof avFin === "number" ? Math.round(avFin * 100) : Number(avFin) || updatedProjects[projectIndex].avancement_financier,
+  1106→                        };
+  1107→                      }
+  1108→                      if (decaisse !== undefined && decaisse !== "") {
+  1109→                        const decaisseVal = typeof decaisse === "number" ? decaisse : Number(decaisse) || 0;
+  1110→                        updatedProjects[projectIndex] = {
+  1111→                          ...updatedProjects[projectIndex],
+  1112→                          montant_paye: paye !== undefined && paye !== "" ? (typeof paye === "number" ? paye : Number(paye) || decaisseVal) : decaisseVal,
+  1113→                        };
+  1114→                      }
+  1115→                      if (paye !== undefined && paye !== "") {
+  1116→                        const payeVal = typeof paye === "number" ? paye : Number(paye) || 0;
+  1117→                        updatedProjects[projectIndex] = {
+  1118→                          ...updatedProjects[projectIndex],
+  1119→                          montant_paye: payeVal,
+  1120→                        };
+  1121→                      }
+  1122→                      if (ordonne !== undefined && ordonne !== "") {
+  1123→                        const ordonneVal = typeof ordonne === "number" ? ordonne : Number(ordonne) || 0;
+  1124→                        updatedProjects[projectIndex] = {
+  1125→                          ...updatedProjects[projectIndex],
+  1126→                          montant_ordonne: ordonneVal,
+  1127→                        };
+  1128→                      }
+  1129→                      matchedCount++;
+  1130→                    });
+  1131→
+  1132→                    setData({ ...data, projects: updatedProjects });
+  1133→                    setImportStatus("success");
+  1134→                    setImportMessage(`${matchedCount} projets mis à jour depuis le fichier Excel`);
+  1135→                    setTimeout(() => { setImportStatus("idle"); setImportMessage(""); }, 4000);
+  1136→                  } catch (err) {
+  1137→                    console.error("Erreur import Excel:", err);
+  1138→                    setImportStatus("error");
+  1139→                    setImportMessage("Erreur lors de l'import du fichier Excel");
+  1140→                    setTimeout(() => { setImportStatus("idle"); setImportMessage(""); }, 4000);
+  1141→                  }
+  1142→                  if (fileInputRef.current) fileInputRef.current.value = "";
+  1143→                }}
+  1144→              />
+  1145→              <button
+  1146→                onClick={() => fileInputRef.current?.click()}
+  1147→                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.03] active:scale-95 bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-blue-400/30 hover:from-blue-600 hover:to-indigo-700"
+  1148→                title="Charger un fichier Excel pour mettre à jour le suivi physique et financier"
+  1149→              >
+  1150→                <Upload className="h-4 w-4" />
+  1151→                Importer Excel
+  1152→              </button>
+  1153→              {importStatus !== "idle" && (
+  1154→                <div
+  1155→                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ${
+  1156→                    importStatus === "success"
+  1157→                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+  1158→                      : "bg-red-50 text-red-700 border border-red-200"
+  1159→                  }`}
+  1160→                >
+  1161→                  {importStatus === "success" ? <CheckCircle className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
+  1162→                  {importMessage}
+  1163→                </div>
+  1164→              )}
+  1165→              {activeView === "overview" &&
+  1166→                Object.entries(PROVINCE_COLORS).map(([name, color]) => {
+  1167→                  const provData = data.byProvince[name];
+  1168→                  return (
+  1169→                    <Badge
+  1170→                      key={name}
+  1171→                      style={{
+  1172→                        backgroundColor: color + "18",
+  1173→                        color: color,
+  1174→                        borderColor: color + "30",
+  1175→                      }}
+  1176→                      className="text-xs px-3 py-1 border font-semibold"
+  1177→                    >
+  1178→                      {name}: {((provData?.cout_total ?? 0) / 1e6).toFixed(1)} MDH
+  1179→                    </Badge>
+  1180→                  );
+  1181→                })}
+  1182→
+  1183→            </div>
+  1184→          </div>
+  1185→        </div>
+  1186→
+  1187→        <div className="p-5 space-y-5">
+  1188→          {/* ===== RAPPORT VIEW ===== */}
+  1189→          {activeView === "rapport" ? (
+  1190→            <div className="space-y-6">
+  1191→              {/* Rapport Header */}
+  1192→              <Card className="overflow-hidden shadow-xl border-amber-200/60">
+  1193→                <CardHeader className="py-5 px-6 bg-gradient-to-r from-amber-600 to-orange-600">
+  1194→                  <CardTitle className="text-lg font-extrabold text-white flex items-center gap-3">
+  1195→                    <ClipboardCheck className="h-6 w-6" />
+  1196→                    Rapport d&apos;Analyse — Projets de Lutte contre les Inondations
+  1197→                  </CardTitle>
+  1198→                  <p className="text-amber-100 text-xs mt-1">Région du Gharb — ORMVAG — Année 2026</p>
+  1199→                </CardHeader>
+  1200→                <CardContent className="p-6 space-y-4">
+  1201→                  <p className="text-sm text-slate-700 leading-relaxed">
+  1202→                    Ce rapport présente une analyse détaillée de l&apos;ensemble des projets de lutte contre les inondations
+  1203→                    dans la région du Gharb, couvrant les trois provinces de Kénitra, Sidi Kacem et Sidi Slimane.
+  1204→                    L&apos;objectif est d&apos;identifier les priorités d&apos;investissement, d&apos;évaluer la répartition géographique
+  1205→                    et sectorielle des budgets, et de formuler des recommandations stratégiques pour optimiser
+  1206→                    l&apos;allocation des ressources disponibles.
+  1207→                  </p>
+  1208→                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
+  1209→                    <div className="bg-amber-50 rounded-xl p-4 border border-amber-200/60 text-center">
+  1210→                      <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest mb-1">Coût Global</p>
+  1211→                      <p className="text-2xl font-black text-amber-700">{(data.totalCost / 1e6).toFixed(1)} <span className="text-sm">MDH</span></p>
+  1212→                    </div>
+  1213→                    <div className="bg-blue-50 rounded-xl p-4 border border-blue-200/60 text-center">
+  1214→                      <p className="text-[9px] font-bold text-blue-600 uppercase tracking-widest mb-1">Projets</p>
+  1215→                      <p className="text-2xl font-black text-blue-700">{data.totalProjects}</p>
+  1216→                    </div>
+  1217→                    <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200/60 text-center">
+  1218→                      <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Communes</p>
+  1219→                      <p className="text-2xl font-black text-emerald-700">{Object.keys(data.summary).length}</p>
+  1220→                    </div>
+  1221→                    <div className="bg-purple-50 rounded-xl p-4 border border-purple-200/60 text-center">
+  1222→                      <p className="text-[9px] font-bold text-purple-600 uppercase tracking-widest mb-1">Secteurs</p>
+  1223→                      <p className="text-2xl font-black text-purple-700">{Object.keys(data.bySecteur).length}</p>
+  1224→                    </div>
+  1225→                  </div>
+  1226→
+  1227→                </CardContent>
+  1228→              </Card>
+  1229→
+  1230→              {/* 1. Analyse par Province */}
+  1231→              <Card className="overflow-hidden shadow-lg border-slate-200/60">
+  1232→                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-slate-800 to-slate-700">
+  1233→                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-white">
+  1234→                    <Building2 className="h-4 w-4 text-blue-400" />
+  1235→                    1. Analyse comparative par province
+  1236→                  </CardTitle>
+  1237→                </CardHeader>
+  1238→                <CardContent className="p-5 space-y-4">
+  1239→                  <p className="text-sm text-slate-700 leading-relaxed">
+  1240→                    La répartition des investissements entre les trois provinces révèle des disparités significatives
+  1241→                    qui reflètent à la fois l&apos;étendue des besoins en infrastructure et la densité des zones à risque
+  1242→                    inondation dans chaque province. L&apos;analyse des écarts budgétaires permet d&apos;identifier les provinces
+  1243→                    nécessitant une attention prioritaire en matière de renforcement des ouvrages de protection.
+  1244→                  </p>
+  1245→                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+  1246→                    {Object.entries(data.byProvince).sort(([, a], [, b]) => b.cout_total - a.cout_total).map(([name, d]) => {
+  1247→                      const pct = data.totalCost > 0 ? (d.cout_total / data.totalCost) * 100 : 0;
+  1248→                      const avgCost = d.nb_projets > 0 ? d.cout_total / d.nb_projets : 0;
+  1249→                      const provColor = PROVINCE_COLORS[name] || "#6366f1";
+  1250→                      const isTop = pct === Math.max(...Object.values(data.byProvince).map(p => data.totalCost > 0 ? (p.cout_total / data.totalCost) * 100 : 0));
+  1251→                      return (
+  1252→                        <div key={name} className="rounded-xl border-2 p-4 space-y-3 transition-shadow hover:shadow-lg" style={{ borderColor: provColor + "40", backgroundColor: provColor + "08" }}>
+  1253→                          <div className="flex items-center justify-between">
+  1254→                            <div className="flex items-center gap-2">
+  1255→                              <div className="w-4 h-4 rounded-full shadow-md" style={{ backgroundColor: provColor }} />
+  1256→                              <span className="text-sm font-extrabold text-slate-800">{name}</span>
+  1257→                            </div>
+  1258→                            {isTop && (
+  1259→                              <Badge className="text-[8px] font-bold px-2 py-0.5 border-0 bg-amber-100 text-amber-700">
+  1260→                                <ArrowUpRight className="h-3 w-3 mr-0.5" /> Dominante
+  1261→                              </Badge>
+  1262→                            )}
+  1263→                          </div>
+  1264→                          <div className="space-y-2">
+  1265→                            <div className="flex justify-between items-center">
+  1266→                              <span className="text-[10px] text-slate-500 font-semibold">Budget alloué</span>
+  1267→                              <span className="text-sm font-black" style={{ color: provColor }}>{(d.cout_total / 1e6).toFixed(1)} MDH</span>
+  1268→                            </div>
+  1269→                            <div className="w-full bg-slate-200/80 rounded-full h-3 overflow-hidden shadow-inner">
+  1270→                              <div className="h-full rounded-full shadow-sm" style={{ width: `${pct}%`, backgroundColor: provColor }} />
+  1271→                            </div>
+  1272→                            <div className="flex justify-between">
+  1273→                              <span className="text-[10px] font-bold text-slate-600">{pct.toFixed(1)}% du total</span>
+  1274→                              <span className="text-[10px] text-slate-400">{d.nb_projets} projets / {d.communes} communes</span>
+  1275→                            </div>
+  1276→                          </div>
+  1277→                          <div className="bg-white rounded-lg p-2.5 border border-slate-100 mt-1">
+  1278→                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Coût moyen / projet</p>
+  1279→                            <p className="text-sm font-black text-slate-800">{(avgCost / 1e6).toFixed(2)} MDH</p>
+  1280→                          </div>
+  1281→                        </div>
+  1282→                      );
+  1283→                    })}
+  1284→                  </div>
+  1285→                  {(() => {
+  1286→                    const provEntries = Object.entries(data.byProvince).sort(([, a], [, b]) => b.cout_total - a.cout_total);
+  1287→                    const maxPct = data.totalCost > 0 ? (provEntries[0][1].cout_total / data.totalCost) * 100 : 0;
+  1288→                    const minPct = data.totalCost > 0 ? (provEntries[provEntries.length - 1][1].cout_total / data.totalCost) * 100 : 0;
+  1289→                    const ecart = maxPct - minPct;
+  1290→                    return (
+  1291→                      <div className="bg-amber-50 rounded-xl p-4 border border-amber-200/60 flex items-start gap-3">
+  1292→                        <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+  1293→                        <div>
+  1294→                          <p className="text-xs font-bold text-amber-800 mb-1">Constat clé — Disparité inter-provinciale</p>
+  1295→                          <p className="text-[11px] text-amber-700 leading-relaxed">
+  1296→                            L&apos;écart entre la province la plus dotée ({provEntries[0][0]}, {maxPct.toFixed(1)}%) et la moins dotée
+  1297→                            ({provEntries[provEntries.length - 1][0]}, {minPct.toFixed(1)}%) est de <strong>{ecart.toFixed(1)} points</strong>.
+  1298→                            Cet écart reflète une concentration des investissements sur les zones les plus vulnérables, mais
+  1299→                            souligne également la nécessité de renforcer les infrastructures dans les provinces à faible couverture.
+  1300→                          </p>
+  1301→                        </div>
+  1302→                      </div>
+  1303→                    );
+  1304→                  })()}
+  1305→                </CardContent>
+  1306→              </Card>
+  1307→
+  1308→              {/* 2. Analyse par Secteur */}
+  1309→              <Card className="overflow-hidden shadow-lg border-slate-200/60">
+  1310→                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-slate-800 to-slate-700">
+  1311→                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-white">
+  1312→                    <Layers className="h-4 w-4 text-amber-400" />
+  1313→                    2. Analyse sectorielle des investissements
+  1314→                  </CardTitle>
+  1315→                </CardHeader>
+  1316→                <CardContent className="p-5 space-y-4">
+  1317→                  <p className="text-sm text-slate-700 leading-relaxed">
+  1318→                    L&apos;analyse sectorielle met en évidence la répartition des budgets entre les cinq grands secteurs
+  1319→                    d&apos;intervention. Cette ventilation permet d&apos;identifier les domaines prioritaires et de vérifier
+  1320→                    l&apos;adéquation entre les investissements et les risques identifiés sur le terrain. Les secteurs
+  1321→                    d&apos;assainissement et de drainage concentrent logiquement la part la plus importante des budgets,
+  1322→                    reflétant la nature hydrologique des enjeux dans la plaine du Gharb.
+  1323→                  </p>
+  1324→                  <div className="space-y-3">
+  1325→                    {Object.entries(data.bySecteur)
+  1326→                      .sort(([, a], [, b]) => b.cout_total - a.cout_total)
+  1327→                      .map(([name, d]) => {
+  1328→                        const shortName = SECTEUR_SHORT[name] || name;
+  1329→                        const dotColor = SECTEUR_DOT_COLORS[shortName] || "#94a3b8";
+  1330→                        const pct = data.totalCost > 0 ? (d.cout_total / data.totalCost) * 100 : 0;
+  1331→                        const avgCost = d.nb_projets > 0 ? d.cout_total / d.nb_projets : 0;
+  1332→                        return (
+  1333→                          <div key={name} className="rounded-xl border p-4" style={{ borderColor: dotColor + "30", backgroundColor: dotColor + "06" }}>
+  1334→                            <div className="flex items-center justify-between mb-2">
+  1335→                              <div className="flex items-center gap-2.5">
+  1336→                                <div className="w-4 h-4 rounded-full shadow-md" style={{ backgroundColor: dotColor }} />
+  1337→                                <span className="text-sm font-extrabold text-slate-800">{shortName}</span>
+  1338→                              </div>
+  1339→                              <div className="flex items-center gap-2">
+  1340→                                <span className="text-sm font-black" style={{ color: dotColor }}>{(d.cout_total / 1e6).toFixed(1)} MDH</span>
+  1341→                                <Badge className="text-[10px] font-bold px-2 py-0.5 border-0 shadow-sm" style={{ backgroundColor: dotColor + "15", color: dotColor }}>
+  1342→                                  {pct.toFixed(1)}%
+  1343→                                </Badge>
+  1344→                              </div>
+  1345→                            </div>
+  1346→                            <div className="w-full bg-slate-200/80 rounded-full h-4 overflow-hidden shadow-inner mb-2">
+  1347→                              <div className="h-full rounded-full shadow-sm transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: dotColor }} />
+  1348→                            </div>
+  1349→                            <div className="flex gap-4 text-[10px] text-slate-500 font-semibold">
+  1350→                              <span>{d.nb_projets} projets</span>
+  1351→                              <span>{d.communes} communes</span>
+  1352→                              <span>Coût moyen: {(avgCost / 1e6).toFixed(2)} MDH/projet</span>
+  1353→                            </div>
+  1354→                          </div>
+  1355→                        );
+  1356→                      })}
+  1357→                  </div>
+  1358→                  {(() => {
+  1359→                    const secteurEntries = Object.entries(data.bySecteur).sort(([, a], [, b]) => b.cout_total - a.cout_total);
+  1360→                    const topSecteur = secteurEntries[0];
+  1361→                    const topPct = data.totalCost > 0 ? (topSecteur[1].cout_total / data.totalCost) * 100 : 0;
+  1362→                    return (
+  1363→                      <div className="bg-blue-50 rounded-xl p-4 border border-blue-200/60 flex items-start gap-3">
+  1364→                        <Target className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+  1365→                        <div>
+  1366→                          <p className="text-xs font-bold text-blue-800 mb-1">Secteur prédominant</p>
+  1367→                          <p className="text-[11px] text-blue-700 leading-relaxed">
+  1368→                            Le secteur <strong>{SECTEUR_SHORT[topSecteur[0]] || topSecteur[0]}</strong> capte à lui seul
+  1369→                            <strong> {topPct.toFixed(1)}%</strong> du budget total avec <strong>{topSecteur[1].nb_projets} projets</strong> pour
+  1370→                            un montant de <strong>{(topSecteur[1].cout_total / 1e6).toFixed(1)} MDH</strong>. Cette dominance
+  1371→                            s&apos;explique par la vocation agricole de la région du Gharb, où le réseau d&apos;assainissement
+  1372→                            et de drainage constitue l&apos;infrastructure critique pour la gestion des eaux de crue et la
+  1373→                            protection des terres agricoles.
+  1374→                          </p>
+  1375→                        </div>
+  1376→                      </div>
+  1377→                    );
+  1378→                  })()}
+  1379→                </CardContent>
+  1380→              </Card>
+  1381→
+  1382→              {/* 3. Top Communes */}
+  1383→              <Card className="overflow-hidden shadow-lg border-slate-200/60">
+  1384→                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-slate-800 to-slate-700">
+  1385→                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-white">
+  1386→                    <TrendingUp className="h-4 w-4 text-emerald-400" />
+  1387→                    3. Classement des communes par effort d&apos;investissement
+  1388→                  </CardTitle>
+  1389→                </CardHeader>
+  1390→                <CardContent className="p-5 space-y-4">
+  1391→                  <p className="text-sm text-slate-700 leading-relaxed">
+  1392→                    Le classement des communes selon le montant total des investissements révéle une concentration
+  1393→                    marquée des budgets sur un nombre réduit de communes. Les communes les mieux dotées correspondent
+  1394→                    généralement aux zones les plus exposées aux risques d&apos;inondation, situées dans les bassins versants
+  1395→                    principaux de l&apos;Oued Sebou et ses affluents. Cette concentration est justifiée par l&apos;ampleur des
+  1396→                    travaux nécessaires pour protéger les populations et les infrastructures agricoles.
+  1397→                  </p>
+  1398→                  {(() => {
+  1399→                    const allCommunes = Object.entries(data.summary)
+  1400→                      .map(([name, d]) => ({ name, ...d }))
+  1401→                      .sort((a, b) => b.cout_total - a.cout_total);
+  1402→                    const top5 = allCommunes.slice(0, 5);
+  1403→                    const top5Cost = top5.reduce((s, d) => s + d.cout_total, 0);
+  1404→                    const top5Pct = data.totalCost > 0 ? (top5Cost / data.totalCost) * 100 : 0;
+  1405→                    const avgCost = data.totalProjects > 0 ? data.totalCost / data.totalProjects : 0;
+  1406→                    return (
+  1407→                      <>
+  1408→                        <div className="space-y-2">
+  1409→                          {top5.map((d, idx) => {
+  1410→                            const pct = data.totalCost > 0 ? (d.cout_total / data.totalCost) * 100 : 0;
+  1411→                            const commColor = communeColorMap[d.name] || "#6366f1";
+  1412→                            const provColor = PROVINCE_COLORS[d.province] || "#6366f1";
+  1413→                            return (
+  1414→                              <div key={d.name} className="flex items-center gap-3 rounded-xl border border-slate-200/80 p-3 hover:shadow-md transition-shadow" style={{ borderLeftWidth: "4px", borderLeftColor: commColor }}>
+  1415→                                <span className="text-lg font-black text-slate-300 w-8 text-center shrink-0">#{idx + 1}</span>
+  1416→                                <div className="flex-1 min-w-0">
+  1417→                                  <div className="flex items-center gap-2 mb-1">
+  1418→                                    <span className="text-sm font-extrabold text-slate-800 truncate">{d.name}</span>
+  1419→                                    <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: provColor + "18", color: provColor }}>{d.province}</Badge>
+  1420→                                  </div>
+  1421→                                  <div className="flex items-center gap-2">
+  1422→                                    <div className="flex-1 bg-slate-200/80 rounded-full h-2.5 overflow-hidden shadow-inner">
+  1423→                                      <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: commColor }} />
+  1424→                                    </div>
+  1425→                                    <span className="text-[10px] font-bold text-slate-600 w-10 text-right">{pct.toFixed(1)}%</span>
+  1426→                                  </div>
+  1427→                                </div>
+  1428→                                <div className="text-right shrink-0">
+  1429→                                  <p className="text-sm font-black text-emerald-600">{(d.cout_total / 1e6).toFixed(2)} MDH</p>
+  1430→                                  <p className="text-[10px] text-slate-400">{d.nb_projets} projets</p>
+  1431→                                </div>
+  1432→                              </div>
+  1433→                            );
+  1434→                          })}
+  1435→                        </div>
+  1436→                        <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200/60 flex items-start gap-3">
+  1437→                          <Activity className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
+  1438→                          <div>
+  1439→                            <p className="text-xs font-bold text-emerald-800 mb-1">Concentration des investissements</p>
+  1440→                            <p className="text-[11px] text-emerald-700 leading-relaxed">
+  1441→                              Les 5 communes les mieux dotées concentrent <strong>{top5Pct.toFixed(1)}%</strong> du budget total
+  1442→                              ({(top5Cost / 1e6).toFixed(1)} MDH sur {(data.totalCost / 1e6).toFixed(1)} MDH). Le coût moyen par projet
+  1443→                              à l&apos;échelle régionale s&apos;élève à <strong>{(avgCost / 1e6).toFixed(2)} MDH</strong>. Cette concentration
+  1444→                              traduit la priorisation des zones les plus vulnérables, mais appelle une vigilance pour
+  1445→                              maintenir un niveau d&apos;investissement minimal dans les communes moins dotées.
+  1446→                            </p>
+  1447→                          </div>
+  1448→                        </div>
+  1449→                      </>
+  1450→                    );
+  1451→                  })()}
+  1452→                </CardContent>
+  1453→              </Card>
+  1454→
+  1455→              {/* 4. Indicateurs de performance */}
+  1456→              <Card className="overflow-hidden shadow-lg border-slate-200/60">
+  1457→                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-slate-800 to-slate-700">
+  1458→                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-white">
+  1459→                    <BarChart3 className="h-4 w-4 text-blue-400" />
+  1460→                    4. Indicateurs clés de performance (KPI)
+  1461→                  </CardTitle>
+  1462→                </CardHeader>
+  1463→                <CardContent className="p-5 space-y-4">
+  1464→                  <p className="text-sm text-slate-700 leading-relaxed">
+  1465→                    Les indicateurs ci-dessous offrent une vue synthétique de l&apos;effort d&apos;investissement à l&apos;échelle
+  1466→                    régionale. Ils permettent de mesurer l&apos;intensité de la dépense par commune et par projet, ainsi que
+  1467→                    la diversité sectorielle des interventions. Ces métriques sont essentielles pour le pilotage
+  1468→                    stratégique du programme et l&apos;évaluation de son efficacité.
+  1469→                  </p>
+  1470→                  {(() => {
+  1471→                    const nbCommunes = Object.keys(data.summary).length;
+  1472→                    const nbSecteurs = Object.keys(data.bySecteur).length;
+  1473→                    const avgCostPerCommune = nbCommunes > 0 ? data.totalCost / nbCommunes : 0;
+  1474→                    const avgCostPerProject = data.totalProjects > 0 ? data.totalCost / data.totalProjects : 0;
+  1475→                    const maxCommuneCost = Math.max(...Object.values(data.summary).map(d => d.cout_total));
+  1476→                    const minCommuneCost = Math.min(...Object.values(data.summary).map(d => d.cout_total));
+  1477→                    const maxMinRatio = minCommuneCost > 0 ? maxCommuneCost / minCommuneCost : 0;
+  1478→                    const kpis = [
+  1479→                      { label: "Coût moyen / commune", value: `${(avgCostPerCommune / 1e6).toFixed(2)} MDH`, color: "#3b82f6", icon: LandPlot },
+  1480→                      { label: "Coût moyen / projet", value: `${(avgCostPerProject / 1e6).toFixed(2)} MDH`, color: "#10b981", icon: Hash },
+  1481→                      { label: "Projets / commune", value: (data.totalProjects / nbCommunes).toFixed(1), color: "#f59e0b", icon: MapPin },
+  1482→                      { label: "Ratio max/min (commune)", value: `×${maxMinRatio.toFixed(1)}`, color: "#ef4444", icon: AlertTriangle },
+  1483→                      { label: "Couverture sectorielle", value: `${nbSecteurs} secteurs`, color: "#8b5cf6", icon: Layers },
+  1484→                      { label: "Densité investissement", value: `${(data.totalCost / 1e6 / nbCommunes).toFixed(2)} MDH/commune`, color: "#06b6d4", icon: Activity },
+  1485→                    ];
+  1486→                    return (
+  1487→                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+  1488→                        {kpis.map((kpi) => (
+  1489→                          <div key={kpi.label} className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow">
+  1490→                            <div className="flex items-center gap-2 mb-2">
+  1491→                              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: kpi.color + "15" }}>
+  1492→                                <kpi.icon className="h-4 w-4" style={{ color: kpi.color }} />
+  1493→                              </div>
+  1494→                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-tight">{kpi.label}</span>
+  1495→                            </div>
+  1496→                            <p className="text-lg font-black text-slate-800">{kpi.value}</p>
+  1497→                          </div>
+  1498→                        ))}
+  1499→                      </div>
+  1500→                    );
+  1501→                  })()}
+  1502→                </CardContent>
+  1503→              </Card>
+  1504→            </div>
+  1505→          ) : activeView === "suivi-avancement" ? (
+  1506→            <div className="space-y-6">
+  1507→              {/* Suivi Header */}
+  1508→              <Card className="overflow-hidden shadow-xl border-indigo-200/60">
+  1509→                <CardHeader className="py-5 px-6 bg-gradient-to-r from-indigo-700 to-violet-700">
+  1510→                  <CardTitle className="text-lg font-extrabold text-white flex items-center gap-3">
+  1511→                    <Gauge className="h-6 w-6 text-indigo-300" />
+  1512→                    Suivi d&apos;Avancement Physique et Financier
+  1513→                  </CardTitle>
+  1514→                  <p className="text-indigo-200 text-xs mt-1">Région du Gharb — ORMVAG — Année 2026</p>
+  1515→                </CardHeader>
+  1516→                <CardContent className="p-6 space-y-6">
+  1517→                  {/* Global progress gauges */}
+  1518→                  {(() => {
+  1519→                    const sd = suiviData ?? data;
+  1520→                    const ap = sd.avancementPhysiqueGlobal;
+  1521→                    const af = sd.avancementFinancierGlobal;
+  1522→                    const paye = sd.totalPaye;
+  1523→                    const ordonne = sd.totalOrdonne;
+  1524→                    const tauxPaiement = sd.totalCost > 0 ? (paye / sd.totalCost) * 100 : 0;
+  1525→                    const tauxOrdonnancement = sd.totalCost > 0 ? (ordonne / sd.totalCost) * 100 : 0;
+  1526→                    const getStatusColor = (val: number) => val >= 75 ? "#10b981" : val >= 50 ? "#f59e0b" : val >= 25 ? "#f97316" : "#ef4444";
+  1527→                    const GaugeRing = ({ value, label, color, icon: Icon }: { value: number; label: string; color: string; icon: React.ElementType }) => {
+  1528→                      const radius = 54;
+  1529→                      const circ = 2 * Math.PI * radius;
+  1530→                      const offset = circ - (value / 100) * circ;
+  1531→                      return (
+  1532→                        <div className="flex flex-col items-center gap-2">
+  1533→                          <div className="relative w-32 h-32">
+  1534→                            <svg className="w-32 h-32 -rotate-90" viewBox="0 0 120 120">
+  1535→                              <circle cx="60" cy="60" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="10" />
+  1536→                              <circle cx="60" cy="60" r={radius} fill="none" stroke={color} strokeWidth="10" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset} className="transition-all duration-1000" />
+  1537→                            </svg>
+  1538→                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+  1539→                              <Icon className="h-4 w-4 mb-0.5" style={{ color }} />
+  1540→                              <span className="text-2xl font-black" style={{ color }}>{value.toFixed(0)}%</span>
+  1541→                            </div>
+  1542→                          </div>
+  1543→                          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">{label}</p>
+  1544→                        </div>
+  1545→                      );
+  1546→                    };
+  1547→                    return (
+  1548→                      <>
+  1549→                        <div className="flex flex-wrap justify-center gap-8">
+  1550→                          <GaugeRing value={ap} label="Avancement physique" color={getStatusColor(ap)} icon={Wrench} />
+  1551→                          <GaugeRing value={af} label="Avancement financier" color={getStatusColor(af)} icon={Wallet} />
+  1552→                          <GaugeRing value={tauxOrdonnancement} label="Taux d'ordonnancement" color={getStatusColor(tauxOrdonnancement)} icon={FileText} />
+  1553→                          <GaugeRing value={tauxPaiement} label="Taux de paiement" color={getStatusColor(tauxPaiement)} icon={Wallet} />
+  1554→                        </div>
+  1555→                        <div className="grid grid-cols-4 gap-3 mt-4">
+  1556→                          <div className="bg-indigo-50 rounded-xl p-3 border border-indigo-200/60 text-center">
+  1557→                            <p className="text-[9px] font-bold text-indigo-600 uppercase tracking-widest mb-1">Budget total</p>
+  1558→                            <p className="text-lg font-black text-indigo-800">{(sd.totalCost / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+  1559→                          </div>
+  1560→                          <div className="bg-violet-50 rounded-xl p-3 border border-violet-200/60 text-center">
+  1561→                            <p className="text-[9px] font-bold text-violet-600 uppercase tracking-widest mb-1">Ordonnancé</p>
+  1562→                            <p className="text-lg font-black text-violet-800">{(ordonne / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+  1563→                          </div>
+  1564→                          <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-200/60 text-center">
+  1565→                            <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Payé</p>
+  1566→                            <p className="text-lg font-black text-emerald-800">{(paye / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+  1567→                          </div>
+  1568→                          <div className="bg-amber-50 rounded-xl p-3 border border-amber-200/60 text-center">
+  1569→                            <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest mb-1">Reste à payer</p>
+  1570→                            <p className="text-lg font-black text-amber-800">{((sd.totalCost - paye) / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+  1571→                          </div>
+  1572→                        </div>
+  1573→                      </>
+  1574→                    );
+  1575→                  })()}
+  1576→
+  1577→                  {/* Status distribution */}
+  1578→                  {(() => {
+  1579→                    const sd = suiviData ?? data;
+  1580→                    const statuts = sd.projects.reduce((acc, p) => {
+  1581→                      acc[p.statut] = (acc[p.statut] || 0) + 1;
+  1582→                      return acc;
+  1583→                    }, {} as Record<string, number>);
+  1584→                    const termine = statuts["Terminé"] || 0;
+  1585→                    const enCours = statuts["En cours"] || 0;
+  1586→                    const nonDemarre = statuts["Non démarré"] || 0;
+  1587→                    const total = sd.totalProjects;
+  1588→                    const statusItems = [
+  1589→                      { label: "Terminé", count: termine, color: "#10b981", icon: CheckCircle2, bg: "bg-emerald-50", border: "border-emerald-200/60" },
+  1590→                      { label: "En cours", count: enCours, color: "#f59e0b", icon: Clock, bg: "bg-amber-50", border: "border-amber-200/60" },
+  1591→                      { label: "Non démarré", count: nonDemarre, color: "#ef4444", icon: CircleDot, bg: "bg-red-50", border: "border-red-200/60" },
+  1592→                    ];
+  1593→                    return (
+  1594→                      <div>
+  1595→                        <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+  1596→                          <Activity className="h-4 w-4 text-indigo-500" />
+  1597→                          Répartition par statut
+  1598→                        </h4>
+  1599→                        <div className="grid grid-cols-3 gap-3">
+  1600→                          {statusItems.map((s) => (
+  1601→                            <div key={s.label} className={`${s.bg} rounded-xl p-4 border ${s.border} text-center`}>
+  1602→                              <s.icon className="h-5 w-5 mx-auto mb-1" style={{ color: s.color }} />
+  1603→                              <p className="text-2xl font-black" style={{ color: s.color }}>{s.count}</p>
+  1604→                              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{s.label}</p>
+  1605→                              <p className="text-[9px] text-slate-400 font-semibold mt-0.5">{total > 0 ? ((s.count / total) * 100).toFixed(0) : 0}% des projets</p>
+  1606→                            </div>
+  1607→                          ))}
+  1608→                        </div>
+  1609→                      </div>
+  1610→                    );
+  1611→                  })()}
+  1612→
+  1613→                  {/* Progress by province */}
+  1614→                  <div>
+  1615→                    <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+  1616→                      <Building2 className="h-4 w-4 text-blue-500" />
+  1617→                      Avancement par province
+  1618→                    </h4>
+  1619→                    <div className="space-y-3">
+  1620→                      {Object.entries((suiviData ?? data).byProvince).sort(([, a], [, b]) => b.cout_total - a.cout_total).map(([name, d]) => {
+  1621→                        const provColor = PROVINCE_COLORS[name] || "#6366f1";
+  1622→                        const ap = d.avancement_physique_moyen;
+  1623→                        const af = d.avancement_financier_moyen;
+  1624→                        const ecart = ap - af;
+  1625→                        const ecartLabel = ecart > 0 ? `Physique +${ecart.toFixed(0)}pts` : ecart < 0 ? `Financier +${Math.abs(ecart).toFixed(0)}pts` : "Équilibré";
+  1626→                        const ecartColor = Math.abs(ecart) <= 5 ? "#10b981" : Math.abs(ecart) <= 15 ? "#f59e0b" : "#ef4444";
+  1627→                        return (
+  1628→                          <div key={name} className="rounded-xl border-2 p-4 space-y-3" style={{ borderColor: provColor + "30", backgroundColor: provColor + "06" }}>
+  1629→                            <div className="flex items-center justify-between">
+  1630→                              <div className="flex items-center gap-2">
+  1631→                                <div className="w-3.5 h-3.5 rounded-full shadow" style={{ backgroundColor: provColor }} />
+  1632→                                <span className="text-sm font-extrabold text-slate-800">{name}</span>
+  1633→                              </div>
+  1634→                              <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: ecartColor + "18", color: ecartColor }}>{ecartLabel}</Badge>
+  1635→                            </div>
+  1636→                            <div className="grid grid-cols-2 gap-4">
+  1637→                              <div>
+  1638→                                <div className="flex justify-between items-center mb-1">
+  1639→                                  <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Wrench className="h-3 w-3" /> Physique</span>
+  1640→                                  <span className="text-xs font-black" style={{ color: provColor }}>{ap.toFixed(0)}%</span>
+  1641→                                </div>
+  1642→                                <div className="w-full bg-slate-200/80 rounded-full h-3 overflow-hidden shadow-inner">
+  1643→                                  <div className="h-full rounded-full shadow-sm transition-all duration-700" style={{ width: `${ap}%`, backgroundColor: provColor }} />
+  1644→                                </div>
+  1645→                              </div>
+  1646→                              <div>
+  1647→                                <div className="flex justify-between items-center mb-1">
+  1648→                                  <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Wallet className="h-3 w-3" /> Financier</span>
+  1649→                                  <span className="text-xs font-black" style={{ color: provColor }}>{af.toFixed(0)}%</span>
+  1650→                                </div>
+  1651→                                <div className="w-full bg-slate-200/80 rounded-full h-3 overflow-hidden shadow-inner">
+  1652→                                  <div className="h-full rounded-full shadow-sm transition-all duration-700 opacity-70" style={{ width: `${af}%`, backgroundColor: provColor }} />
+  1653→                                </div>
+  1654→                              </div>
+  1655→                            </div>
+  1656→                            <div className="grid grid-cols-3 gap-2 text-[10px] text-slate-400 font-semibold">
+  1657→                              <span>Ordonnancé: {(d.montant_ordonne_total / 1e6).toFixed(1)} MDH</span>
+  1658→                              <span>Payé: {(d.montant_paye_total / 1e6).toFixed(1)} MDH / {(d.cout_total / 1e6).toFixed(1)} MDH</span>
+  1659→                              <span>{d.nb_projets} projets / {d.communes} communes</span>
+  1660→                            </div>
+  1661→                          </div>
+  1662→                        );
+  1663→                      })}
+  1664→                    </div>
+  1665→                  </div>
+  1666→
+  1667→                  {/* Progress by sector */}
+  1668→                  <div>
+  1669→                    <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+  1670→                      <Layers className="h-4 w-4 text-amber-500" />
+  1671→                      Avancement par secteur
+  1672→                    </h4>
+  1673→                    <div className="space-y-2">
+  1674→                      {Object.entries((suiviData ?? data).bySecteur)
+  1675→                        .sort(([, a], [, b]) => b.cout_total - a.cout_total)
+  1676→                        .map(([name, d]) => {
+  1677→                          const shortName = SECTEUR_SHORT[name] || name;
+  1678→                          const dotColor = SECTEUR_DOT_COLORS[shortName] || "#94a3b8";
+  1679→                          const ap = d.avancement_physique_moyen;
+  1680→                          const af = d.avancement_financier_moyen;
+  1681→                          return (
+  1682→                            <div key={name} className="rounded-xl border p-3" style={{ borderColor: dotColor + "25", backgroundColor: dotColor + "04" }}>
+  1683→                              <div className="flex items-center justify-between mb-2">
+  1684→                                <div className="flex items-center gap-2">
+  1685→                                  <div className="w-3 h-3 rounded-full shadow" style={{ backgroundColor: dotColor }} />
+  1686→                                  <span className="text-xs font-extrabold text-slate-800">{shortName}</span>
+  1687→                                </div>
+  1688→                                <div className="flex items-center gap-3 text-[10px] font-bold">
+  1689→                                  <span style={{ color: dotColor }}>Phys. {ap.toFixed(0)}%</span>
+  1690→                                  <span className="text-slate-300">|</span>
+  1691→                                  <span style={{ color: dotColor }} className="opacity-70">Fin. {af.toFixed(0)}%</span>
+  1692→                                  <span className="text-slate-300">|</span>
+  1693→                                  <span className="text-violet-500">{(d.montant_ordonne_total / 1e6).toFixed(1)} MDH ord.</span>
+  1694→                                  <span className="text-slate-300">|</span>
+  1695→                                  <span className="text-emerald-500">{(d.montant_paye_total / 1e6).toFixed(1)} MDH payé</span>
+  1696→                                </div>
+  1697→                              </div>
+  1698→                              <div className="flex gap-1.5 h-2.5">
+  1699→                                <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+  1700→                                  <div className="h-full rounded-full" style={{ width: `${ap}%`, backgroundColor: dotColor }} />
+  1701→                                </div>
+  1702→                                <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+  1703→                                  <div className="h-full rounded-full opacity-60" style={{ width: `${af}%`, backgroundColor: dotColor }} />
+  1704→                                </div>
+  1705→                              </div>
+  1706→                              <div className="flex justify-between mt-1 text-[9px] text-slate-400 font-semibold">
+  1707→                                <span>Physique</span>
+  1708→                                <span>Financier</span>
+  1709→                              </div>
+  1710→                            </div>
+  1711→                          );
+  1712→                        })}
+  1713→                    </div>
+  1714→                  </div>
+  1715→
+  1716→                  {/* Alert: projects behind schedule */}
+  1717→                  {(() => {
+  1718→                    const alertProjects = (suiviData ?? data).projects
+  1719→                      .filter(p => p.statut === "En cours" && p.avancement_financier - p.avancement_physique > 20)
+  1720→                      .sort((a, b) => (b.avancement_financier - b.avancement_physique) - (a.avancement_financier - a.avancement_physique))
+  1721→                      .slice(0, 5);
+  1722→                    if (alertProjects.length === 0) return null;
+  1723→                    return (
+  1724→                      <div className="bg-red-50 rounded-xl p-4 border border-red-200/60">
+  1725→                        <h4 className="text-xs font-bold text-red-800 mb-2 flex items-center gap-2">
+  1726→                          <AlertTriangle className="h-4 w-4 text-red-500" />
+  1727→                          Projets en retard physique ({alertProjects.length} projets avec écart &gt; 20pts)
+  1728→                        </h4>
+  1729→                        <div className="space-y-1.5">
+  1730→                          {alertProjects.map((p, i) => {
+  1731→                            const ecart = p.avancement_financier - p.avancement_physique;
+  1732→                            return (
+  1733→                              <div key={i} className="flex items-center gap-2 text-[11px] text-red-700 bg-white rounded-lg px-3 py-2 border border-red-100">
+  1734→                                <ArrowDownRight className="h-3.5 w-3.5 text-red-500 shrink-0" />
+  1735→                                <span className="flex-1 truncate"><strong>{p.commune}</strong> — {p.consistance.substring(0, 60)}...</span>
+  1736→                                <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 bg-red-100 text-red-700">Phys. {p.avancement_physique}% vs Fin. {p.avancement_financier}%</Badge>
+  1737→                              </div>
+  1738→                            );
+  1739→                          })}
+  1740→                        </div>
+  1741→                      </div>
+  1742→                    );
+  1743→                  })()}
+  1744→
+  1745→                  {/* Detailed project table by province */}
+  1746→                  <div>
+  1747→                    <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+  1748→                      <TableIcon className="h-4 w-4 text-slate-500" />
+  1749→                      Détail de l&apos;avancement par projet
+  1750→                    </h4>
+  1751→                    <div className="space-y-6">
+  1752→                      {(() => {
+  1753→                        const statusConfig: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
+  1754→                          "Terminé": { bg: "bg-emerald-100", text: "text-emerald-700", icon: CheckCircle2 },
+  1755→                          "En cours": { bg: "bg-amber-100", text: "text-amber-700", icon: Clock },
+  1756→                          "Non démarré": { bg: "bg-red-100", text: "text-red-700", icon: CircleDot },
+  1757→                        };
+  1758→                        const getApColor = (v: number) => v >= 75 ? "#10b981" : v >= 50 ? "#f59e0b" : v >= 25 ? "#f97316" : "#ef4444";
+  1759→
+  1760→                        // Group projects by province, preserving PROVINCE_COLORS order
+  1761→                        const sd = suiviData ?? data;
+  1762→                        const provinceOrder = Object.keys(PROVINCE_COLORS);
+  1763→                        const projectsByProvince = provinceOrder.reduce<Record<string, Project[]>>((acc, prov) => {
+  1764→                          acc[prov] = sd.projects.filter(p => p.province === prov);
+  1765→                          return acc;
+  1766→                        }, {});
+  1767→                        // Also add any provinces not in PROVINCE_COLORS
+  1768→                        sd.projects.forEach(p => {
+  1769→                          if (!projectsByProvince[p.province]) projectsByProvince[p.province] = [];
+  1770→                        });
+  1771→
+  1772→                        return provinceOrder.filter(prov => projectsByProvince[prov] && projectsByProvince[prov].length > 0).map((province) => {
+  1773→                          const provProjects = projectsByProvince[province];
+  1774→                          const provColor = PROVINCE_COLORS[province] || "#6366f1";
+  1775→                          const provTotalBudget = provProjects.reduce((s, p) => s + p.cout, 0);
+  1776→                          const provTotalOrdonne = provProjects.reduce((s, p) => s + p.montant_ordonne, 0);
+  1777→                          const provTotalPaye = provProjects.reduce((s, p) => s + p.montant_paye, 0);
+  1778→                          const provAvgPhys = provProjects.length > 0 ? provProjects.reduce((s, p) => s + p.avancement_physique, 0) / provProjects.length : 0;
+  1779→                          const provAvgFin = provProjects.length > 0 ? provProjects.reduce((s, p) => s + p.avancement_financier, 0) / provProjects.length : 0;
+  1780→                          const termine = provProjects.filter(p => p.statut === "Terminé").length;
+  1781→                          const enCours = provProjects.filter(p => p.statut === "En cours").length;
+  1782→                          const nonDemarre = provProjects.filter(p => p.statut === "Non démarré").length;
+  1783→
+  1784→                          return (
+  1785→                            <div key={province} className="rounded-2xl border-2 overflow-hidden shadow-lg" style={{ borderColor: provColor + "35" }}>
+  1786→                              {/* Province header */}
+  1787→                              <div className="px-5 py-3.5 flex items-center justify-between flex-wrap gap-2" style={{ background: `linear-gradient(135deg, ${provColor}18 0%, ${provColor}08 100%)` }}>
+  1788→                                <div className="flex items-center gap-2.5">
+  1789→                                  <div className="w-4 h-4 rounded-full shadow-md ring-2 ring-white" style={{ backgroundColor: provColor }} />
+  1790→                                  <span className="text-sm font-extrabold text-slate-800">Province de {province}</span>
+  1791→                                  <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 shadow-sm" style={{ backgroundColor: provColor + "15", color: provColor }}>
+  1792→                                    {provProjects.length} projets
+  1793→                                  </Badge>
+  1794→                                </div>
+  1795→                                <div className="flex items-center gap-2 flex-wrap">
+  1796→                                  <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: "#10b98120", color: "#10b981" }}>
+  1797→                                    <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />{termine} Terminé
+  1798→                                  </Badge>
+  1799→                                  <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: "#f59e0b20", color: "#f59e0b" }}>
+  1800→                                    <Clock className="h-2.5 w-2.5 mr-0.5" />{enCours} En cours
+  1801→                                  </Badge>
+  1802→                                  <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: "#ef444420", color: "#ef4444" }}>
+  1803→                                    <CircleDot className="h-2.5 w-2.5 mr-0.5" />{nonDemarre} Non démarré
+  1804→                                  </Badge>
+  1805→                                  <span className="font-extrabold px-3 py-1 rounded-lg text-[11px] shadow-sm" style={{ backgroundColor: provColor + "10", color: provColor, border: `1px solid ${provColor}25` }}>
+  1806→                                    {(provTotalBudget / 1e6).toFixed(2)} MDH
+  1807→                                  </span>
+  1808→                                </div>
+  1809→                              </div>
+  1810→
+  1811→                              {/* Province progress bars */}
+  1812→                              <div className="px-5 py-2.5 grid grid-cols-2 gap-3 bg-white/60 border-b" style={{ borderColor: provColor + "15" }}>
+  1813→                                <div>
+  1814→                                  <div className="flex justify-between items-center mb-1">
+  1815→                                    <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Wrench className="h-3 w-3" /> Avancement Physique</span>
+  1816→                                    <span className="text-[11px] font-black" style={{ color: provColor }}>{provAvgPhys.toFixed(0)}%</span>
+  1817→                                  </div>
+  1818→                                  <div className="w-full bg-slate-200/80 rounded-full h-2.5 overflow-hidden shadow-inner">
+  1819→                                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${provAvgPhys}%`, backgroundColor: provColor }} />
+  1820→                                  </div>
+  1821→                                </div>
+  1822→                                <div>
+  1823→                                  <div className="flex justify-between items-center mb-1">
+  1824→                                    <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Wallet className="h-3 w-3" /> Avancement Financier</span>
+  1825→                                    <span className="text-[11px] font-black" style={{ color: provColor }}>{provAvgFin.toFixed(0)}%</span>
+  1826→                                  </div>
+  1827→                                  <div className="w-full bg-slate-200/80 rounded-full h-2.5 overflow-hidden shadow-inner">
+  1828→                                    <div className="h-full rounded-full transition-all duration-700 opacity-70" style={{ width: `${provAvgFin}%`, backgroundColor: provColor }} />
+  1829→                                  </div>
+  1830→                                </div>
+  1831→                              </div>
+  1832→
+  1833→                              {/* Province project table */}
+  1834→                              <div className="overflow-x-auto">
+  1835→                                <Table>
+  1836→                                  <TableHeader>
+  1837→                                    <TableRow style={{ backgroundColor: provColor + "0A", borderBottomColor: provColor + "20" }}>
+  1838→                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3" style={{ color: provColor + "BB" }}>Commune</TableHead>
+  1839→                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3" style={{ color: provColor + "BB" }}>Projet</TableHead>
+  1840→                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-right" style={{ color: provColor + "BB" }}>Budget</TableHead>
+  1841→                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-right" style={{ color: provColor + "BB" }}>Ordonnancé</TableHead>
+  1842→                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-right" style={{ color: provColor + "BB" }}>Payé</TableHead>
+  1843→                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-center" style={{ color: provColor + "BB" }}>Phys.</TableHead>
+  1844→                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-center" style={{ color: provColor + "BB" }}>Fin.</TableHead>
+  1845→                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-center" style={{ color: provColor + "BB" }}>Statut</TableHead>
+  1846→                                    </TableRow>
+  1847→                                  </TableHeader>
+  1848→                                  <TableBody>
+  1849→                                    {provProjects.map((p, i) => {
+  1850→                                      const ecart = p.avancement_financier - p.avancement_physique;
+  1851→                                      const sc = statusConfig[p.statut] || statusConfig["Non démarré"];
+  1852→                                      const apColor = getApColor(p.avancement_physique);
+  1853→                                      const afColor = getApColor(p.avancement_financier);
+  1854→                                      return (
+  1855→                                        <TableRow key={i} className={`border-b border-slate-100/80 ${i % 2 === 0 ? "bg-white" : "bg-slate-50/40"}`} style={{ borderLeftWidth: "3px", borderLeftColor: provColor + "30" }}>
+  1856→                                          <TableCell className="py-2 px-3">
+  1857→                                            <span className="text-[10px] font-bold text-slate-700 whitespace-nowrap">{p.commune}</span>
+  1858→                                          </TableCell>
+  1859→                                          <TableCell className="py-2 px-3 text-[10px] text-slate-600 max-w-[300px] leading-relaxed whitespace-normal">{p.consistance}</TableCell>
+  1860→                                          <TableCell className="py-2 px-3 text-[10px] font-bold text-slate-700 text-right">{(p.cout / 1e6).toFixed(2)} M</TableCell>
+  1861→                                          <TableCell className="py-2 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_ordonne > 0 ? "#8b5cf6" : "#94a3b8" }}>{(p.montant_ordonne / 1e6).toFixed(2)} M</TableCell>
+  1862→                                          <TableCell className="py-2 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_paye > 0 ? "#10b981" : "#94a3b8" }}>{(p.montant_paye / 1e6).toFixed(2)} M</TableCell>
+  1863→                                          <TableCell className="py-2 px-3 text-center">
+  1864→                                            <div className="flex items-center justify-center gap-1">
+  1865→                                              <div className="w-12 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+  1866→                                                <div className="h-full rounded-full" style={{ width: `${p.avancement_physique}%`, backgroundColor: apColor }} />
+  1867→                                              </div>
+  1868→                                              <span className="text-[10px] font-black" style={{ color: apColor }}>{p.avancement_physique}%</span>
+  1869→                                            </div>
+  1870→                                          </TableCell>
+  1871→                                          <TableCell className="py-2 px-3 text-center">
+  1872→                                            <div className="flex items-center justify-center gap-1">
+  1873→                                              <div className="w-12 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+  1874→                                                <div className="h-full rounded-full" style={{ width: `${p.avancement_financier}%`, backgroundColor: afColor }} />
+  1875→                                              </div>
+  1876→                                              <span className="text-[10px] font-black" style={{ color: afColor }}>{p.avancement_financier}%</span>
+  1877→                                            </div>
+  1878→                                          </TableCell>
+  1879→                                          <TableCell className="py-2 px-3 text-center">
+  1880→                                            <Badge className={`${sc.bg} ${sc.text} text-[9px] font-bold px-2 py-0.5 border-0`}>
+  1881→                                              <sc.icon className="h-2.5 w-2.5 mr-0.5" />
+  1882→                                              {p.statut}
+  1883→                                            </Badge>
+  1884→                                            {Math.abs(ecart) > 15 && p.statut === "En cours" && (
+  1885→                                              <span className="block text-[8px] font-bold text-red-500 mt-0.5">Écart {ecart > 0 ? "-" : "+"}{Math.abs(ecart)}pts</span>
+  1886→                                            )}
+  1887→                                          </TableCell>
+  1888→                                        </TableRow>
+  1889→                                      );
+  1890→                                    })}
+  1891→                                    {/* Province total row */}
+  1892→                                    <TableRow style={{ background: `linear-gradient(135deg, ${provColor}18, ${provColor}08)` }}>
+  1893→                                      <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-slate-800" colSpan={2}>
+  1894→                                        Total {province}
+  1895→                                      </TableCell>
+  1896→                                      <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-right" style={{ color: "#059669" }}>
+  1897→                                        {(provTotalBudget / 1e6).toFixed(2)} MDH
+  1898→                                      </TableCell>
+  1899→                                      <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-right" style={{ color: "#8b5cf6" }}>
+  1900→                                        {(provTotalOrdonne / 1e6).toFixed(2)} MDH
+  1901→                                      </TableCell>
+  1902→                                      <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-right" style={{ color: "#10b981" }}>
+  1903→                                        {(provTotalPaye / 1e6).toFixed(2)} MDH
+  1904→                                      </TableCell>
+  1905→                                      <TableCell className="py-2.5 px-3 text-center">
+  1906→                                        <span className="text-[10px] font-black" style={{ color: provColor }}>{provAvgPhys.toFixed(0)}%</span>
+  1907→                                      </TableCell>
+  1908→                                      <TableCell className="py-2.5 px-3 text-center">
+  1909→                                        <span className="text-[10px] font-black" style={{ color: provColor }}>{provAvgFin.toFixed(0)}%</span>
+  1910→                                      </TableCell>
+  1911→                                      <TableCell className="py-2.5 px-3 text-center">
+  1912→                                        <span className="text-[9px] font-bold text-slate-500">{provProjects.length} projets</span>
+  1913→                                      </TableCell>
+  1914→                                    </TableRow>
+  1915→                                  </TableBody>
+  1916→                                </Table>
+  1917→                              </div>
+  1918→                            </div>
+  1919→                          );
+  1920→                        });
+  1921→                      })()}
+  1922→                    </div>
+  1923→                  </div>
+  1924→                </CardContent>
+  1925→              </Card>
+  1926→            </div>
+  1927→          ) : (
+  1928→          <>
+  1929→          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+  1930→            <KPICard title="Coût Global" value={`${(totalCost / 1e6).toFixed(1)} MDH`} icon={TrendingUp} {...getKpiColors(0)} />
+  1931→            <KPICard title="Projets" value={totalProjects.toString()} icon={Hash} {...getKpiColors(1)} />
+  1932→            <KPICard title="Communes" value={totalCommunes.toString()} icon={LandPlot} {...getKpiColors(2)} />
+  1933→            <KPICard
+  1934→              title="Secteurs"
+  1935→              value={
+  1936→                activeView === "overview"
+  1937→                  ? Object.keys(data.bySecteur).length.toString()
+  1938→                  : Object.keys(filteredSummary).length > 0
+  1939→                  ? new Set(Object.values(filteredSummary).flatMap((d) => Object.keys(d.rubriques))).size.toString()
+  1940→                  : "0"
+  1941→              }
+  1942→              icon={Layers}
+  1943→              {...getKpiColors(3)}
+  1944→            />
+  1945→          </div>
+  1946→
+  1947→
+  1948→
+  1949→          {/* Convention PDF download */}
+  1950→          {selectedProvince && CONVENTION_PDF[selectedProvince] && (
+  1951→            <div className="flex justify-end">
+  1952→              <a
+  1953→                href={CONVENTION_PDF[selectedProvince]!}
+  1954→                download
+  1955→                target="_blank"
+  1956→                rel="noopener noreferrer"
+  1957→                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold border shadow-sm transition-all hover:shadow-md"
+  1958→                style={{
+  1959→                  backgroundColor: (PROVINCE_COLORS[selectedProvince] || "#6366f1") + "10",
+  1960→                  color: PROVINCE_COLORS[selectedProvince] || "#6366f1",
+  1961→                  borderColor: (PROVINCE_COLORS[selectedProvince] || "#6366f1") + "30",
+  1962→                }}
+  1963→              >
+  1964→                <FileDown className="h-4 w-4" />
+  1965→                Convention {selectedProvince}
+  1966→              </a>
+  1967→            </div>
+  1968→          )}
+  1969→
+  1970→          {/* MAP */}
+  1971→          <Card className={`${mapFullscreen ? "fixed inset-0 z-50 h-screen rounded-none border-0" : activeView === "overview" ? "h-[900px]" : "h-[700px]"} !py-0 !gap-0 overflow-hidden shadow-md border-slate-200/60 transition-all duration-300`}>
+  1972→            <CardHeader className="py-2.5 px-4 border-b bg-gradient-to-r from-slate-50 to-white shrink-0">
+  1973→              <div className="flex items-center justify-between">
+  1974→                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-700">
+  1975→                  <Map className="h-4 w-4 text-blue-500" />
+  1976→                  {activeView === "overview" ? "Carte - Région du Gharb" : `Carte - Province ${selectedProvince}`}
+  1977→                </CardTitle>
+  1978→                <button
+  1979→                  onClick={() => setMapFullscreen(!mapFullscreen)}
+  1980→                  className="p-1.5 rounded-lg hover:bg-slate-200/70 transition-colors text-slate-500 hover:text-slate-800"
+  1981→                  title={mapFullscreen ? "Quitter le plein écran" : "Plein écran"}
+  1982→                >
+  1983→                  {mapFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+  1984→                </button>
+  1985→              </div>
+  1986→            </CardHeader>
+  1987→            <CardContent className="p-0 flex-1 min-h-0" style={{ height: mapFullscreen ? "calc(100vh - 44px)" : "calc(100% - 44px)" }}>
+  1988→              <MapComponent
+  1989→                geojsonData={geojsonData}
+  1990→                selectedCommune={selectedCommune}
+  1991→                selectedProvince={selectedProvince}
+  1992→                onCommuneClick={handleCommuneClick}
+  1993→                projectsByCommune={projectsByCommune}
+  1994→                communeColorMap={communeColorMap}
+  1995→              />
+  1996→            </CardContent>
+  1997→          </Card>
+  1998→
+  1999→          {/* ===== SUMMARY TABLE + BAR CHART ===== */}
+  2000→          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+[showing lines 1-2000 of 2845; use offset=2001 with limit to continue reading]

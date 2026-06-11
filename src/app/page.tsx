@@ -319,24 +319,11 @@ export default function Home() {
     const allCommunes = [...new Set(data.projects.filter(p => p.province === province).map(p => p.commune))].sort();
 
     // Compute metrics
-    const totalCost = projects.reduce((s, p) => s + p.cout, 0);
     const totalProjects = projects.length;
-    const totalPaye = projects.reduce((s, p) => s + p.montant_paye, 0);
-    const totalOrdonne = projects.reduce((s, p) => s + p.montant_ordonne, 0);
     const avancementPhysique = totalProjects > 0 ? projects.reduce((s, p) => s + p.avancement_physique, 0) / totalProjects : 0;
     const avancementFinancier = totalProjects > 0 ? projects.reduce((s, p) => s + p.avancement_financier, 0) / totalProjects : 0;
-    const tauxOrdonnancement = totalCost > 0 ? (totalOrdonne / totalCost) * 100 : 0;
-    const tauxPaiement = totalCost > 0 ? (totalPaye / totalCost) * 100 : 0;
-
-    const termine = projects.filter(p => p.statut === "Terminé").length;
-    const enCours = projects.filter(p => p.statut === "En cours").length;
-    const nonDemarre = projects.filter(p => p.statut === "Non démarré").length;
 
     const currentWeek = getCurrentWeek();
-    const weekPhys = getWeeklyData(avancementPhysique);
-    const weekFin = getWeeklyData(avancementFinancier);
-    const deltaPhys = weekPhys.length >= 2 ? weekPhys[weekPhys.length - 1] - weekPhys[weekPhys.length - 2] : 0;
-    const deltaFin = weekFin.length >= 2 ? weekFin[weekFin.length - 1] - weekFin[weekFin.length - 2] : 0;
 
     // Sector breakdown
     const bySecteur: Record<string, { nb: number; cout: number; ap: number; af: number; montant_paye: number; montant_ordonne: number }> = {};
@@ -370,43 +357,45 @@ export default function Home() {
       byCommune[k].af = byCommune[k].nb > 0 ? byCommune[k].af / byCommune[k].nb : 0;
     });
 
-    // Alert projects
-    const alertProjects = projects
-      .filter(p => p.statut === "En cours" && Math.abs(p.avancement_financier - p.avancement_physique) > 20)
-      .sort((a, b) => Math.abs(b.avancement_financier - b.avancement_physique) - Math.abs(a.avancement_financier - a.avancement_physique))
-      .slice(0, 5);
 
-    const getStatusColor = (val: number) => val >= 75 ? "#10b981" : val >= 50 ? "#f59e0b" : val >= 25 ? "#f97316" : "#ef4444";
-
-    const statusConfig: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
-      "Terminé": { bg: "bg-emerald-100", text: "text-emerald-700", icon: CheckCircle2 },
-      "En cours": { bg: "bg-amber-100", text: "text-amber-700", icon: Clock },
-      "Non démarré": { bg: "bg-red-100", text: "text-red-700", icon: CircleDot },
-    };
-
-    const GaugeRing = ({ value, label, color, icon: Icon }: { value: number; label: string; color: string; icon: React.ElementType }) => {
-      const radius = 54;
-      const circ = 2 * Math.PI * radius;
-      const offset = circ - (value / 100) * circ;
-      return (
-        <div className="flex flex-col items-center gap-2">
-          <div className="relative w-32 h-32">
-            <svg className="w-32 h-32 -rotate-90" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="10" />
-              <circle cx="60" cy="60" r={radius} fill="none" stroke={color} strokeWidth="10" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset} className="transition-all duration-1000" />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <Icon className="h-4 w-4 mb-0.5" style={{ color }} />
-              <span className="text-2xl font-black" style={{ color }}>{value.toFixed(0)}%</span>
-            </div>
-          </div>
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">{label}</p>
-        </div>
-      );
-    };
 
     return (
       <div className="space-y-6">
+        {/* Province header */}
+        <div className="rounded-2xl overflow-hidden shadow-xl border-2" style={{ borderColor: provColor + "50" }}>
+          <div className="px-6 py-4" style={{ background: `linear-gradient(135deg, ${provColor}, ${provColor}CC)` }}>
+            <div className="flex items-center gap-3">
+              <Gauge className="h-6 w-6 text-white/80" />
+              <div>
+                <h2 className="text-lg font-extrabold text-white">État d&apos;Avancement — {province}</h2>
+                <p className="text-xs mt-0.5 text-white/50">Région du Gharb — ORMVAG — S{currentWeek}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Overall progress bars */}
+          <div className="px-6 py-4 grid grid-cols-2 gap-4" style={{ background: `linear-gradient(135deg, ${provColor}08, ${provColor}03)` }}>
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1.5"><Wrench className="h-3.5 w-3.5" style={{ color: provColor }} /> Avancement Physique</span>
+                <span className="text-sm font-black" style={{ color: provColor }}>{avancementPhysique.toFixed(1)}%</span>
+              </div>
+              <div className="w-full bg-slate-200/80 rounded-full h-3.5 overflow-hidden shadow-inner">
+                <div className="h-full rounded-full transition-all duration-700" style={{ width: `${avancementPhysique}%`, backgroundColor: provColor }} />
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1.5"><Wallet className="h-3.5 w-3.5" style={{ color: provColor }} /> Avancement Financier</span>
+                <span className="text-sm font-black" style={{ color: provColor }}>{avancementFinancier.toFixed(1)}%</span>
+              </div>
+              <div className="w-full bg-slate-200/80 rounded-full h-3.5 overflow-hidden shadow-inner">
+                <div className="h-full rounded-full transition-all duration-700 opacity-70" style={{ width: `${avancementFinancier}%`, backgroundColor: provColor }} />
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Filter bar */}
         <div className="bg-white/90 backdrop-blur-sm rounded-xl border shadow-md p-3" style={{ borderColor: provColor + "40" }}>
           <div className="flex items-center gap-2 mb-2.5">
@@ -488,376 +477,91 @@ export default function Home() {
           )}
         </div>
 
-        {/* Province header card */}
-        <Card className="overflow-hidden shadow-xl" style={{ borderColor: provColor + "60" }}>
-          <CardHeader className="py-5 px-6" style={{ background: `linear-gradient(135deg, ${provColor}, ${provColor}CC)` }}>
-            <CardTitle className="text-lg font-extrabold text-white flex items-center gap-3">
-              <Gauge className="h-6 w-6" style={{ color: provColor + "80" }} />
-              Suivi d&apos;Avancement — {province}
-            </CardTitle>
-            <p className="text-sm mt-1" style={{ color: provColor + "40" }}>Région du Gharb — ORMVAG — S{currentWeek}</p>
-          </CardHeader>
-          <CardContent className="p-6 space-y-6">
-            {/* Gauge rings */}
-            <div className="flex flex-wrap justify-center gap-8">
-              <GaugeRing value={avancementPhysique} label="Avancement physique" color={getStatusColor(avancementPhysique)} icon={Wrench} />
-              <GaugeRing value={avancementFinancier} label="Avancement financier" color={getStatusColor(avancementFinancier)} icon={Wallet} />
-              <GaugeRing value={tauxOrdonnancement} label="Taux d'ordonnancement" color={getStatusColor(tauxOrdonnancement)} icon={FileText} />
-              <GaugeRing value={tauxPaiement} label="Taux de paiement" color={getStatusColor(tauxPaiement)} icon={Wallet} />
-            </div>
-
-            {/* Budget summary */}
-            <div className="grid grid-cols-4 gap-3">
-              <div className="rounded-xl p-3 border text-center" style={{ backgroundColor: provColor + "08", borderColor: provColor + "20" }}>
-                <p className="text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: provColor }}>Budget total</p>
-                <p className="text-lg font-black" style={{ color: provColor }}>{(totalCost / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
-              </div>
-              <div className="bg-violet-50 rounded-xl p-3 border border-violet-200/60 text-center">
-                <p className="text-[9px] font-bold text-violet-600 uppercase tracking-widest mb-1">Ordonnancé</p>
-                <p className="text-lg font-black text-violet-800">{(totalOrdonne / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
-              </div>
-              <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-200/60 text-center">
-                <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Payé</p>
-                <p className="text-lg font-black text-emerald-800">{(totalPaye / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
-              </div>
-              <div className="bg-amber-50 rounded-xl p-3 border border-amber-200/60 text-center">
-                <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest mb-1">Reste à payer</p>
-                <p className="text-lg font-black text-amber-800">{((totalCost - totalPaye) / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
-              </div>
-            </div>
-
-            {/* Status distribution */}
-            <div>
-              <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
-                <Activity className="h-4 w-4" style={{ color: provColor }} />
-                Répartition par statut
-              </h4>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { label: "Terminé", count: termine, color: "#10b981", icon: CheckCircle2, bg: "bg-emerald-50", border: "border-emerald-200/60" },
-                  { label: "En cours", count: enCours, color: "#f59e0b", icon: Clock, bg: "bg-amber-50", border: "border-amber-200/60" },
-                  { label: "Non démarré", count: nonDemarre, color: "#ef4444", icon: CircleDot, bg: "bg-red-50", border: "border-red-200/60" },
-                ].map((s) => (
-                  <div key={s.label} className={`${s.bg} rounded-xl p-4 border ${s.border} text-center`}>
-                    <s.icon className="h-5 w-5 mx-auto mb-1" style={{ color: s.color }} />
-                    <p className="text-2xl font-black" style={{ color: s.color }}>{s.count}</p>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{s.label}</p>
-                    <p className="text-[9px] text-slate-400 font-semibold mt-0.5">{totalProjects > 0 ? ((s.count / totalProjects) * 100).toFixed(0) : 0}% des projets</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Weekly tracking analysis */}
-            <div className="rounded-xl border p-4" style={{ borderColor: provColor + "25", backgroundColor: provColor + "06" }}>
-              <div className="flex items-center gap-2 mb-3">
-                <Calendar className="h-4 w-4" style={{ color: provColor }} />
-                <span className="text-sm font-extrabold text-slate-700">Suivi Hebdomadaire — S{currentWeek}</span>
-              </div>
-              <div className="grid grid-cols-2 gap-3 mb-3">
-                <div className="bg-white rounded-lg p-3 border border-slate-100 text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <span className="text-xs font-bold text-slate-600">Δ Physique</span>
-                    {deltaPhys > 0 ? <TrendingUp className="h-3.5 w-3.5 text-emerald-500" /> : deltaPhys < 0 ? <TrendingDown className="h-3.5 w-3.5 text-red-500" /> : <Minus className="h-3.5 w-3.5 text-slate-400" />}
-                  </div>
-                  <span className={`text-lg font-black ${deltaPhys > 0 ? "text-emerald-600" : deltaPhys < 0 ? "text-red-600" : "text-slate-500"}`}>{deltaPhys > 0 ? "+" : ""}{deltaPhys.toFixed(1)}pts</span>
-                </div>
-                <div className="bg-white rounded-lg p-3 border border-slate-100 text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <span className="text-xs font-bold text-slate-600">Δ Financier</span>
-                    {deltaFin > 0 ? <TrendingUp className="h-3.5 w-3.5 text-emerald-500" /> : deltaFin < 0 ? <TrendingDown className="h-3.5 w-3.5 text-red-500" /> : <Minus className="h-3.5 w-3.5 text-slate-400" />}
-                  </div>
-                  <span className={`text-lg font-black ${deltaFin > 0 ? "text-emerald-600" : deltaFin < 0 ? "text-red-600" : "text-slate-500"}`}>{deltaFin > 0 ? "+" : ""}{deltaFin.toFixed(1)}pts</span>
-                </div>
-              </div>
-              {/* Sparkline bars */}
-              <div className="space-y-1 mb-3">
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Évolution 4 semaines</p>
-                <div className="flex items-end gap-1.5 h-12">
-                  {weekPhys.map((v, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
-                      <div className="w-full rounded-sm" style={{ height: `${Math.max(6, v * 0.48)}px`, backgroundColor: provColor, opacity: i === weekPhys.length - 1 ? 1 : 0.4 + i * 0.15 }} />
-                    </div>
-                  ))}
-                </div>
-                <div className="flex gap-1.5">
-                  {weekPhys.map((_, i) => (
-                    <div key={i} className="flex-1 text-center">
-                      <span className="text-[8px] text-slate-400">S{currentWeek - (weekPhys.length - 1 - i)}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {/* Weekly counts */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-emerald-50 rounded-lg p-2.5 text-center border border-emerald-100">
-                  <p className="text-[9px] font-bold text-emerald-600">Démarrés</p>
-                  <p className="text-lg font-black text-emerald-700">{enCours > 0 ? Math.min(2, enCours) : 0}</p>
-                </div>
-                <div className="bg-amber-50 rounded-lg p-2.5 text-center border border-amber-100">
-                  <p className="text-[9px] font-bold text-amber-600">Terminés</p>
-                  <p className="text-lg font-black text-amber-700">{termine > 0 ? Math.min(1, termine) : 0}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Sector breakdown */}
-            <div>
-              <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
-                <Layers className="h-4 w-4" style={{ color: provColor }} />
-                Avancement par secteur
-              </h4>
-              <div className="space-y-2">
-                {Object.entries(bySecteur)
-                  .sort(([, a], [, b]) => b.cout - a.cout)
-                  .map(([name, d]) => {
-                    const shortName = SECTEUR_SHORT[name] || name;
-                    const dotColor = SECTEUR_DOT_COLORS[shortName] || "#94a3b8";
-                    return (
-                      <div key={name} className="rounded-xl border p-3" style={{ borderColor: dotColor + "25", backgroundColor: dotColor + "04" }}>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full shadow" style={{ backgroundColor: dotColor }} />
-                            <span className="text-xs font-extrabold text-slate-800">{shortName}</span>
-                          </div>
-                          <div className="flex items-center gap-3 text-[10px] font-bold">
-                            <span style={{ color: dotColor }}>Phys. {d.ap.toFixed(0)}%</span>
-                            <span className="text-slate-300">|</span>
-                            <span style={{ color: dotColor }} className="opacity-70">Fin. {d.af.toFixed(0)}%</span>
-                            <span className="text-slate-300">|</span>
-                            <span className="text-violet-500">{(d.montant_ordonne / 1e6).toFixed(1)} MDH ord.</span>
-                            <span className="text-slate-300">|</span>
-                            <span className="text-emerald-500">{(d.montant_paye / 1e6).toFixed(1)} MDH payé</span>
-                          </div>
-                        </div>
-                        <div className="flex gap-1.5 h-2.5">
-                          <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
-                            <div className="h-full rounded-full" style={{ width: `${d.ap}%`, backgroundColor: dotColor }} />
-                          </div>
-                          <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
-                            <div className="h-full rounded-full opacity-60" style={{ width: `${d.af}%`, backgroundColor: dotColor }} />
-                          </div>
-                        </div>
-                        <div className="flex justify-between mt-1 text-[9px] text-slate-400 font-semibold">
-                          <span>Physique</span>
-                          <span>Financier</span>
-                        </div>
+        {/* Sector advancement */}
+        <div>
+          <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+            <Layers className="h-4 w-4" style={{ color: provColor }} />
+            Avancement par secteur
+          </h4>
+          <div className="space-y-2">
+            {Object.entries(bySecteur)
+              .sort(([, a], [, b]) => b.cout - a.cout)
+              .map(([name, d]) => {
+                const shortName = SECTEUR_SHORT[name] || name;
+                const dotColor = SECTEUR_DOT_COLORS[shortName] || "#94a3b8";
+                return (
+                  <div key={name} className="rounded-xl border p-3" style={{ borderColor: dotColor + "25", backgroundColor: dotColor + "04" }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full shadow" style={{ backgroundColor: dotColor }} />
+                        <span className="text-xs font-extrabold text-slate-800">{shortName}</span>
                       </div>
-                    );
-                  })}
-              </div>
-            </div>
-
-            {/* Commune breakdown */}
-            <div>
-              <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
-                <MapPin className="h-4 w-4" style={{ color: provColor }} />
-                Avancement par commune
-              </h4>
-              <div className="space-y-2">
-                {Object.entries(byCommune)
-                  .sort(([, a], [, b]) => b.cout - a.cout)
-                  .map(([name, d]) => {
-                    const commColor = communeColorMap[name] || provColor;
-                    return (
-                      <div key={name} className="rounded-xl border p-3" style={{ borderColor: commColor + "25", backgroundColor: commColor + "04" }}>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full shadow" style={{ backgroundColor: commColor }} />
-                            <span className="text-xs font-extrabold text-slate-800">{name}</span>
-                            <Badge className="text-[8px] font-bold px-1.5 py-0 border-0" style={{ backgroundColor: commColor + "18", color: commColor }}>{d.nb}P</Badge>
-                          </div>
-                          <div className="flex items-center gap-3 text-[10px] font-bold">
-                            <span style={{ color: commColor }}>Phys. {d.ap.toFixed(0)}%</span>
-                            <span className="text-slate-300">|</span>
-                            <span style={{ color: commColor }} className="opacity-70">Fin. {d.af.toFixed(0)}%</span>
-                            <span className="text-slate-300">|</span>
-                            <span className="text-emerald-500">{(d.cout / 1e6).toFixed(2)} MDH</span>
-                          </div>
-                        </div>
-                        <div className="flex gap-1.5 h-2.5">
-                          <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
-                            <div className="h-full rounded-full" style={{ width: `${d.ap}%`, backgroundColor: commColor }} />
-                          </div>
-                          <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
-                            <div className="h-full rounded-full opacity-60" style={{ width: `${d.af}%`, backgroundColor: commColor }} />
-                          </div>
-                        </div>
-                        <div className="flex justify-between mt-1 text-[9px] text-slate-400 font-semibold">
-                          <span>Physique</span>
-                          <span>Financier</span>
-                        </div>
+                      <div className="flex items-center gap-3 text-[10px] font-bold">
+                        <span style={{ color: dotColor }}>Phys. {d.ap.toFixed(0)}%</span>
+                        <span className="text-slate-300">|</span>
+                        <span style={{ color: dotColor }} className="opacity-70">Fin. {d.af.toFixed(0)}%</span>
                       </div>
-                    );
-                  })}
-              </div>
-            </div>
-
-            {/* Alert projects */}
-            {alertProjects.length > 0 && (
-              <div className="bg-red-50 rounded-xl p-4 border border-red-200/60">
-                <h4 className="text-xs font-bold text-red-800 mb-2 flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-red-500" />
-                  Projets en retard physique ({alertProjects.length} projets avec écart &gt; 20pts)
-                </h4>
-                <div className="space-y-1.5">
-                  {alertProjects.map((p, i) => {
-                    const ecart = p.avancement_financier - p.avancement_physique;
-                    return (
-                      <div key={i} className="flex items-center gap-2 text-[11px] text-red-700 bg-white rounded-lg px-3 py-2 border border-red-100">
-                        <ArrowDownRight className="h-3.5 w-3.5 text-red-500 shrink-0" />
-                        <span className="flex-1 truncate"><strong>{p.commune}</strong> — {p.consistance.substring(0, 60)}...</span>
-                        <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 bg-red-100 text-red-700">Phys. {p.avancement_physique}% vs Fin. {p.avancement_financier}%</Badge>
+                    </div>
+                    <div className="flex gap-1.5 h-2.5">
+                      <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+                        <div className="h-full rounded-full" style={{ width: `${d.ap}%`, backgroundColor: dotColor }} />
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+                      <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+                        <div className="h-full rounded-full opacity-60" style={{ width: `${d.af}%`, backgroundColor: dotColor }} />
+                      </div>
+                    </div>
+                    <div className="flex justify-between mt-1 text-[9px] text-slate-400 font-semibold">
+                      <span>Physique</span>
+                      <span>Financier</span>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
 
-            {/* Detailed project table */}
-            <div>
-              <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
-                <TableIcon className="h-4 w-4" style={{ color: provColor }} />
-                Détail de l&apos;avancement par projet
-              </h4>
-              <div className="rounded-2xl border-2 overflow-hidden shadow-lg" style={{ borderColor: provColor + "35" }}>
-                {/* Province header */}
-                <div className="px-5 py-3.5 flex items-center justify-between flex-wrap gap-2" style={{ background: `linear-gradient(135deg, ${provColor}18 0%, ${provColor}08 100%)` }}>
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-4 h-4 rounded-full shadow-md ring-2 ring-white" style={{ backgroundColor: provColor }} />
-                    <span className="text-sm font-extrabold text-slate-800">Province de {province}</span>
-                    <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 shadow-sm" style={{ backgroundColor: provColor + "15", color: provColor }}>
-                      {totalProjects} projets
-                    </Badge>
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: "#10b98120", color: "#10b981" }}>
-                      <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />{termine} Terminé
-                    </Badge>
-                    <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: "#f59e0b20", color: "#f59e0b" }}>
-                      <Clock className="h-2.5 w-2.5 mr-0.5" />{enCours} En cours
-                    </Badge>
-                    <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: "#ef444420", color: "#ef4444" }}>
-                      <CircleDot className="h-2.5 w-2.5 mr-0.5" />{nonDemarre} Non démarré
-                    </Badge>
-                    <span className="font-extrabold px-3 py-1 rounded-lg text-[11px] shadow-sm" style={{ backgroundColor: provColor + "10", color: provColor, border: `1px solid ${provColor}25` }}>
-                      {(totalCost / 1e6).toFixed(2)} MDH
-                    </span>
-                  </div>
-                </div>
-
-                {/* Progress bars */}
-                <div className="px-5 py-2.5 grid grid-cols-2 gap-3 bg-white/60 border-b" style={{ borderColor: provColor + "15" }}>
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Wrench className="h-3 w-3" /> Avancement Physique</span>
-                      <span className="text-[11px] font-black" style={{ color: provColor }}>{avancementPhysique.toFixed(0)}%</span>
+        {/* Commune advancement */}
+        <div>
+          <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+            <MapPin className="h-4 w-4" style={{ color: provColor }} />
+            Avancement par commune
+          </h4>
+          <div className="space-y-2">
+            {Object.entries(byCommune)
+              .sort(([, a], [, b]) => b.cout - a.cout)
+              .map(([name, d]) => {
+                const commColor = communeColorMap[name] || provColor;
+                return (
+                  <div key={name} className="rounded-xl border p-3" style={{ borderColor: commColor + "25", backgroundColor: commColor + "04" }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full shadow" style={{ backgroundColor: commColor }} />
+                        <span className="text-xs font-extrabold text-slate-800">{name}</span>
+                        <Badge className="text-[8px] font-bold px-1.5 py-0 border-0" style={{ backgroundColor: commColor + "18", color: commColor }}>{d.nb}P</Badge>
+                      </div>
+                      <div className="flex items-center gap-3 text-[10px] font-bold">
+                        <span style={{ color: commColor }}>Phys. {d.ap.toFixed(0)}%</span>
+                        <span className="text-slate-300">|</span>
+                        <span style={{ color: commColor }} className="opacity-70">Fin. {d.af.toFixed(0)}%</span>
+                      </div>
                     </div>
-                    <div className="w-full bg-slate-200/80 rounded-full h-2.5 overflow-hidden shadow-inner">
-                      <div className="h-full rounded-full transition-all duration-700" style={{ width: `${avancementPhysique}%`, backgroundColor: provColor }} />
+                    <div className="flex gap-1.5 h-2.5">
+                      <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+                        <div className="h-full rounded-full" style={{ width: `${d.ap}%`, backgroundColor: commColor }} />
+                      </div>
+                      <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+                        <div className="h-full rounded-full opacity-60" style={{ width: `${d.af}%`, backgroundColor: commColor }} />
+                      </div>
+                    </div>
+                    <div className="flex justify-between mt-1 text-[9px] text-slate-400 font-semibold">
+                      <span>Physique</span>
+                      <span>Financier</span>
                     </div>
                   </div>
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Wallet className="h-3 w-3" /> Avancement Financier</span>
-                      <span className="text-[11px] font-black" style={{ color: provColor }}>{avancementFinancier.toFixed(0)}%</span>
-                    </div>
-                    <div className="w-full bg-slate-200/80 rounded-full h-2.5 overflow-hidden shadow-inner">
-                      <div className="h-full rounded-full transition-all duration-700 opacity-70" style={{ width: `${avancementFinancier}%`, backgroundColor: provColor }} />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Project table */}
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow style={{ backgroundColor: provColor + "0A", borderBottomColor: provColor + "20" }}>
-                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3" style={{ color: provColor + "BB" }}>Commune</TableHead>
-                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3" style={{ color: provColor + "BB" }}>Projet</TableHead>
-                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-right" style={{ color: provColor + "BB" }}>Budget</TableHead>
-                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-right" style={{ color: provColor + "BB" }}>Ordonnancé</TableHead>
-                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-right" style={{ color: provColor + "BB" }}>Payé</TableHead>
-                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-center" style={{ color: provColor + "BB" }}>Phys.</TableHead>
-                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-center" style={{ color: provColor + "BB" }}>Fin.</TableHead>
-                        <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-center" style={{ color: provColor + "BB" }}>Statut</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {projects.map((p, i) => {
-                        const ecart = p.avancement_financier - p.avancement_physique;
-                        const sc = statusConfig[p.statut] || statusConfig["Non démarré"];
-                        const apColor = getStatusColor(p.avancement_physique);
-                        const afColor = getStatusColor(p.avancement_financier);
-                        return (
-                          <TableRow key={i} className={`border-b border-slate-100/80 ${i % 2 === 0 ? "bg-white" : "bg-slate-50/40"}`} style={{ borderLeftWidth: "3px", borderLeftColor: provColor + "30" }}>
-                            <TableCell className="py-2 px-3">
-                              <span className="text-[10px] font-bold text-slate-700 whitespace-nowrap">{p.commune}</span>
-                            </TableCell>
-                            <TableCell className="py-2 px-3 text-[10px] text-slate-600 max-w-[300px] leading-relaxed whitespace-normal">{p.consistance}</TableCell>
-                            <TableCell className="py-2 px-3 text-[10px] font-bold text-slate-700 text-right">{(p.cout / 1e6).toFixed(2)} M</TableCell>
-                            <TableCell className="py-2 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_ordonne > 0 ? "#8b5cf6" : "#94a3b8" }}>{(p.montant_ordonne / 1e6).toFixed(2)} M</TableCell>
-                            <TableCell className="py-2 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_paye > 0 ? "#10b981" : "#94a3b8" }}>{(p.montant_paye / 1e6).toFixed(2)} M</TableCell>
-                            <TableCell className="py-2 px-3 text-center">
-                              <div className="flex items-center justify-center gap-1">
-                                <div className="w-12 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
-                                  <div className="h-full rounded-full" style={{ width: `${p.avancement_physique}%`, backgroundColor: apColor }} />
-                                </div>
-                                <span className="text-[10px] font-black" style={{ color: apColor }}>{p.avancement_physique}%</span>
-                              </div>
-                            </TableCell>
-                            <TableCell className="py-2 px-3 text-center">
-                              <div className="flex items-center justify-center gap-1">
-                                <div className="w-12 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
-                                  <div className="h-full rounded-full" style={{ width: `${p.avancement_financier}%`, backgroundColor: afColor }} />
-                                </div>
-                                <span className="text-[10px] font-black" style={{ color: afColor }}>{p.avancement_financier}%</span>
-                              </div>
-                            </TableCell>
-                            <TableCell className="py-2 px-3 text-center">
-                              <Badge className={`${sc.bg} ${sc.text} text-[9px] font-bold px-2 py-0.5 border-0`}>
-                                <sc.icon className="h-2.5 w-2.5 mr-0.5" />
-                                {p.statut}
-                              </Badge>
-                              {Math.abs(ecart) > 15 && p.statut === "En cours" && (
-                                <span className="block text-[8px] font-bold text-red-500 mt-0.5">Écart {ecart > 0 ? "-" : "+"}{Math.abs(ecart)}pts</span>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                      {/* Total row */}
-                      <TableRow style={{ background: `linear-gradient(135deg, ${provColor}18, ${provColor}08)` }}>
-                        <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-slate-800" colSpan={2}>
-                          Total {province}
-                        </TableCell>
-                        <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-right" style={{ color: "#059669" }}>
-                          {(totalCost / 1e6).toFixed(2)} MDH
-                        </TableCell>
-                        <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-right" style={{ color: "#8b5cf6" }}>
-                          {(totalOrdonne / 1e6).toFixed(2)} MDH
-                        </TableCell>
-                        <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-right" style={{ color: "#10b981" }}>
-                          {(totalPaye / 1e6).toFixed(2)} MDH
-                        </TableCell>
-                        <TableCell className="py-2.5 px-3 text-center">
-                          <span className="text-[10px] font-black" style={{ color: provColor }}>{avancementPhysique.toFixed(0)}%</span>
-                        </TableCell>
-                        <TableCell className="py-2.5 px-3 text-center">
-                          <span className="text-[10px] font-black" style={{ color: provColor }}>{avancementFinancier.toFixed(0)}%</span>
-                        </TableCell>
-                        <TableCell className="py-2.5 px-3 text-center">
-                          <span className="text-[9px] font-bold text-slate-500">{totalProjects} projets</span>
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                );
+              })}
+          </div>
+        </div>
       </div>
     );
   };
