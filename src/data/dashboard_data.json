@@ -15,7 +15,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 1046,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/01",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 120,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -32,7 +40,15 @@
       "montant_ordonne": 0,
       "unite": "km",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/40/21/2026/02",
+      "societe_titulaire": "MAROCHEM",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -49,7 +65,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 42,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/03",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -66,7 +90,15 @@
       "montant_ordonne": 0,
       "unite": "U",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/04",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 150,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -83,7 +115,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 500,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/05",
+      "societe_titulaire": "STARECO",
+      "date_ouverture_plis": "2026-11-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 90,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -100,7 +140,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 423,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/06",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "2026-11-01",
+      "date_jugement": "2026-12-01",
+      "date_osc": "",
+      "delai_execution": 90,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -117,7 +165,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 67,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/07",
+      "societe_titulaire": "SOCIETE CHÉRIFIENNE DE TRAVAUX",
+      "date_ouverture_plis": "2026-11-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -134,7 +190,15 @@
       "montant_ordonne": 0,
       "unite": "U",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/08",
+      "societe_titulaire": "ALF SAHARA",
+      "date_ouverture_plis": "2026-11-01",
+      "date_jugement": "2026-12-01",
+      "date_osc": "",
+      "delai_execution": 120,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -151,7 +215,15 @@
       "montant_ordonne": 0,
       "unite": "U",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/09",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 150,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -168,7 +240,15 @@
       "montant_ordonne": 0,
       "unite": "m³",
       "qte_prevue": 320,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/10",
+      "societe_titulaire": "SOTHEMA ENGINEERING",
+      "date_ouverture_plis": "2026-11-01",
+      "date_jugement": "2026-12-01",
+      "date_osc": "",
+      "delai_execution": 90,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -185,7 +265,15 @@
       "montant_ordonne": 0,
       "unite": "U",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/11",
+      "societe_titulaire": "HYDRAULIQUE DU MAGHREB",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 120,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -202,7 +290,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 500,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/12",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 150,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -219,7 +315,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 370,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/13",
+      "societe_titulaire": "BETON PLUS",
+      "date_ouverture_plis": "2026-11-01",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 120,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -236,7 +340,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 638,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/14",
+      "societe_titulaire": "CANALISATION MODERNE",
+      "date_ouverture_plis": "2026-11-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 90,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -253,7 +365,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 2898,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/15",
+      "societe_titulaire": "GENIE CIVIL DU NORD",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 150,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -270,7 +390,15 @@
       "montant_ordonne": 0,
       "unite": "km",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/40/21/2026/16",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "2026-12-01",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -287,7 +415,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 133,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/20/11/2026/17",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "2026-12-01",
+      "date_osc": "",
+      "delai_execution": 150,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -304,7 +440,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 69,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/20/11/2026/18",
+      "societe_titulaire": "ASSAINISSEMENT SERVICES",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "2026-12-01",
+      "date_osc": "",
+      "delai_execution": 90,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -321,7 +465,15 @@
       "montant_ordonne": 0,
       "unite": "km",
       "qte_prevue": 4,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/40/21/2026/19",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "",
+      "date_jugement": "",
+      "date_osc": "",
+      "delai_execution": 90,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -338,7 +490,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 100,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/20",
+      "societe_titulaire": "SOCIETE D'EAU ET D'ASSAINISSEMENT",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "2026-12-01",
+      "date_osc": "",
+      "delai_execution": 150,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -355,7 +515,15 @@
       "montant_ordonne": 0,
       "unite": "U",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/21",
+      "societe_titulaire": "ROUTES ET PISTES DU MAGHREB",
+      "date_ouverture_plis": "",
+      "date_jugement": "2026-12-01",
+      "date_osc": "",
+      "delai_execution": 90,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -372,7 +540,15 @@
       "montant_ordonne": 0,
       "unite": "U",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/22",
+      "societe_titulaire": "SOGEA MAROC",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -389,7 +565,15 @@
       "montant_ordonne": 0,
       "unite": "U",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/23",
+      "societe_titulaire": "Bouygues Trav. Publics",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 90,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -406,7 +590,15 @@
       "montant_ordonne": 0,
       "unite": "m³",
       "qte_prevue": 7040,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/24",
+      "societe_titulaire": "COLAS MAROC",
+      "date_ouverture_plis": "",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 150,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -423,7 +615,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 48,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/25",
+      "societe_titulaire": "SNC-LAVALIN MAROC",
+      "date_ouverture_plis": "",
+      "date_jugement": "2026-12-01",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -440,7 +640,15 @@
       "montant_ordonne": 0,
       "unite": "U",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/26",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "2026-12-01",
+      "date_osc": "",
+      "delai_execution": 120,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -457,7 +665,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 867,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/27",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 150,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -474,7 +690,15 @@
       "montant_ordonne": 0,
       "unite": "km",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/40/21/2026/28",
+      "societe_titulaire": "MAROCHEM",
+      "date_ouverture_plis": "2026-11-01",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -491,7 +715,15 @@
       "montant_ordonne": 0,
       "unite": "U",
       "qte_prevue": 5,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/20/11/2026/29",
+      "societe_titulaire": "TRAVAUX GENERAUX DU MAGHREB",
+      "date_ouverture_plis": "2026-11-01",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 90,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -508,7 +740,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 267,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/30",
+      "societe_titulaire": "SOCIETE NATIONALE DE TRAVAUX",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 120,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -525,7 +765,15 @@
       "montant_ordonne": 0,
       "unite": "U",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/31",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "2026-12-01",
+      "date_osc": "",
+      "delai_execution": 120,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -542,7 +790,15 @@
       "montant_ordonne": 0,
       "unite": "U",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/32",
+      "societe_titulaire": "BETICO",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -559,7 +815,15 @@
       "montant_ordonne": 0,
       "unite": "U",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/33",
+      "societe_titulaire": "SOCIETE CHÉRIFIENNE DE TRAVAUX",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 90,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -576,7 +840,15 @@
       "montant_ordonne": 0,
       "unite": "U",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/34",
+      "societe_titulaire": "ALF SAHARA",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "2026-12-01",
+      "date_osc": "",
+      "delai_execution": 150,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -593,7 +865,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 2512,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/35",
+      "societe_titulaire": "CONSTRUCTEURS REUNIS",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "2026-12-01",
+      "date_osc": "",
+      "delai_execution": 150,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -610,7 +890,15 @@
       "montant_ordonne": 0,
       "unite": "km",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/40/21/2026/36",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "2026-11-01",
+      "date_jugement": "",
+      "date_osc": "",
+      "delai_execution": 150,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -627,7 +915,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 3000,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/37",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 120,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -644,7 +940,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 77,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/20/11/2026/38",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -661,7 +965,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 352,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/20/11/2026/39",
+      "societe_titulaire": "BETON PLUS",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -678,7 +990,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 335,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/20/11/2026/40",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "2026-11-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 90,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -695,7 +1015,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 265,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/20/11/2026/41",
+      "societe_titulaire": "GENIE CIVIL DU NORD",
+      "date_ouverture_plis": "",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 90,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -712,7 +1040,15 @@
       "montant_ordonne": 0,
       "unite": "km",
       "qte_prevue": 4,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/40/21/2026/42",
+      "societe_titulaire": "SOCIETE DE DRAINAGE DU GHBAR",
+      "date_ouverture_plis": "",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 150,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -729,7 +1065,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 67,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/43",
+      "societe_titulaire": "POMPAGE TECHNIQUE SARL",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -746,7 +1090,15 @@
       "montant_ordonne": 0,
       "unite": "U",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/44",
+      "societe_titulaire": "ASSAINISSEMENT SERVICES",
+      "date_ouverture_plis": "2026-11-01",
+      "date_jugement": "",
+      "date_osc": "",
+      "delai_execution": 150,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -763,7 +1115,15 @@
       "montant_ordonne": 0,
       "unite": "m³",
       "qte_prevue": 2667,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/45",
+      "societe_titulaire": "TRAVAUX HYDRAULIQUES DU RIF",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -780,7 +1140,15 @@
       "montant_ordonne": 0,
       "unite": "km",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/40/21/2026/46",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "2026-11-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 90,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -797,7 +1165,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 1728,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/20/11/2026/47",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 150,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -814,7 +1190,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 51,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/20/11/2026/48",
+      "societe_titulaire": "SOGEA MAROC",
+      "date_ouverture_plis": "",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -831,7 +1215,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 473,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/20/11/2026/49",
+      "societe_titulaire": "Bouygues Trav. Publics",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -848,7 +1240,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 400,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/20/11/2026/50",
+      "societe_titulaire": "COLAS MAROC",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 150,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -865,7 +1265,15 @@
       "montant_ordonne": 0,
       "unite": "km",
       "qte_prevue": 7,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/40/21/2026/51",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -882,7 +1290,15 @@
       "montant_ordonne": 0,
       "unite": "U",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/52",
+      "societe_titulaire": "SOCIETE DES EAUX DU GHARB",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "",
+      "date_osc": "",
+      "delai_execution": 120,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Kacem",
@@ -899,7 +1315,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 124,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/53",
+      "societe_titulaire": "SOMAGEC",
+      "date_ouverture_plis": "",
+      "date_jugement": "2026-12-01",
+      "date_osc": "",
+      "delai_execution": 150,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Kénitra",
@@ -916,7 +1340,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 5000,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/54",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 90,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Kénitra",
@@ -933,7 +1365,15 @@
       "montant_ordonne": 0,
       "unite": "km",
       "qte_prevue": 4,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/40/21/2026/55",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 120,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Kénitra",
@@ -950,7 +1390,15 @@
       "montant_ordonne": 0,
       "unite": "U",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/56",
+      "societe_titulaire": "SOCIETE NATIONALE DE TRAVAUX",
+      "date_ouverture_plis": "",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Kénitra",
@@ -967,7 +1415,15 @@
       "montant_ordonne": 0,
       "unite": "U",
       "qte_prevue": 200,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/20/11/2026/57",
+      "societe_titulaire": "STARECO",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Kénitra",
@@ -984,7 +1440,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 1500,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/58",
+      "societe_titulaire": "BETICO",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Kénitra",
@@ -1001,7 +1465,15 @@
       "montant_ordonne": 0,
       "unite": "U",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/40/21/2026/59",
+      "societe_titulaire": "SOCIETE CHÉRIFIENNE DE TRAVAUX",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Kénitra",
@@ -1018,7 +1490,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 1500,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/60",
+      "societe_titulaire": "ALF SAHARA",
+      "date_ouverture_plis": "2026-11-01",
+      "date_jugement": "2026-12-01",
+      "date_osc": "",
+      "delai_execution": 90,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Kénitra",
@@ -1035,7 +1515,15 @@
       "montant_ordonne": 0,
       "unite": "km",
       "qte_prevue": 6,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/40/21/2026/61",
+      "societe_titulaire": "CONSTRUCTEURS REUNIS",
+      "date_ouverture_plis": "2026-11-01",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 120,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Kénitra",
@@ -1052,7 +1540,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 3000,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/62",
+      "societe_titulaire": "SOTHEMA ENGINEERING",
+      "date_ouverture_plis": "2026-11-01",
+      "date_jugement": "",
+      "date_osc": "",
+      "delai_execution": 120,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Kénitra",
@@ -1069,7 +1565,15 @@
       "montant_ordonne": 0,
       "unite": "km",
       "qte_prevue": 12,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/40/21/2026/63",
+      "societe_titulaire": "HYDRAULIQUE DU MAGHREB",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 150,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Kénitra",
@@ -1086,7 +1590,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 1500,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/64",
+      "societe_titulaire": "SOGECOM",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 90,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Kénitra",
@@ -1103,7 +1615,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 500,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/65",
+      "societe_titulaire": "BETON PLUS",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "2026-12-01",
+      "date_osc": "",
+      "delai_execution": 60,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Kénitra",
@@ -1120,7 +1640,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 500,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/66",
+      "societe_titulaire": "CANALISATION MODERNE",
+      "date_ouverture_plis": "2026-11-01",
+      "date_jugement": "2026-12-01",
+      "date_osc": "",
+      "delai_execution": 90,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Kénitra",
@@ -1137,7 +1665,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 3300,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/67",
+      "societe_titulaire": "GENIE CIVIL DU NORD",
+      "date_ouverture_plis": "2026-11-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 120,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Slimane",
@@ -1154,7 +1690,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 903,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/68",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 120,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Slimane",
@@ -1171,7 +1715,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 1294,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/69",
+      "societe_titulaire": "",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "2026-11-01",
+      "date_osc": "",
+      "delai_execution": 120,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Slimane",
@@ -1188,7 +1740,15 @@
       "montant_ordonne": 0,
       "unite": "km",
       "qte_prevue": 7,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/40/21/2026/70",
+      "societe_titulaire": "ASSAINISSEMENT SERVICES",
+      "date_ouverture_plis": "2026-10-01",
+      "date_jugement": "2026-12-01",
+      "date_osc": "",
+      "delai_execution": 90,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Slimane",
@@ -1205,7 +1765,15 @@
       "montant_ordonne": 0,
       "unite": "U",
       "qte_prevue": 1,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/21/2026/71",
+      "societe_titulaire": "TRAVAUX HYDRAULIQUES DU RIF",
+      "date_ouverture_plis": "2026-11-01",
+      "date_jugement": "",
+      "date_osc": "",
+      "delai_execution": 120,
+      "date_reception_provisoire": "",
+      "observations": ""
     },
     {
       "province": "Sidi Slimane",
@@ -1222,7 +1790,15 @@
       "montant_ordonne": 0,
       "unite": "ml",
       "qte_prevue": 167,
-      "qte_realisee": 0
+      "qte_realisee": 0,
+      "numero_consultation": "CN/50/23/2026/72",
+      "societe_titulaire": "SOCIETE D'EAU ET D'ASSAINISSEMENT",
+      "date_ouverture_plis": "2026-09-01",
+      "date_jugement": "2026-10-01",
+      "date_osc": "",
+      "delai_execution": 150,
+      "date_reception_provisoire": "",
+      "observations": ""
     }
   ],
   "summary": {

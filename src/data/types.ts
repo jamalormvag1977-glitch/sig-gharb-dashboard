@@ -16,6 +16,15 @@ export interface Project {
   montant_paye: number; // DH — montant effectivement payé
   montant_ordonne: number; // DH — montant ordonnancé (engagé mais non encore payé)
   statut: ProjectStatus;
+  // Procurement / consultation fields
+  numero_consultation: string; // N° de la consultation négociée
+  societe_titulaire: string; // Société titulaire du marché
+  date_ouverture_plis: string; // Date d'ouverture des plis (ISO: YYYY-MM-DD or "")
+  date_jugement: string; // Date de jugement (ISO: YYYY-MM-DD or "")
+  date_osc: string; // Date ordre de service de commencement (ISO: YYYY-MM-DD or "")
+  delai_execution: number; // Délai d'exécution en jours
+  date_reception_provisoire: string; // Date de réception provisoire (ISO: YYYY-MM-DD or "")
+  observations: string; // Observations / remarques
 }
 
 export interface CommuneSummary {

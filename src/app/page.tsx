@@ -1036,6 +1036,86 @@ export default function Home() {
               })}
           </div>
         </div>
+
+        {/* ── Consultations Négociées ── */}
+        <div>
+          <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+            <ClipboardCheck className="h-4 w-4" style={{ color: provColor }} />
+            Consultations Négociées — Détail des Marchés
+          </h4>
+          <div className="overflow-x-auto rounded-xl border shadow-sm" style={{ borderColor: provColor + "20" }}>
+            <Table>
+              <TableHeader>
+                <TableRow style={{ backgroundColor: provColor + "0A", borderBottomColor: provColor + "20" }}>
+                  <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2" style={{ color: provColor + "BB" }}>N° Cons.</TableHead>
+                  <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2" style={{ color: provColor + "BB" }}>Projet</TableHead>
+                  <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2" style={{ color: provColor + "BB" }}>Société Titulaire</TableHead>
+                  <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Ouv. Plis</TableHead>
+                  <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Jugement</TableHead>
+                  <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>OSC</TableHead>
+                  <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Délai</TableHead>
+                  <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Récept. Prov.</TableHead>
+                  <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Statut</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {projects.map((p, i) => {
+                  const fmtDate = (d: string) => {
+                    if (!d) return <span className="text-slate-300">—</span>;
+                    const dt = new Date(d);
+                    return <span className="text-[9px] font-semibold text-slate-700 whitespace-nowrap">{dt.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}</span>;
+                  };
+                  const statusConfig: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
+                    "Terminé": { bg: "bg-emerald-100", text: "text-emerald-700", icon: CheckCircle2 },
+                    "En cours": { bg: "bg-amber-100", text: "text-amber-700", icon: Clock },
+                    "Non démarré": { bg: "bg-red-100", text: "text-red-700", icon: CircleDot },
+                  };
+                  const sc = statusConfig[p.statut] || statusConfig["Non démarré"];
+                  // OSC status: has OSC = green, no OSC but has jugement = yellow, no jugement = red
+                  const oscStatus = p.date_osc ? "active" : p.date_jugement ? "pending" : "waiting";
+                  return (
+                    <TableRow key={i} className={`border-b border-slate-100/80 ${i % 2 === 0 ? "bg-white" : "bg-slate-50/40"}`} style={{ borderLeftWidth: "3px", borderLeftColor: provColor + "25" }}>
+                      <TableCell className="py-2 px-2">
+                        <span className="text-[9px] font-bold text-slate-600 whitespace-nowrap">{p.numero_consultation || "—"}</span>
+                      </TableCell>
+                      <TableCell className="py-2 px-2 text-[9px] text-slate-600 max-w-[200px] leading-relaxed whitespace-normal">{p.consistance.substring(0, 50)}{p.consistance.length > 50 ? "..." : ""}</TableCell>
+                      <TableCell className="py-2 px-2">
+                        {p.societe_titulaire ? (
+                          <span className="text-[9px] font-bold text-slate-800 whitespace-nowrap">{p.societe_titulaire}</span>
+                        ) : (
+                          <span className="text-[9px] text-slate-400 italic">En attente</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="py-2 px-2 text-center">{fmtDate(p.date_ouverture_plis)}</TableCell>
+                      <TableCell className="py-2 px-2 text-center">{fmtDate(p.date_jugement)}</TableCell>
+                      <TableCell className="py-2 px-2 text-center">
+                        {p.date_osc ? (
+                          <div className="flex flex-col items-center">
+                            {fmtDate(p.date_osc)}
+                            <Badge className="text-[7px] font-bold px-1.5 py-0 border-0 bg-emerald-100 text-emerald-700 mt-0.5">Lancé</Badge>
+                          </div>
+                        ) : (
+                          <Badge className={`text-[7px] font-bold px-1.5 py-0 border-0 ${oscStatus === "pending" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-400"}`}>
+                            {oscStatus === "pending" ? "En attente OSC" : "Non lancé"}
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="py-2 px-2 text-center">
+                        <span className="text-[9px] font-bold text-slate-700">{p.delai_execution ? `${p.delai_execution}j` : "—"}</span>
+                      </TableCell>
+                      <TableCell className="py-2 px-2 text-center">{fmtDate(p.date_reception_provisoire)}</TableCell>
+                      <TableCell className="py-2 px-2 text-center">
+                        <Badge className={`${sc.bg} ${sc.text} text-[8px] font-bold px-1.5 py-0.5 border-0`}>
+                          <sc.icon className="h-2.5 w-2.5 mr-0.5" />{p.statut}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
       </div>
     );
   };
@@ -2244,14 +2324,17 @@ export default function Home() {
                                 <Table>
                                   <TableHeader>
                                     <TableRow style={{ backgroundColor: provColor + "0A", borderBottomColor: provColor + "20" }}>
-                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3" style={{ color: provColor + "BB" }}>Commune</TableHead>
-                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3" style={{ color: provColor + "BB" }}>Projet</TableHead>
-                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-right" style={{ color: provColor + "BB" }}>Budget</TableHead>
-                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-right" style={{ color: provColor + "BB" }}>Ordonnancé</TableHead>
-                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-right" style={{ color: provColor + "BB" }}>Payé</TableHead>
-                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-center" style={{ color: provColor + "BB" }}>Phys.</TableHead>
-                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-center" style={{ color: provColor + "BB" }}>Fin.</TableHead>
-                                      <TableHead className="text-[10px] font-bold uppercase tracking-wider py-2 px-3 text-center" style={{ color: provColor + "BB" }}>Statut</TableHead>
+                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2" style={{ color: provColor + "BB" }}>Commune</TableHead>
+                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2" style={{ color: provColor + "BB" }}>Projet</TableHead>
+                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-right" style={{ color: provColor + "BB" }}>Budget</TableHead>
+                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2" style={{ color: provColor + "BB" }}>Société</TableHead>
+                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Ouv. Plis</TableHead>
+                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Jugement</TableHead>
+                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>OSC</TableHead>
+                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Délai</TableHead>
+                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Phys.</TableHead>
+                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Fin.</TableHead>
+                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Statut</TableHead>
                                     </TableRow>
                                   </TableHeader>
                                   <TableBody>
@@ -2260,38 +2343,65 @@ export default function Home() {
                                       const sc = statusConfig[p.statut] || statusConfig["Non démarré"];
                                       const apColor = getApColor(p.avancement_physique);
                                       const afColor = getApColor(p.avancement_financier);
+                                      const fmtDate = (d: string) => {
+                                        if (!d) return <span className="text-slate-300">—</span>;
+                                        const dt = new Date(d);
+                                        return <span className="text-[8px] font-semibold text-slate-700 whitespace-nowrap">{dt.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" })}</span>;
+                                      };
                                       return (
                                         <TableRow key={i} className={`border-b border-slate-100/80 ${i % 2 === 0 ? "bg-white" : "bg-slate-50/40"}`} style={{ borderLeftWidth: "3px", borderLeftColor: provColor + "30" }}>
-                                          <TableCell className="py-2 px-3">
-                                            <span className="text-[10px] font-bold text-slate-700 whitespace-nowrap">{p.commune}</span>
+                                          <TableCell className="py-2 px-2">
+                                            <span className="text-[9px] font-bold text-slate-700 whitespace-nowrap">{p.commune}</span>
                                           </TableCell>
-                                          <TableCell className="py-2 px-3 text-[10px] text-slate-600 max-w-[300px] leading-relaxed whitespace-normal">{p.consistance}</TableCell>
-                                          <TableCell className="py-2 px-3 text-[10px] font-bold text-slate-700 text-right">{(p.cout / 1e6).toFixed(2)} M</TableCell>
-                                          <TableCell className="py-2 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_ordonne > 0 ? "#8b5cf6" : "#94a3b8" }}>{(p.montant_ordonne / 1e6).toFixed(2)} M</TableCell>
-                                          <TableCell className="py-2 px-3 text-[10px] font-bold text-right" style={{ color: p.montant_paye > 0 ? "#10b981" : "#94a3b8" }}>{(p.montant_paye / 1e6).toFixed(2)} M</TableCell>
-                                          <TableCell className="py-2 px-3 text-center">
+                                          <TableCell className="py-2 px-2 text-[9px] text-slate-600 max-w-[200px] leading-relaxed whitespace-normal">{p.consistance.substring(0, 50)}{p.consistance.length > 50 ? "..." : ""}</TableCell>
+                                          <TableCell className="py-2 px-2 text-[9px] font-bold text-slate-700 text-right">{(p.cout / 1e6).toFixed(2)} M</TableCell>
+                                          <TableCell className="py-2 px-2">
+                                            {p.societe_titulaire ? (
+                                              <span className="text-[8px] font-bold text-slate-800 whitespace-nowrap">{p.societe_titulaire}</span>
+                                            ) : (
+                                              <span className="text-[8px] text-slate-400 italic">Attente</span>
+                                            )}
+                                          </TableCell>
+                                          <TableCell className="py-2 px-2 text-center">{fmtDate(p.date_ouverture_plis)}</TableCell>
+                                          <TableCell className="py-2 px-2 text-center">{fmtDate(p.date_jugement)}</TableCell>
+                                          <TableCell className="py-2 px-2 text-center">
+                                            {p.date_osc ? (
+                                              <div className="flex flex-col items-center">
+                                                {fmtDate(p.date_osc)}
+                                                <Badge className="text-[6px] font-bold px-1 py-0 border-0 bg-emerald-100 text-emerald-700">Lancé</Badge>
+                                              </div>
+                                            ) : (
+                                              <Badge className={`text-[6px] font-bold px-1 py-0 border-0 ${p.date_jugement ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-400"}`}>
+                                                {p.date_jugement ? "Attente" : "—"}
+                                              </Badge>
+                                            )}
+                                          </TableCell>
+                                          <TableCell className="py-2 px-2 text-center">
+                                            <span className="text-[8px] font-bold text-slate-700">{p.delai_execution ? `${p.delai_execution}j` : "—"}</span>
+                                          </TableCell>
+                                          <TableCell className="py-2 px-2 text-center">
                                             <div className="flex items-center justify-center gap-1">
-                                              <div className="w-12 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+                                              <div className="w-10 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
                                                 <div className="h-full rounded-full" style={{ width: `${p.avancement_physique}%`, backgroundColor: apColor }} />
                                               </div>
-                                              <span className="text-[10px] font-black" style={{ color: apColor }}>{p.avancement_physique}%</span>
+                                              <span className="text-[9px] font-black" style={{ color: apColor }}>{p.avancement_physique}%</span>
                                             </div>
                                           </TableCell>
-                                          <TableCell className="py-2 px-3 text-center">
+                                          <TableCell className="py-2 px-2 text-center">
                                             <div className="flex items-center justify-center gap-1">
-                                              <div className="w-12 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+                                              <div className="w-10 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
                                                 <div className="h-full rounded-full" style={{ width: `${p.avancement_financier}%`, backgroundColor: afColor }} />
                                               </div>
-                                              <span className="text-[10px] font-black" style={{ color: afColor }}>{p.avancement_financier}%</span>
+                                              <span className="text-[9px] font-black" style={{ color: afColor }}>{p.avancement_financier}%</span>
                                             </div>
                                           </TableCell>
-                                          <TableCell className="py-2 px-3 text-center">
-                                            <Badge className={`${sc.bg} ${sc.text} text-[9px] font-bold px-2 py-0.5 border-0`}>
+                                          <TableCell className="py-2 px-2 text-center">
+                                            <Badge className={`${sc.bg} ${sc.text} text-[8px] font-bold px-1.5 py-0.5 border-0`}>
                                               <sc.icon className="h-2.5 w-2.5 mr-0.5" />
                                               {p.statut}
                                             </Badge>
                                             {Math.abs(ecart) > 15 && p.statut === "En cours" && (
-                                              <span className="block text-[8px] font-bold text-red-500 mt-0.5">Écart {ecart > 0 ? "-" : "+"}{Math.abs(ecart)}pts</span>
+                                              <span className="block text-[7px] font-bold text-red-500 mt-0.5">Écart {ecart > 0 ? "-" : "+"}{Math.abs(ecart)}pts</span>
                                             )}
                                           </TableCell>
                                         </TableRow>
@@ -2299,26 +2409,20 @@ export default function Home() {
                                     })}
                                     {/* Province total row */}
                                     <TableRow style={{ background: `linear-gradient(135deg, ${provColor}18, ${provColor}08)` }}>
-                                      <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-slate-800" colSpan={2}>
+                                      <TableCell className="py-2.5 px-2 text-[10px] font-extrabold text-slate-800" colSpan={3}>
                                         Total {province}
                                       </TableCell>
-                                      <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-right" style={{ color: "#059669" }}>
-                                        {(provTotalBudget / 1e6).toFixed(2)} MDH
+                                      <TableCell className="py-2.5 px-2 text-[9px] font-extrabold text-slate-600" colSpan={4}>
+                                        {provProjects.reduce((s, p) => s + (p.societe_titulaire ? 1 : 0), 0)} marchés attribués
                                       </TableCell>
-                                      <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-right" style={{ color: "#8b5cf6" }}>
-                                        {(provTotalOrdonne / 1e6).toFixed(2)} MDH
+                                      <TableCell className="py-2.5 px-2 text-center">
+                                        <span className="text-[9px] font-black" style={{ color: provColor }}>{provAvgPhys.toFixed(0)}%</span>
                                       </TableCell>
-                                      <TableCell className="py-2.5 px-3 text-[11px] font-extrabold text-right" style={{ color: "#10b981" }}>
-                                        {(provTotalPaye / 1e6).toFixed(2)} MDH
+                                      <TableCell className="py-2.5 px-2 text-center">
+                                        <span className="text-[9px] font-black" style={{ color: provColor }}>{provAvgFin.toFixed(0)}%</span>
                                       </TableCell>
-                                      <TableCell className="py-2.5 px-3 text-center">
-                                        <span className="text-[10px] font-black" style={{ color: provColor }}>{provAvgPhys.toFixed(0)}%</span>
-                                      </TableCell>
-                                      <TableCell className="py-2.5 px-3 text-center">
-                                        <span className="text-[10px] font-black" style={{ color: provColor }}>{provAvgFin.toFixed(0)}%</span>
-                                      </TableCell>
-                                      <TableCell className="py-2.5 px-3 text-center">
-                                        <span className="text-[9px] font-bold text-slate-500">{provProjects.length} projets</span>
+                                      <TableCell className="py-2.5 px-2 text-center">
+                                        <span className="text-[8px] font-bold text-slate-500">{provProjects.length} projets</span>
                                       </TableCell>
                                     </TableRow>
                                   </TableBody>
