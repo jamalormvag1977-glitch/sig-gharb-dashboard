@@ -493,28 +493,55 @@ export default function Home() {
       ? getMonthLabel(filterMois)
       : `Semaine ${currentWeek} en cours`;
 
-    // ─── Inline helper: Gauge Ring (SVG) ───
-    const GaugeRing = ({ value, maxValue = 100, color, size = 140, strokeWidth = 10, label, delta }: { value: number; maxValue?: number; color: string; size?: number; strokeWidth?: number; label: string; delta?: number }) => {
+    // ─── Inline helper: Gauge Ring (SVG) — Professional redesign ───
+    const GaugeRing = ({ value, maxValue = 100, color, size = 150, strokeWidth = 12, label, delta }: { value: number; maxValue?: number; color: string; size?: number; strokeWidth?: number; label: string; delta?: number }) => {
       const radius = (size - strokeWidth) / 2;
       const circumference = 2 * Math.PI * radius;
       const progress = Math.min(Math.max(value / maxValue, 0), 1);
       const offset = circumference * (1 - progress);
       const center = size / 2;
+      const innerR = radius - strokeWidth / 2 - 4;
+      // Tick marks (8 major ticks around the circle)
+      const ticks = Array.from({ length: 8 }, (_, i) => {
+        const angle = (i * 45 - 90) * Math.PI / 180;
+        const x1 = center + (radius + strokeWidth / 2 + 2) * Math.cos(angle);
+        const y1 = center + (radius + strokeWidth / 2 + 2) * Math.sin(angle);
+        const x2 = center + (radius + strokeWidth / 2 + 6) * Math.cos(angle);
+        const y2 = center + (radius + strokeWidth / 2 + 6) * Math.sin(angle);
+        return { x1, y1, x2, y2 };
+      });
       return (
         <div className="flex flex-col items-center relative">
-          <svg width={size} height={size} className="transform -rotate-90">
-            <circle cx={center} cy={center} r={radius} fill="none" stroke="#e2e8f0" strokeWidth={strokeWidth} />
-            <circle cx={center} cy={center} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth} strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" className="transition-all duration-1000" style={{ filter: `drop-shadow(0 0 4px ${color}40)` }} />
+          <svg width={size + 16} height={size + 16} className="transform -rotate-90" style={{ margin: -8 }}>
+            {/* Outer subtle shadow ring */}
+            <circle cx={center + 8} cy={center + 8} r={radius + strokeWidth / 2 + 1} fill="none" stroke={color} strokeWidth="1" opacity="0.08" />
+            {/* Background track with gradient feel */}
+            <circle cx={center + 8} cy={center + 8} r={radius} fill="none" stroke="#1e293b" strokeWidth={strokeWidth} opacity="0.12" />
+            {/* Inner decorative ring */}
+            <circle cx={center + 8} cy={center + 8} r={innerR} fill="none" stroke={color} strokeWidth="0.5" opacity="0.15" />
+            {/* Progress arc with glow */}
+            <circle cx={center + 8} cy={center + 8} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth} strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" className="transition-all duration-1000" style={{ filter: `drop-shadow(0 0 6px ${color}60)` }} />
+            {/* Second lighter arc for 3D effect */}
+            {progress > 0 && <circle cx={center + 8} cy={center + 8} r={radius - strokeWidth * 0.3} fill="none" stroke={color} strokeWidth={strokeWidth * 0.15} strokeDasharray={circumference * 0.95} strokeDashoffset={offset * 0.95} strokeLinecap="round" opacity="0.3" className="transition-all duration-1000" />}
           </svg>
+          {/* Tick marks overlay (not rotated) */}
+          <svg width={size + 16} height={size + 16} className="absolute" style={{ top: -8, left: -8 }} >
+            {ticks.map((t, i) => (
+              <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke={color} strokeWidth="1.5" opacity="0.2" strokeLinecap="round" />
+            ))}
+          </svg>
+          {/* Center content */}
           <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ width: size, height: size }}>
-            <span className="text-2xl font-black" style={{ color }}>{value.toFixed(1)}%</span>
-            {delta !== undefined && delta !== 0 && (
-              <span className={`text-[10px] font-bold flex items-center gap-0.5 ${delta > 0 ? "text-emerald-600" : "text-red-500"}`}>
-                {delta > 0 ? "▲" : "▼"}{delta > 0 ? "+" : ""}{delta.toFixed(1)}
-              </span>
-            )}
+            <div className="rounded-full flex flex-col items-center justify-center" style={{ width: innerR * 1.6, height: innerR * 1.6, background: `radial-gradient(circle, ${color}08 0%, transparent 70%)` }}>
+              <span className="text-2xl font-black tracking-tight" style={{ color }}>{value.toFixed(1)}%</span>
+              {delta !== undefined && delta !== 0 && (
+                <span className={`text-[10px] font-bold flex items-center gap-0.5 ${delta > 0 ? "text-emerald-600" : "text-red-500"}`}>
+                  {delta > 0 ? "▲" : "▼"}{delta > 0 ? "+" : ""}{delta.toFixed(1)}
+                </span>
+              )}
+            </div>
           </div>
-          <span className="text-[11px] font-bold text-slate-500 mt-1">{label}</span>
+          <span className="text-[11px] font-extrabold uppercase tracking-wider mt-2" style={{ color: color + "BB" }}>{label}</span>
         </div>
       );
     };
@@ -529,8 +556,8 @@ export default function Home() {
       const c = size / 2;
       return (
         <svg width={size} height={size} className="transform -rotate-90 shrink-0">
-          <circle cx={c} cy={c} r={r} fill="none" stroke="#e2e8f0" strokeWidth={sw} />
-          <circle cx={c} cy={c} r={r} fill="none" stroke={color} strokeWidth={sw} strokeDasharray={circ} strokeDashoffset={off} strokeLinecap="round" />
+          <circle cx={c} cy={c} r={r} fill="none" stroke="#1e293b" strokeWidth={sw} opacity="0.12" />
+          <circle cx={c} cy={c} r={r} fill="none" stroke={color} strokeWidth={sw} strokeDasharray={circ} strokeDashoffset={off} strokeLinecap="round" style={{ filter: `drop-shadow(0 0 3px ${color}40)` }} />
         </svg>
       );
     };
@@ -1958,22 +1985,50 @@ export default function Home() {
                     const tauxOrdonnancement = totalCostFiltered > 0 ? (ordonneFiltered / totalCostFiltered) * 100 : 0;
                     const getStatusColor = (val: number) => val >= 75 ? "#10b981" : val >= 50 ? "#3b82f6" : val >= 25 ? "#8b5cf6" : "#ef4444";
                     const GaugeRing = ({ value, label, color, icon: Icon }: { value: number; label: string; color: string; icon: React.ElementType }) => {
-                      const radius = 54;
+                      const radius = 48;
                       const circ = 2 * Math.PI * radius;
                       const offset = circ - (value / 100) * circ;
+                      const progress = Math.min(Math.max(value / 100, 0), 1);
+                      const innerR = radius - 10;
+                      const tickCount = 8;
+                      const ticks = Array.from({ length: tickCount }, (_, i) => {
+                        const angle = (i * 360 / tickCount - 90) * Math.PI / 180;
+                        const cx = 60, cy = 60;
+                        const x1 = cx + (radius + 6) * Math.cos(angle);
+                        const y1 = cy + (radius + 6) * Math.sin(angle);
+                        const x2 = cx + (radius + 10) * Math.cos(angle);
+                        const y2 = cy + (radius + 10) * Math.sin(angle);
+                        return { x1, y1, x2, y2 };
+                      });
                       return (
                         <div className="flex flex-col items-center gap-2">
-                          <div className="relative w-32 h-32">
-                            <svg className="w-32 h-32 -rotate-90" viewBox="0 0 120 120">
-                              <circle cx="60" cy="60" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="10" />
-                              <circle cx="60" cy="60" r={radius} fill="none" stroke={color} strokeWidth="10" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset} className="transition-all duration-1000" />
+                          <div className="relative w-36 h-36">
+                            <svg className="w-36 h-36 -rotate-90" viewBox="0 0 120 120">
+                              {/* Shadow ring */}
+                              <circle cx="60" cy="60" r={radius + 1} fill="none" stroke={color} strokeWidth="1" opacity="0.06" />
+                              {/* Background track */}
+                              <circle cx="60" cy="60" r={radius} fill="none" stroke="#1e293b" strokeWidth="10" opacity="0.12" />
+                              {/* Inner decorative ring */}
+                              <circle cx="60" cy="60" r={innerR} fill="none" stroke={color} strokeWidth="0.5" opacity="0.12" />
+                              {/* Progress arc with glow */}
+                              <circle cx="60" cy="60" r={radius} fill="none" stroke={color} strokeWidth="10" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset} className="transition-all duration-1000" style={{ filter: `drop-shadow(0 0 5px ${color}50)` }} />
+                              {/* 3D inner arc */}
+                              {progress > 0 && <circle cx="60" cy="60" r={radius - 3} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeDasharray={circ * 0.95} strokeDashoffset={offset * 0.95} opacity="0.25" className="transition-all duration-1000" />}
+                            </svg>
+                            {/* Tick marks */}
+                            <svg className="absolute inset-0 w-36 h-36" viewBox="0 0 120 120">
+                              {ticks.map((t, i) => (
+                                <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke={color} strokeWidth="1.5" opacity="0.18" strokeLinecap="round" />
+                              ))}
                             </svg>
                             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                              <Icon className="h-4 w-4 mb-0.5" style={{ color }} />
-                              <span className="text-2xl font-black" style={{ color }}>{value.toFixed(0)}%</span>
+                              <div className="rounded-full flex flex-col items-center justify-center" style={{ width: innerR * 1.3, height: innerR * 1.3, background: `radial-gradient(circle, ${color}08 0%, transparent 70%)` }}>
+                                <Icon className="h-4 w-4 mb-0.5" style={{ color }} />
+                                <span className="text-xl font-black tracking-tight" style={{ color }}>{value.toFixed(0)}%</span>
+                              </div>
                             </div>
                           </div>
-                          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">{label}</p>
+                          <p className="text-[10px] font-extrabold uppercase tracking-wider text-center" style={{ color: color + "BB" }}>{label}</p>
                         </div>
                       );
                     };
