@@ -1695,18 +1695,181 @@ export default function Home() {
                     <Gauge className="h-6 w-6 text-indigo-300" />
                     Suivi d&apos;Avancement Physique et Financier
                   </CardTitle>
-                  <p className="text-indigo-200 text-xs mt-1">Région du Gharb — ORMVAG — Année 2026</p>
+                  <p className="text-indigo-200 text-xs mt-1">Région du Gharb — ORMVAG — Juin–Décembre 2026</p>
                 </CardHeader>
                 <CardContent className="p-6 space-y-6">
-                  {/* Global progress gauges */}
+                  {/* ===== FILTER BAR ===== */}
                   {(() => {
                     const sd = suiviData ?? data;
-                    const ap = sd.avancementPhysiqueGlobal;
-                    const af = sd.avancementFinancierGlobal;
-                    const paye = sd.totalPaye;
-                    const ordonne = sd.totalOrdonne;
-                    const tauxPaiement = sd.totalCost > 0 ? (paye / sd.totalCost) * 100 : 0;
-                    const tauxOrdonnancement = sd.totalCost > 0 ? (ordonne / sd.totalCost) * 100 : 0;
+                    const allProvinces = Object.keys(PROVINCE_COLORS);
+                    const allCommunes = [...new Set(sd.projects.map(p => p.commune))].sort();
+                    const filteredWeeks = filterMois !== "all"
+                      ? WEEKS_2026.filter(w => w.month === parseInt(filterMois))
+                      : WEEKS_2026;
+                    const selectedWeekNum = filterSemaine !== "all" ? parseInt(filterSemaine) : null;
+                    const selectedMonthNum = filterMois !== "all" ? parseInt(filterMois) : null;
+                    const isHistoricalWeek = selectedWeekNum !== null;
+                    const isHistoricalMonth = selectedMonthNum !== null;
+                    const timeLabel = isHistoricalWeek
+                      ? `S${selectedWeekNum} — ${WEEKS_2026.find(w => w.value === filterSemaine)?.label ?? ""}`
+                      : isHistoricalMonth
+                      ? getMonthLabel(filterMois)
+                      : "En cours";
+                    const hasFilters = filterSecteur !== "all" || filterStatut !== "all" || filterCommune !== "all" || filterMois !== "all" || filterSemaine !== "all";
+                    return (
+                      <div className="bg-white/90 backdrop-blur-sm rounded-xl border shadow-md p-3 border-indigo-200/40">
+                        <div className="flex items-center gap-2 mb-2.5">
+                          <Filter className="h-4 w-4 text-indigo-600" />
+                          <span className="text-xs font-extrabold text-slate-700">Filtres</span>
+                          {(isHistoricalWeek || isHistoricalMonth) && (
+                            <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 bg-indigo-100 text-indigo-700 ml-2">
+                              <Calendar className="h-3 w-3 mr-0.5" /> Consultation historique — {timeLabel}
+                            </Badge>
+                          )}
+                          {hasFilters && (
+                            <button
+                              onClick={() => { setFilterSecteur("all"); setFilterStatut("all"); setFilterCommune("all"); setFilterMois("all"); setFilterSemaine("all"); }}
+                              className="text-[10px] font-bold hover:opacity-70 ml-auto flex items-center gap-1 text-indigo-600 transition-colors"
+                            >
+                              <XCircle className="h-3 w-3" /> Réinitialiser
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {/* Mois filter */}
+                          <div className="relative">
+                            <select
+                              value={filterMois}
+                              onChange={e => {
+                                setFilterMois(e.target.value);
+                                setFilterSemaine("all");
+                              }}
+                              className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
+                            >
+                              <option value="all">Tous mois (Juin–Déc)</option>
+                              {MONTHS_2026.map(m => (
+                                <option key={m.value} value={m.value}>{m.label}</option>
+                              ))}
+                            </select>
+                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+                          </div>
+                          {/* Semaine filter */}
+                          <div className="relative">
+                            <select
+                              value={filterSemaine}
+                              onChange={e => setFilterSemaine(e.target.value)}
+                              className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors max-w-[220px]"
+                            >
+                              <option value="all">Toutes semaines (Juin–Déc)</option>
+                              {filteredWeeks.map(w => (
+                                <option key={w.value} value={w.value}>{w.label}</option>
+                              ))}
+                            </select>
+                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+                          </div>
+                          {/* Secteur filter */}
+                          <div className="relative">
+                            <select
+                              value={filterSecteur}
+                              onChange={e => setFilterSecteur(e.target.value)}
+                              className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
+                            >
+                              <option value="all">Tous secteurs</option>
+                              {Object.values(SECTEUR_SHORT).map(s => (
+                                <option key={s} value={s}>{s}</option>
+                              ))}
+                            </select>
+                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+                          </div>
+                          {/* Statut filter */}
+                          <div className="relative">
+                            <select
+                              value={filterStatut}
+                              onChange={e => setFilterStatut(e.target.value)}
+                              className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
+                            >
+                              <option value="all">Tous statuts</option>
+                              <option value="Terminé">Terminé</option>
+                              <option value="En cours">En cours</option>
+                              <option value="Non démarré">Non démarré</option>
+                            </select>
+                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+                          </div>
+                          {/* Commune filter */}
+                          <div className="relative">
+                            <select
+                              value={filterCommune}
+                              onChange={e => setFilterCommune(e.target.value)}
+                              className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors max-w-[180px]"
+                            >
+                              <option value="all">Toutes communes</option>
+                              {allCommunes.map(c => (
+                                <option key={c} value={c}>{c}</option>
+                              ))}
+                            </select>
+                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+                          </div>
+                        </div>
+                        {/* Active filter badges */}
+                        {hasFilters && (
+                          <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-slate-100">
+                            {filterMois !== "all" && (
+                              <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 bg-indigo-100/60 text-indigo-700">
+                                <Calendar className="h-2.5 w-2.5 mr-0.5" />{getMonthLabel(filterMois)} <button onClick={() => { setFilterMois("all"); setFilterSemaine("all"); }} className="ml-1 hover:opacity-70">×</button>
+                              </Badge>
+                            )}
+                            {filterSemaine !== "all" && (
+                              <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 bg-indigo-100/60 text-indigo-700">
+                                <Calendar className="h-2.5 w-2.5 mr-0.5" />S{filterSemaine} <button onClick={() => setFilterSemaine("all")} className="ml-1 hover:opacity-70">×</button>
+                              </Badge>
+                            )}
+                            {filterSecteur !== "all" && (
+                              <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: (SECTEUR_DOT_COLORS[filterSecteur] || "#94a3b8") + "15", color: SECTEUR_DOT_COLORS[filterSecteur] || "#94a3b8" }}>
+                                {filterSecteur} <button onClick={() => setFilterSecteur("all")} className="ml-1 hover:opacity-70">×</button>
+                              </Badge>
+                            )}
+                            {filterStatut !== "all" && (
+                              <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 bg-slate-100 text-slate-600">
+                                {filterStatut} <button onClick={() => setFilterStatut("all")} className="ml-1 hover:opacity-70">×</button>
+                              </Badge>
+                            )}
+                            {filterCommune !== "all" && (
+                              <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 bg-indigo-100/40 text-indigo-700">
+                                {filterCommune} <button onClick={() => setFilterCommune("all")} className="ml-1 hover:opacity-70">×</button>
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Global progress gauges — filtered data */}
+                  {(() => {
+                    const sd = suiviData ?? data;
+                    // Apply filters to projects
+                    let filteredProjects = sd.projects;
+                    if (filterSecteur !== "all") filteredProjects = filteredProjects.filter(p => (SECTEUR_SHORT[p.intitule_rubrique] || p.intitule_rubrique) === filterSecteur);
+                    if (filterStatut !== "all") filteredProjects = filteredProjects.filter(p => p.statut === filterStatut);
+                    if (filterCommune !== "all") filteredProjects = filteredProjects.filter(p => p.commune === filterCommune);
+                    const totalFiltered = filteredProjects.length;
+                    const totalCostFiltered = filteredProjects.reduce((s, p) => s + p.cout, 0);
+                    const payeFiltered = filteredProjects.reduce((s, p) => s + p.montant_paye, 0);
+                    const ordonneFiltered = filteredProjects.reduce((s, p) => s + p.montant_ordonne, 0);
+                    let ap = totalFiltered > 0 ? filteredProjects.reduce((s, p) => s + p.avancement_physique, 0) / totalFiltered : 0;
+                    let af = totalFiltered > 0 ? filteredProjects.reduce((s, p) => s + p.avancement_financier, 0) / totalFiltered : 0;
+                    // Apply time simulation
+                    const isHistoricalWeek = filterSemaine !== "all";
+                    const isHistoricalMonth = filterMois !== "all";
+                    if (isHistoricalWeek) {
+                      ap = simulateProgressAtWeek(ap, parseInt(filterSemaine));
+                      af = simulateProgressAtWeek(af, parseInt(filterSemaine));
+                    } else if (isHistoricalMonth) {
+                      ap = simulateProgressAtMonth(ap, parseInt(filterMois));
+                      af = simulateProgressAtMonth(af, parseInt(filterMois));
+                    }
+                    const tauxPaiement = totalCostFiltered > 0 ? (payeFiltered / totalCostFiltered) * 100 : 0;
+                    const tauxOrdonnancement = totalCostFiltered > 0 ? (ordonneFiltered / totalCostFiltered) * 100 : 0;
                     const getStatusColor = (val: number) => val >= 75 ? "#10b981" : val >= 50 ? "#f59e0b" : val >= 25 ? "#f97316" : "#ef4444";
                     const GaugeRing = ({ value, label, color, icon: Icon }: { value: number; label: string; color: string; icon: React.ElementType }) => {
                       const radius = 54;
@@ -1739,36 +1902,43 @@ export default function Home() {
                         <div className="grid grid-cols-4 gap-3 mt-4">
                           <div className="bg-indigo-50 rounded-xl p-3 border border-indigo-200/60 text-center">
                             <p className="text-[9px] font-bold text-indigo-600 uppercase tracking-widest mb-1">Budget total</p>
-                            <p className="text-lg font-black text-indigo-800">{(sd.totalCost / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+                            <p className="text-lg font-black text-indigo-800">{(totalCostFiltered / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
                           </div>
                           <div className="bg-violet-50 rounded-xl p-3 border border-violet-200/60 text-center">
                             <p className="text-[9px] font-bold text-violet-600 uppercase tracking-widest mb-1">Ordonnancé</p>
-                            <p className="text-lg font-black text-violet-800">{(ordonne / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+                            <p className="text-lg font-black text-violet-800">{(ordonneFiltered / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
                           </div>
                           <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-200/60 text-center">
                             <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Payé</p>
-                            <p className="text-lg font-black text-emerald-800">{(paye / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+                            <p className="text-lg font-black text-emerald-800">{(payeFiltered / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
                           </div>
                           <div className="bg-amber-50 rounded-xl p-3 border border-amber-200/60 text-center">
                             <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest mb-1">Reste à payer</p>
-                            <p className="text-lg font-black text-amber-800">{((sd.totalCost - paye) / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+                            <p className="text-lg font-black text-amber-800">{((totalCostFiltered - payeFiltered) / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
                           </div>
                         </div>
+                        {totalFiltered < sd.totalProjects && (
+                          <p className="text-center text-[10px] font-bold text-indigo-500 mt-1">{totalFiltered} projets affichés sur {sd.totalProjects}</p>
+                        )}
                       </>
                     );
                   })()}
 
-                  {/* Status distribution */}
+                  {/* Status distribution — filtered */}
                   {(() => {
                     const sd = suiviData ?? data;
-                    const statuts = sd.projects.reduce((acc, p) => {
+                    let filteredProjects = sd.projects;
+                    if (filterSecteur !== "all") filteredProjects = filteredProjects.filter(p => (SECTEUR_SHORT[p.intitule_rubrique] || p.intitule_rubrique) === filterSecteur);
+                    if (filterStatut !== "all") filteredProjects = filteredProjects.filter(p => p.statut === filterStatut);
+                    if (filterCommune !== "all") filteredProjects = filteredProjects.filter(p => p.commune === filterCommune);
+                    const statuts = filteredProjects.reduce((acc, p) => {
                       acc[p.statut] = (acc[p.statut] || 0) + 1;
                       return acc;
                     }, {} as Record<string, number>);
                     const termine = statuts["Terminé"] || 0;
                     const enCours = statuts["En cours"] || 0;
                     const nonDemarre = statuts["Non démarré"] || 0;
-                    const total = sd.totalProjects;
+                    const total = filteredProjects.length;
                     const statusItems = [
                       { label: "Terminé", count: termine, color: "#10b981", icon: CheckCircle2, bg: "bg-emerald-50", border: "border-emerald-200/60" },
                       { label: "En cours", count: enCours, color: "#f59e0b", icon: Clock, bg: "bg-amber-50", border: "border-amber-200/60" },
@@ -1794,112 +1964,166 @@ export default function Home() {
                     );
                   })()}
 
-                  {/* Progress by province */}
+                  {/* Progress by province — filtered */}
                   <div>
                     <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
                       <Building2 className="h-4 w-4 text-blue-500" />
                       Avancement par province
                     </h4>
                     <div className="space-y-3">
-                      {Object.entries((suiviData ?? data).byProvince).sort(([, a], [, b]) => b.cout_total - a.cout_total).map(([name, d]) => {
-                        const provColor = PROVINCE_COLORS[name] || "#6366f1";
-                        const ap = d.avancement_physique_moyen;
-                        const af = d.avancement_financier_moyen;
-                        const ecart = ap - af;
-                        const ecartLabel = ecart > 0 ? `Physique +${ecart.toFixed(0)}pts` : ecart < 0 ? `Financier +${Math.abs(ecart).toFixed(0)}pts` : "Équilibré";
-                        const ecartColor = Math.abs(ecart) <= 5 ? "#10b981" : Math.abs(ecart) <= 15 ? "#f59e0b" : "#ef4444";
-                        return (
-                          <div key={name} className="rounded-xl border-2 p-4 space-y-3" style={{ borderColor: provColor + "30", backgroundColor: provColor + "06" }}>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <div className="w-3.5 h-3.5 rounded-full shadow" style={{ backgroundColor: provColor }} />
-                                <span className="text-sm font-extrabold text-slate-800">{name}</span>
+                      {(() => {
+                        const sd = suiviData ?? data;
+                        const provinceOrder = Object.keys(PROVINCE_COLORS);
+                        const isHistoricalWeek = filterSemaine !== "all";
+                        const isHistoricalMonth = filterMois !== "all";
+                        return provinceOrder.map((name) => {
+                          let provProjects = sd.projects.filter(p => p.province === name);
+                          if (filterSecteur !== "all") provProjects = provProjects.filter(p => (SECTEUR_SHORT[p.intitule_rubrique] || p.intitule_rubrique) === filterSecteur);
+                          if (filterStatut !== "all") provProjects = provProjects.filter(p => p.statut === filterStatut);
+                          if (filterCommune !== "all") provProjects = provProjects.filter(p => p.commune === filterCommune);
+                          if (provProjects.length === 0) return null;
+                          const provColor = PROVINCE_COLORS[name] || "#6366f1";
+                          let ap = provProjects.length > 0 ? provProjects.reduce((s, p) => s + p.avancement_physique, 0) / provProjects.length : 0;
+                          let af = provProjects.length > 0 ? provProjects.reduce((s, p) => s + p.avancement_financier, 0) / provProjects.length : 0;
+                          if (isHistoricalWeek) {
+                            ap = simulateProgressAtWeek(ap, parseInt(filterSemaine));
+                            af = simulateProgressAtWeek(af, parseInt(filterSemaine));
+                          } else if (isHistoricalMonth) {
+                            ap = simulateProgressAtMonth(ap, parseInt(filterMois));
+                            af = simulateProgressAtMonth(af, parseInt(filterMois));
+                          }
+                          const paye = provProjects.reduce((s, p) => s + p.montant_paye, 0);
+                          const ordonne = provProjects.reduce((s, p) => s + p.montant_ordonne, 0);
+                          const cout = provProjects.reduce((s, p) => s + p.cout, 0);
+                          const ecart = ap - af;
+                          const ecartLabel = ecart > 0 ? `Physique +${ecart.toFixed(0)}pts` : ecart < 0 ? `Financier +${Math.abs(ecart).toFixed(0)}pts` : "Équilibré";
+                          const ecartColor = Math.abs(ecart) <= 5 ? "#10b981" : Math.abs(ecart) <= 15 ? "#f59e0b" : "#ef4444";
+                          const nbCommunes = new Set(provProjects.map(p => p.commune)).size;
+                          return (
+                            <div key={name} className="rounded-xl border-2 p-4 space-y-3" style={{ borderColor: provColor + "30", backgroundColor: provColor + "06" }}>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-3.5 h-3.5 rounded-full shadow" style={{ backgroundColor: provColor }} />
+                                  <span className="text-sm font-extrabold text-slate-800">{name}</span>
+                                  <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: provColor + "15", color: provColor }}>{provProjects.length} projets</Badge>
+                                </div>
+                                <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: ecartColor + "18", color: ecartColor }}>{ecartLabel}</Badge>
                               </div>
-                              <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: ecartColor + "18", color: ecartColor }}>{ecartLabel}</Badge>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <div className="flex justify-between items-center mb-1">
-                                  <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Wrench className="h-3 w-3" /> Physique</span>
-                                  <span className="text-xs font-black" style={{ color: provColor }}>{ap.toFixed(0)}%</span>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <div className="flex justify-between items-center mb-1">
+                                    <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Wrench className="h-3 w-3" /> Physique</span>
+                                    <span className="text-xs font-black" style={{ color: provColor }}>{ap.toFixed(0)}%</span>
+                                  </div>
+                                  <div className="w-full bg-slate-200/80 rounded-full h-3 overflow-hidden shadow-inner">
+                                    <div className="h-full rounded-full shadow-sm transition-all duration-700" style={{ width: `${ap}%`, backgroundColor: provColor }} />
+                                  </div>
                                 </div>
-                                <div className="w-full bg-slate-200/80 rounded-full h-3 overflow-hidden shadow-inner">
-                                  <div className="h-full rounded-full shadow-sm transition-all duration-700" style={{ width: `${ap}%`, backgroundColor: provColor }} />
+                                <div>
+                                  <div className="flex justify-between items-center mb-1">
+                                    <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Wallet className="h-3 w-3" /> Financier</span>
+                                    <span className="text-xs font-black" style={{ color: provColor }}>{af.toFixed(0)}%</span>
+                                  </div>
+                                  <div className="w-full bg-slate-200/80 rounded-full h-3 overflow-hidden shadow-inner">
+                                    <div className="h-full rounded-full shadow-sm transition-all duration-700 opacity-70" style={{ width: `${af}%`, backgroundColor: provColor }} />
+                                  </div>
                                 </div>
                               </div>
-                              <div>
-                                <div className="flex justify-between items-center mb-1">
-                                  <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Wallet className="h-3 w-3" /> Financier</span>
-                                  <span className="text-xs font-black" style={{ color: provColor }}>{af.toFixed(0)}%</span>
-                                </div>
-                                <div className="w-full bg-slate-200/80 rounded-full h-3 overflow-hidden shadow-inner">
-                                  <div className="h-full rounded-full shadow-sm transition-all duration-700 opacity-70" style={{ width: `${af}%`, backgroundColor: provColor }} />
-                                </div>
+                              <div className="grid grid-cols-3 gap-2 text-[10px] text-slate-400 font-semibold">
+                                <span>Ordonnancé: {(ordonne / 1e6).toFixed(1)} MDH</span>
+                                <span>Payé: {(paye / 1e6).toFixed(1)} MDH / {(cout / 1e6).toFixed(1)} MDH</span>
+                                <span>{provProjects.length} projets / {nbCommunes} communes</span>
                               </div>
                             </div>
-                            <div className="grid grid-cols-3 gap-2 text-[10px] text-slate-400 font-semibold">
-                              <span>Ordonnancé: {(d.montant_ordonne_total / 1e6).toFixed(1)} MDH</span>
-                              <span>Payé: {(d.montant_paye_total / 1e6).toFixed(1)} MDH / {(d.cout_total / 1e6).toFixed(1)} MDH</span>
-                              <span>{d.nb_projets} projets / {d.communes} communes</span>
-                            </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        });
+                      })()}
                     </div>
                   </div>
 
-                  {/* Progress by sector */}
+                  {/* Progress by sector — filtered */}
                   <div>
                     <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
                       <Layers className="h-4 w-4 text-amber-500" />
                       Avancement par secteur
                     </h4>
                     <div className="space-y-2">
-                      {Object.entries((suiviData ?? data).bySecteur)
-                        .sort(([, a], [, b]) => b.cout_total - a.cout_total)
-                        .map(([name, d]) => {
-                          const shortName = SECTEUR_SHORT[name] || name;
-                          const dotColor = SECTEUR_DOT_COLORS[shortName] || "#94a3b8";
-                          const ap = d.avancement_physique_moyen;
-                          const af = d.avancement_financier_moyen;
-                          return (
-                            <div key={name} className="rounded-xl border p-3" style={{ borderColor: dotColor + "25", backgroundColor: dotColor + "04" }}>
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-3 h-3 rounded-full shadow" style={{ backgroundColor: dotColor }} />
-                                  <span className="text-xs font-extrabold text-slate-800">{shortName}</span>
+                      {(() => {
+                        const sd = suiviData ?? data;
+                        let filteredProjects = sd.projects;
+                        if (filterStatut !== "all") filteredProjects = filteredProjects.filter(p => p.statut === filterStatut);
+                        if (filterCommune !== "all") filteredProjects = filteredProjects.filter(p => p.commune === filterCommune);
+                        // Group by sector
+                        const bySect: Record<string, { nb: number; cout: number; ap: number; af: number; ordonne: number; paye: number }> = {};
+                        filteredProjects.forEach(p => {
+                          const key = p.intitule_rubrique;
+                          if (!bySect[key]) bySect[key] = { nb: 0, cout: 0, ap: 0, af: 0, ordonne: 0, paye: 0 };
+                          bySect[key].nb++;
+                          bySect[key].cout += p.cout;
+                          bySect[key].ap += p.avancement_physique;
+                          bySect[key].af += p.avancement_financier;
+                          bySect[key].ordonne += p.montant_ordonne;
+                          bySect[key].paye += p.montant_paye;
+                        });
+                        const isHistoricalWeek = filterSemaine !== "all";
+                        const isHistoricalMonth = filterMois !== "all";
+                        return Object.entries(bySect)
+                          .sort(([, a], [, b]) => b.cout - a.cout)
+                          .map(([name, d]) => {
+                            const shortName = SECTEUR_SHORT[name] || name;
+                            const dotColor = SECTEUR_DOT_COLORS[shortName] || "#94a3b8";
+                            let ap = d.nb > 0 ? d.ap / d.nb : 0;
+                            let af = d.nb > 0 ? d.af / d.nb : 0;
+                            if (isHistoricalWeek) {
+                              ap = simulateProgressAtWeek(ap, parseInt(filterSemaine));
+                              af = simulateProgressAtWeek(af, parseInt(filterSemaine));
+                            } else if (isHistoricalMonth) {
+                              ap = simulateProgressAtMonth(ap, parseInt(filterMois));
+                              af = simulateProgressAtMonth(af, parseInt(filterMois));
+                            }
+                            return (
+                              <div key={name} className="rounded-xl border p-3" style={{ borderColor: dotColor + "25", backgroundColor: dotColor + "04" }}>
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full shadow" style={{ backgroundColor: dotColor }} />
+                                    <span className="text-xs font-extrabold text-slate-800">{shortName}</span>
+                                  </div>
+                                  <div className="flex items-center gap-3 text-[10px] font-bold">
+                                    <span style={{ color: dotColor }}>Phys. {ap.toFixed(0)}%</span>
+                                    <span className="text-slate-300">|</span>
+                                    <span style={{ color: dotColor }} className="opacity-70">Fin. {af.toFixed(0)}%</span>
+                                    <span className="text-slate-300">|</span>
+                                    <span className="text-violet-500">{(d.ordonne / 1e6).toFixed(1)} MDH ord.</span>
+                                    <span className="text-slate-300">|</span>
+                                    <span className="text-emerald-500">{(d.paye / 1e6).toFixed(1)} MDH payé</span>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-3 text-[10px] font-bold">
-                                  <span style={{ color: dotColor }}>Phys. {ap.toFixed(0)}%</span>
-                                  <span className="text-slate-300">|</span>
-                                  <span style={{ color: dotColor }} className="opacity-70">Fin. {af.toFixed(0)}%</span>
-                                  <span className="text-slate-300">|</span>
-                                  <span className="text-violet-500">{(d.montant_ordonne_total / 1e6).toFixed(1)} MDH ord.</span>
-                                  <span className="text-slate-300">|</span>
-                                  <span className="text-emerald-500">{(d.montant_paye_total / 1e6).toFixed(1)} MDH payé</span>
+                                <div className="flex gap-1.5 h-2.5">
+                                  <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+                                    <div className="h-full rounded-full" style={{ width: `${ap}%`, backgroundColor: dotColor }} />
+                                  </div>
+                                  <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+                                    <div className="h-full rounded-full opacity-60" style={{ width: `${af}%`, backgroundColor: dotColor }} />
+                                  </div>
+                                </div>
+                                <div className="flex justify-between mt-1 text-[9px] text-slate-400 font-semibold">
+                                  <span>Physique</span>
+                                  <span>Financier</span>
                                 </div>
                               </div>
-                              <div className="flex gap-1.5 h-2.5">
-                                <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
-                                  <div className="h-full rounded-full" style={{ width: `${ap}%`, backgroundColor: dotColor }} />
-                                </div>
-                                <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
-                                  <div className="h-full rounded-full opacity-60" style={{ width: `${af}%`, backgroundColor: dotColor }} />
-                                </div>
-                              </div>
-                              <div className="flex justify-between mt-1 text-[9px] text-slate-400 font-semibold">
-                                <span>Physique</span>
-                                <span>Financier</span>
-                              </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          });
+                      })()}
                     </div>
                   </div>
 
-                  {/* Alert: projects behind schedule */}
+                  {/* Alert: projects behind schedule — filtered */}
                   {(() => {
-                    const alertProjects = (suiviData ?? data).projects
+                    const sd = suiviData ?? data;
+                    let filteredProjects = sd.projects;
+                    if (filterSecteur !== "all") filteredProjects = filteredProjects.filter(p => (SECTEUR_SHORT[p.intitule_rubrique] || p.intitule_rubrique) === filterSecteur);
+                    if (filterCommune !== "all") filteredProjects = filteredProjects.filter(p => p.commune === filterCommune);
+                    const alertProjects = filteredProjects
                       .filter(p => p.statut === "En cours" && p.avancement_financier - p.avancement_physique > 20)
                       .sort((a, b) => (b.avancement_financier - b.avancement_physique) - (a.avancement_financier - a.avancement_physique))
                       .slice(0, 5);
@@ -1926,7 +2150,7 @@ export default function Home() {
                     );
                   })()}
 
-                  {/* Detailed project table by province */}
+                  {/* Detailed project table by province — filtered */}
                   <div>
                     <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
                       <TableIcon className="h-4 w-4 text-slate-500" />
@@ -1941,17 +2165,18 @@ export default function Home() {
                         };
                         const getApColor = (v: number) => v >= 75 ? "#10b981" : v >= 50 ? "#f59e0b" : v >= 25 ? "#f97316" : "#ef4444";
 
-                        // Group projects by province, preserving PROVINCE_COLORS order
+                        // Get filtered projects
                         const sd = suiviData ?? data;
+                        let baseProjects = sd.projects;
+                        if (filterSecteur !== "all") baseProjects = baseProjects.filter(p => (SECTEUR_SHORT[p.intitule_rubrique] || p.intitule_rubrique) === filterSecteur);
+                        if (filterStatut !== "all") baseProjects = baseProjects.filter(p => p.statut === filterStatut);
+                        if (filterCommune !== "all") baseProjects = baseProjects.filter(p => p.commune === filterCommune);
+
                         const provinceOrder = Object.keys(PROVINCE_COLORS);
                         const projectsByProvince = provinceOrder.reduce<Record<string, Project[]>>((acc, prov) => {
-                          acc[prov] = sd.projects.filter(p => p.province === prov);
+                          acc[prov] = baseProjects.filter(p => p.province === prov);
                           return acc;
                         }, {});
-                        // Also add any provinces not in PROVINCE_COLORS
-                        sd.projects.forEach(p => {
-                          if (!projectsByProvince[p.province]) projectsByProvince[p.province] = [];
-                        });
 
                         return provinceOrder.filter(prov => projectsByProvince[prov] && projectsByProvince[prov].length > 0).map((province) => {
                           const provProjects = projectsByProvince[province];
