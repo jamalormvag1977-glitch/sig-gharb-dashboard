@@ -1,70 +1,66 @@
-# Worklog — Province Suivi Views Implementation
+# Work Log — renderProvinceSuivi Redesign
 
-## 2026-03-05: Added 3 Province-Specific Suivi Avancement Sidebar Views
+## Task ID: province-suivi-redesign-001
+## Date: 2026-06-11
+## Agent: Z.ai Code
+
+### Summary
+Complete redesign of the `renderProvinceSuivi` function in `/home/z/my-project/src/app/page.tsx` to transform it from simple progress bars into a professional infographic dashboard with SVG-based visualizations.
 
 ### Changes Made
 
-#### 1. ViewType & Navigation Updates
-- Added 3 new `ViewType` entries: `"suivi-kenitra"`, `"suivi-sidi-kacem"`, `"suivi-sidi-slimane"`
-- Added 3 new `NAV_ITEMS` with Gauge icon and French labels ("Avancement Kénitra", etc.)
-- Added 3 new `PROVINCE_MAP` entries mapping each suivi view to its province name
-- Added color coding in sidebar for each new view (amber for Kénitra, rose for Sidi Kacem, emerald for Sidi Slimane)
+#### 1. Province Header — Premium Dashboard Style
+- Kept gradient header bar with province name and time label
+- Added 4 KPI mini-cards in a responsive grid (2-col mobile, 4-col desktop):
+  - **Nb Projets** (Hash icon)
+  - **Budget Total** (Wallet icon, formatted as "45.2M DH")
+  - **Avancement Physique Moyen** (Wrench icon, percentage)
+  - **Avancement Financier Moyen** (Wallet icon, percentage)
+- Each KPI card has icon with colored background, label, and value
 
-#### 2. State Variable Cleanup
-- Removed `filterProvince`, `filterSemaine`, `rightPanelOpen`, `expandedProvinces` state variables
-- Kept `filterSecteur`, `filterStatut`, `filterCommune` for the new province views
-- Updated filter reset `useEffect` to reset all 3 remaining filters on any view change
+#### 2. Gauge Rings (Jauge Circulaire) — Hero Visual
+- Implemented inline `GaugeRing` component with SVG circular rings
+- Two 150px gauges side by side for Physique and Financier
+- Features: background ring (slate-200), progress arc with rounded stroke-linecap, drop-shadow glow, center percentage text, delta indicators with ▲/▼ arrows
+- Province color applied dynamically via `provColor` prop
 
-#### 3. Memo Updates
-- Updated `suiviCommunes` to remove `filterProvince` dependency (now computes all communes)
-- Updated `suiviData` to remove `filterProvince` and `filterSemaine` filtering conditions and dependencies
+#### 3. Status Donut
+- Smaller donut chart (130px) showing Terminé/En cours/Non démarré distribution
+- Colors: Terminé="#10b981", En cours="#f59e0b", Non démarré="#ef4444"
+- Center shows total project count
+- Legend with colored dots and counts below
 
-#### 4. Layout & Header
-- Fixed `<main>` className — removed conditional flex layout for suivi-avancement
-- Fixed inner `<div>` — removed conditional className
-- Added header title entries for the 3 new views with province-colored Gauge icons
-- Removed right panel toggle button from header
+#### 4. Pie Chart (Camembert) — Budget by Sector
+- SVG donut chart (200px) with inner radius for donut style
+- Uses SECTEUR_DOT_COLORS for slice colors
+- Center shows total budget formatted with `formatBudget()`
+- Right-side legend with sector name, color dot, and percentage
+- Path arcs calculated from budget proportions using trigonometric calculations
 
-#### 5. Removed Suivi-Avancement Filter Bar
-- Removed the entire filter bar section (province, secteur, statut, commune, semaine filters + active filter badges) from the suivi-avancement view
+#### 5. Sector Table — Professional Data Table
+- Replaced simple progress bars with a structured table
+- Columns: Secteur (with color dot + inline progress bar), Nb Projets, Budget (DH), Av. Physique (%), Av. Financier (%), Écart (pts), Statut visuel
+- Écart colored red (negative) or green (positive)
+- Statut badge: green "Bon" if >75%, yellow "Moyen" if 25-75%, red "Faible" if <25%
 
-#### 6. Removed Right Panel
-- Removed the entire right panel (province sidebars with gauges, sector breakdowns, weekly tracking, status breakdown, budget summary)
-- Removed the toggle button for opening/closing the right panel
+#### 6. Commune Cards — Enhanced with Mini Gauges
+- Grid layout (1/2/3 columns responsive)
+- Each card features:
+  - Mini circular gauge (38px SVG) showing physique progress
+  - Commune name, project count badge, budget
+  - Gradient-filled progress bars for Physique and Financier
+  - Delta indicators
 
-#### 7. Added `renderProvinceSuivi` Helper Function
-- Comprehensive function that renders a full province-specific suivi view
-- Includes: filter bar (Secteur, Statut, Commune), province header card, 4 gauge rings, budget summary, status distribution, weekly tracking analysis (sparkline bars, delta trends, weekly counts), sector breakdown, commune breakdown, alert projects, detailed project table
-- Uses province color theme throughout
-- Applies `filterSecteur`, `filterStatut`, `filterCommune` filters scoped to the specific province
+#### 7. Preserved Components
+- Filter bar: kept identical with all dropdowns and active filter badges
+- Week navigation: kept identical with ▲/▼ buttons and reset link
 
-#### 8. Added 3 Province Suivi Views
-- Added conditional blocks inside the existing `<>...</>` fragment:
-  - `activeView === "suivi-kenitra"` → `renderProvinceSuivi("Kénitra", PROVINCE_COLORS["Kénitra"])`
-  - `activeView === "suivi-sidi-kacem"` → `renderProvinceSuivi("Sidi Kacem", PROVINCE_COLORS["Sidi Kacem"])`
-  - `activeView === "suivi-sidi-slimane"` → `renderProvinceSuivi("Sidi Slimane", PROVINCE_COLORS["Sidi Slimane"])`
+### Technical Details
+- All code is inline in `renderProvinceSuivi` — no new files or dependencies
+- Helper components (GaugeRing, MiniGauge, formatBudget) defined inside the function
+- SVG pie/donut charts use `path` elements with arc commands (no external libraries)
+- All existing data computation logic preserved (bySecteur, byCommune, deltas, etc.)
+- Build verified: `npx next build` compiles successfully with no errors
 
-#### 9. Import Cleanup
-- Removed `PanelRightOpen`, `PanelRightClose` (no longer used after right panel removal)
-- Removed `BarChart2` (no longer used after right panel removal)
-- Cleaned up blank lines in import section
-
-### Ternary Chain Structure Preserved
-The existing structure remains intact:
-```
-{activeView === "rapport" ? (
-  ...rapport...
-) : activeView === "suivi-avancement" ? (
-  ...suivi-avancement...
-) : (
-  <>
-    ...province views (kenitra, sidi-kacem, sidi-slimane, overview content)...
-    ...new suivi views (suivi-kenitra, suivi-sidi-kacem, suivi-sidi-slimane)...
-  </>
-)}
-```
-
-### Build Verification
-- `npx next build` passes successfully
-- No TypeScript errors
-- No references to removed variables remain
+### Files Modified
+- `/home/z/my-project/src/app/page.tsx` — lines 496-1041 (replaced return block of renderProvinceSuivi)

@@ -493,9 +493,139 @@ export default function Home() {
       ? getMonthLabel(filterMois)
       : `Semaine ${currentWeek} en cours`;
 
+    // ─── Inline helper: Gauge Ring (SVG) ───
+    const GaugeRing = ({ value, maxValue = 100, color, size = 140, strokeWidth = 10, label, delta }: { value: number; maxValue?: number; color: string; size?: number; strokeWidth?: number; label: string; delta?: number }) => {
+      const radius = (size - strokeWidth) / 2;
+      const circumference = 2 * Math.PI * radius;
+      const progress = Math.min(Math.max(value / maxValue, 0), 1);
+      const offset = circumference * (1 - progress);
+      const center = size / 2;
+      return (
+        <div className="flex flex-col items-center relative">
+          <svg width={size} height={size} className="transform -rotate-90">
+            <circle cx={center} cy={center} r={radius} fill="none" stroke="#e2e8f0" strokeWidth={strokeWidth} />
+            <circle cx={center} cy={center} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth} strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" className="transition-all duration-1000" style={{ filter: `drop-shadow(0 0 4px ${color}40)` }} />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ width: size, height: size }}>
+            <span className="text-2xl font-black" style={{ color }}>{value.toFixed(1)}%</span>
+            {delta !== undefined && delta !== 0 && (
+              <span className={`text-[10px] font-bold flex items-center gap-0.5 ${delta > 0 ? "text-emerald-600" : "text-red-500"}`}>
+                {delta > 0 ? "▲" : "▼"}{delta > 0 ? "+" : ""}{delta.toFixed(1)}
+              </span>
+            )}
+          </div>
+          <span className="text-[11px] font-bold text-slate-500 mt-1">{label}</span>
+        </div>
+      );
+    };
+
+    // ─── Inline helper: Mini Gauge (for commune cards) ───
+    const MiniGauge = ({ value, color, size = 34 }: { value: number; color: string; size?: number }) => {
+      const sw = 4;
+      const r = (size - sw) / 2;
+      const circ = 2 * Math.PI * r;
+      const prog = Math.min(Math.max(value / 100, 0), 1);
+      const off = circ * (1 - prog);
+      const c = size / 2;
+      return (
+        <svg width={size} height={size} className="transform -rotate-90 shrink-0">
+          <circle cx={c} cy={c} r={r} fill="none" stroke="#e2e8f0" strokeWidth={sw} />
+          <circle cx={c} cy={c} r={r} fill="none" stroke={color} strokeWidth={sw} strokeDasharray={circ} strokeDashoffset={off} strokeLinecap="round" />
+        </svg>
+      );
+    };
+
+    // ─── Inline helper: Pie/Donut chart (SVG) ───
+    const formatBudget = (v: number) => {
+      if (v >= 1_000_000) return (v / 1_000_000).toFixed(1) + "M DH";
+      if (v >= 1_000) return (v / 1_000).toFixed(0) + "K DH";
+      return v.toFixed(0) + " DH";
+    };
+
+    // Compute status counts
+    const statusCounts = {
+      termine: projects.filter(p => p.statut === "Terminé").length,
+      enCours: projects.filter(p => p.statut === "En cours").length,
+      nonDemarre: projects.filter(p => p.statut === "Non démarré").length,
+    };
+
+    // Budget total for pie chart
+    const totalBudget = projects.reduce((s, p) => s + p.cout, 0);
+
+    // Sector data sorted by budget for pie + table
+    const sectorEntries = Object.entries(bySecteur).sort(([, a], [, b]) => b.cout - a.cout);
+
+    // Pie chart data: sector name, budget, color, percentage
+    const pieData = sectorEntries.map(([name, d]) => {
+      const shortName = SECTEUR_SHORT[name] || name;
+      const dotColor = SECTEUR_DOT_COLORS[shortName] || "#94a3b8";
+      return { name: shortName, budget: d.cout, color: dotColor, pct: totalBudget > 0 ? (d.cout / totalBudget) * 100 : 0 };
+    });
+
+    // Status donut data
+    const statusDonutData = [
+      { name: "Terminé", count: statusCounts.termine, color: "#10b981" },
+      { name: "En cours", count: statusCounts.enCours, color: "#f59e0b" },
+      { name: "Non démarré", count: statusCounts.nonDemarre, color: "#ef4444" },
+    ].filter(d => d.count > 0);
+
+    // Build SVG pie/donut slices
+    const pieSize = 200;
+    const pieR = 75;
+    const pieInnerR = 45;
+    const pieCx = pieSize / 2;
+    const pieCy = pieSize / 2;
+
+    const pieSlices = pieData.reduce<{ name: string; color: string; pct: number; path: string }[]>((acc, d, i) => {
+      const startAngle = acc.length > 0 ? acc.reduce((s, x) => s + x.pct, 0) * 3.6 : 0;
+      const endAngle = (acc.reduce((s, x) => s + x.pct, 0) + d.pct) * 3.6;
+      const startRad = (startAngle - 90) * Math.PI / 180;
+      const endRad = (endAngle - 90) * Math.PI / 180;
+      const largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
+      const x1o = pieCx + pieR * Math.cos(startRad);
+      const y1o = pieCy + pieR * Math.sin(startRad);
+      const x2o = pieCx + pieR * Math.cos(endRad);
+      const y2o = pieCy + pieR * Math.sin(endRad);
+      const x1i = pieCx + pieInnerR * Math.cos(endRad);
+      const y1i = pieCy + pieInnerR * Math.sin(endRad);
+      const x2i = pieCx + pieInnerR * Math.cos(startRad);
+      const y2i = pieCy + pieInnerR * Math.sin(startRad);
+      const path = `M${x1o},${y1o} A${pieR},${pieR} 0 ${largeArc} 1 ${x2o},${y2o} L${x1i},${y1i} A${pieInnerR},${pieInnerR} 0 ${largeArc} 0 ${x2i},${y2i} Z`;
+      acc.push({ name: d.name, color: d.color, pct: d.pct, path });
+      return acc;
+    }, []);
+
+    // Status donut slices
+    const statusSize = 130;
+    const statusR = 50;
+    const statusInnerR = 30;
+    const statusCx = statusSize / 2;
+    const statusCy = statusSize / 2;
+    const statusTotal = statusCounts.termine + statusCounts.enCours + statusCounts.nonDemarre;
+
+    const statusSlices = statusDonutData.reduce<{ name: string; color: string; count: number; path: string }[]>((acc, d) => {
+      const pct = statusTotal > 0 ? (d.count / statusTotal) * 100 : 0;
+      const startAngle = acc.length > 0 ? acc.reduce((s, x) => s + (statusTotal > 0 ? (x.count / statusTotal) * 360 : 0), 0) : 0;
+      const endAngle = startAngle + (statusTotal > 0 ? (d.count / statusTotal) * 360 : 0);
+      const startRad = (startAngle - 90) * Math.PI / 180;
+      const endRad = (endAngle - 90) * Math.PI / 180;
+      const largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
+      const x1o = statusCx + statusR * Math.cos(startRad);
+      const y1o = statusCy + statusR * Math.sin(startRad);
+      const x2o = statusCx + statusR * Math.cos(endRad);
+      const y2o = statusCy + statusR * Math.sin(endRad);
+      const x1i = statusCx + statusInnerR * Math.cos(endRad);
+      const y1i = statusCy + statusInnerR * Math.sin(endRad);
+      const x2i = statusCx + statusInnerR * Math.cos(startRad);
+      const y2i = statusCy + statusInnerR * Math.sin(startRad);
+      const path = `M${x1o},${y1o} A${statusR},${statusR} 0 ${largeArc} 1 ${x2o},${y2o} L${x1i},${y1i} A${statusInnerR},${statusInnerR} 0 ${largeArc} 0 ${x2i},${y2i} Z`;
+      acc.push({ name: d.name, color: d.color, count: d.count, path });
+      return acc;
+    }, []);
+
     return (
       <div className="space-y-6">
-        {/* Province header */}
+        {/* ── Province header ── */}
         <div className="rounded-2xl overflow-hidden shadow-xl border-2" style={{ borderColor: provColor + "50" }}>
           <div className="px-6 py-4" style={{ background: `linear-gradient(135deg, ${provColor}, ${provColor}CC)` }}>
             <div className="flex items-center gap-3">
@@ -504,7 +634,6 @@ export default function Home() {
                 <h2 className="text-lg font-extrabold text-white">État d&apos;Avancement — {province}</h2>
                 <p className="text-xs mt-0.5 text-white/50">Région du Gharb — ORMVAG — {timeLabel}</p>
               </div>
-              {/* Historical badge */}
               {(isHistoricalWeek || isHistoricalMonth) && (
                 <Badge className="text-[10px] font-bold px-3 py-1 border-0 bg-white/20 text-white backdrop-blur-sm">
                   <Calendar className="h-3 w-3 mr-1" /> Consultation historique
@@ -513,46 +642,48 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Overall progress bars with deltas */}
-          <div className="px-6 py-4 space-y-3" style={{ background: `linear-gradient(135deg, ${provColor}08, ${provColor}03)` }}>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1.5"><Wrench className="h-3.5 w-3.5" style={{ color: provColor }} /> Avancement Physique</span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-black" style={{ color: provColor }}>{avancementPhysique.toFixed(1)}%</span>
-                    {deltaAP !== 0 && (
-                      <span className={`text-[10px] font-bold flex items-center gap-0.5 ${deltaAP > 0 ? "text-emerald-600" : "text-red-500"}`}>
-                        {deltaAP > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                        {deltaAP > 0 ? "+" : ""}{deltaAP.toFixed(1)}
-                      </span>
-                    )}
-                  </div>
+          {/* KPI mini-cards */}
+          <div className="px-4 py-4" style={{ background: `linear-gradient(135deg, ${provColor}08, ${provColor}03)` }}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="bg-white rounded-xl border shadow-sm p-3 flex items-center gap-3" style={{ borderColor: provColor + "20" }}>
+                <div className="p-2 rounded-lg" style={{ backgroundColor: provColor + "15" }}>
+                  <Hash className="h-4 w-4" style={{ color: provColor }} />
                 </div>
-                <div className="w-full bg-slate-200/80 rounded-full h-3.5 overflow-hidden shadow-inner">
-                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${avancementPhysique}%`, backgroundColor: provColor }} />
+                <div>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Nb Projets</p>
+                  <p className="text-lg font-black text-slate-800 leading-tight">{totalProjects}</p>
                 </div>
               </div>
-              <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1.5"><Wallet className="h-3.5 w-3.5" style={{ color: provColor }} /> Avancement Financier</span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-black" style={{ color: provColor }}>{avancementFinancier.toFixed(1)}%</span>
-                    {deltaAF !== 0 && (
-                      <span className={`text-[10px] font-bold flex items-center gap-0.5 ${deltaAF > 0 ? "text-emerald-600" : "text-red-500"}`}>
-                        {deltaAF > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                        {deltaAF > 0 ? "+" : ""}{deltaAF.toFixed(1)}
-                      </span>
-                    )}
-                  </div>
+              <div className="bg-white rounded-xl border shadow-sm p-3 flex items-center gap-3" style={{ borderColor: provColor + "20" }}>
+                <div className="p-2 rounded-lg" style={{ backgroundColor: provColor + "15" }}>
+                  <Wallet className="h-4 w-4" style={{ color: provColor }} />
                 </div>
-                <div className="w-full bg-slate-200/80 rounded-full h-3.5 overflow-hidden shadow-inner">
-                  <div className="h-full rounded-full transition-all duration-700 opacity-70" style={{ width: `${avancementFinancier}%`, backgroundColor: provColor }} />
+                <div>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Budget Total</p>
+                  <p className="text-lg font-black text-slate-800 leading-tight">{formatBudget(totalBudget)}</p>
+                </div>
+              </div>
+              <div className="bg-white rounded-xl border shadow-sm p-3 flex items-center gap-3" style={{ borderColor: provColor + "20" }}>
+                <div className="p-2 rounded-lg" style={{ backgroundColor: provColor + "15" }}>
+                  <Wrench className="h-4 w-4" style={{ color: provColor }} />
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Av. Physique</p>
+                  <p className="text-lg font-black leading-tight" style={{ color: provColor }}>{avancementPhysique.toFixed(1)}%</p>
+                </div>
+              </div>
+              <div className="bg-white rounded-xl border shadow-sm p-3 flex items-center gap-3" style={{ borderColor: provColor + "20" }}>
+                <div className="p-2 rounded-lg" style={{ backgroundColor: provColor + "15" }}>
+                  <Wallet className="h-4 w-4" style={{ color: provColor }} />
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Av. Financier</p>
+                  <p className="text-lg font-black leading-tight" style={{ color: provColor }}>{avancementFinancier.toFixed(1)}%</p>
                 </div>
               </div>
             </div>
             {/* Quick week navigation */}
-            <div className="flex items-center justify-center gap-1 pt-1">
+            <div className="flex items-center justify-center gap-1 pt-3">
               <button
                 onClick={() => {
                   const firstWeek = WEEKS_2026.length > 0 ? parseInt(WEEKS_2026[0].value) : 23;
@@ -586,7 +717,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Filter bar */}
+        {/* ── Filter bar (KEEP AS-IS) ── */}
         <div className="bg-white/90 backdrop-blur-sm rounded-xl border shadow-md p-3" style={{ borderColor: provColor + "40" }}>
           <div className="flex items-center gap-2 mb-2.5">
             <Filter className="h-4 w-4" style={{ color: provColor }} />
@@ -608,7 +739,7 @@ export default function Home() {
                 value={filterMois}
                 onChange={e => {
                   setFilterMois(e.target.value);
-                  setFilterSemaine("all"); // Reset week when month changes
+                  setFilterSemaine("all");
                 }}
                 className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
               >
@@ -708,76 +839,147 @@ export default function Home() {
           )}
         </div>
 
-        {/* Sector advancement */}
-        <div>
-          <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
-            <Layers className="h-4 w-4" style={{ color: provColor }} />
-            Avancement par secteur
+        {/* ── Gauge Rings + Status Donut ── */}
+        <div className="bg-white rounded-2xl border shadow-lg p-5" style={{ borderColor: provColor + "30" }}>
+          <h4 className="text-sm font-extrabold text-slate-800 mb-4 flex items-center gap-2">
+            <Target className="h-4 w-4" style={{ color: provColor }} />
+            Jaunes d&apos;Avancement
             {(isHistoricalWeek || isHistoricalMonth) && <span className="text-[9px] font-bold text-slate-400 ml-1">({timeLabel})</span>}
           </h4>
-          <div className="space-y-2">
-            {Object.entries(bySecteur)
-              .sort(([, a], [, b]) => b.cout - a.cout)
-              .map(([name, d]) => {
-                const shortName = SECTEUR_SHORT[name] || name;
-                const dotColor = SECTEUR_DOT_COLORS[shortName] || "#94a3b8";
-                // Delta for sector
-                const prevSectAP = isHistoricalWeek
-                  ? simulateProgressAtWeek(d.currentAp / d.nb, Math.max(1, selectedWeekNum! - 1))
-                  : isHistoricalMonth
-                  ? simulateProgressAtMonth(d.currentAp / d.nb, Math.max(1, selectedMonthNum! - 1))
-                  : d.ap;
-                const sectDelta = d.ap - prevSectAP;
-                return (
-                  <div key={name} className="rounded-xl border p-3" style={{ borderColor: dotColor + "25", backgroundColor: dotColor + "04" }}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full shadow" style={{ backgroundColor: dotColor }} />
-                        <span className="text-xs font-extrabold text-slate-800">{shortName}</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-[10px] font-bold">
-                        <span style={{ color: dotColor }}>Phys. {d.ap.toFixed(0)}%</span>
-                        <span className="text-slate-300">|</span>
-                        <span style={{ color: dotColor }} className="opacity-70">Fin. {d.af.toFixed(0)}%</span>
-                        {sectDelta !== 0 && (
-                          <span className={`flex items-center gap-0.5 ${sectDelta > 0 ? "text-emerald-500" : "text-red-500"}`}>
-                            {sectDelta > 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-                            {sectDelta > 0 ? "+" : ""}{sectDelta.toFixed(1)}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex gap-1.5 h-2.5">
-                      <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
-                        <div className="h-full rounded-full" style={{ width: `${d.ap}%`, backgroundColor: dotColor }} />
-                      </div>
-                      <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
-                        <div className="h-full rounded-full opacity-60" style={{ width: `${d.af}%`, backgroundColor: dotColor }} />
-                      </div>
-                    </div>
-                    <div className="flex justify-between mt-1 text-[9px] text-slate-400 font-semibold">
-                      <span>Physique</span>
-                      <span>Financier</span>
-                    </div>
+          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+            <GaugeRing value={avancementPhysique} color={provColor} label="Avancement Physique" delta={deltaAP} size={150} strokeWidth={12} />
+            <GaugeRing value={avancementFinancier} color={provColor} label="Avancement Financier" delta={deltaAF} size={150} strokeWidth={12} />
+            {/* Status donut */}
+            <div className="flex flex-col items-center">
+              <div className="relative">
+                <svg width={statusSize} height={statusSize}>
+                  {statusSlices.map((s, i) => (
+                    <path key={i} d={s.path} fill={s.color} stroke="white" strokeWidth="2" className="transition-all duration-700" />
+                  ))}
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-base font-black text-slate-800">{statusTotal}</span>
+                  <span className="text-[8px] font-bold text-slate-400">projets</span>
+                </div>
+              </div>
+              <span className="text-[11px] font-bold text-slate-500 mt-1">Statut</span>
+              <div className="flex flex-wrap gap-2 mt-2 justify-center">
+                {statusDonutData.map((s, i) => (
+                  <div key={i} className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
+                    <span className="text-[9px] font-bold text-slate-600">{s.name} ({s.count})</span>
                   </div>
-                );
-              })}
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Commune advancement */}
+        {/* ── Pie Chart + Sector Table ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+          {/* Pie chart (2 cols) */}
+          <div className="lg:col-span-2 bg-white rounded-2xl border shadow-lg p-5" style={{ borderColor: provColor + "30" }}>
+            <h4 className="text-sm font-extrabold text-slate-800 mb-4 flex items-center gap-2">
+              <PieChartIcon className="h-4 w-4" style={{ color: provColor }} />
+              Budget par Secteur
+            </h4>
+            <div className="flex flex-col items-center">
+              <div className="relative">
+                <svg width={pieSize} height={pieSize}>
+                  {pieSlices.map((s, i) => (
+                    <path key={i} d={s.path} fill={s.color} stroke="white" strokeWidth="2" className="transition-all duration-700" style={{ filter: `drop-shadow(0 1px 2px ${s.color}40)` }} />
+                  ))}
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-sm font-black text-slate-800">{formatBudget(totalBudget)}</span>
+                  <span className="text-[8px] font-bold text-slate-400">Total</span>
+                </div>
+              </div>
+              {/* Legend */}
+              <div className="mt-4 space-y-1.5 w-full">
+                {pieData.map((d, i) => (
+                  <div key={i} className="flex items-center gap-2 px-1">
+                    <div className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: d.color }} />
+                    <span className="text-[10px] font-bold text-slate-700 flex-1 truncate">{d.name}</span>
+                    <span className="text-[10px] font-black text-slate-500">{d.pct.toFixed(1)}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Sector table (3 cols) */}
+          <div className="lg:col-span-3 bg-white rounded-2xl border shadow-lg p-5" style={{ borderColor: provColor + "30" }}>
+            <h4 className="text-sm font-extrabold text-slate-800 mb-4 flex items-center gap-2">
+              <Layers className="h-4 w-4" style={{ color: provColor }} />
+              Avancement par Secteur
+              {(isHistoricalWeek || isHistoricalMonth) && <span className="text-[9px] font-bold text-slate-400 ml-1">({timeLabel})</span>}
+            </h4>
+            <div className="overflow-x-auto">
+              <table className="w-full text-[11px]">
+                <thead>
+                  <tr className="border-b border-slate-200">
+                    <th className="text-left font-extrabold text-slate-500 pb-2 pr-2">Secteur</th>
+                    <th className="text-center font-extrabold text-slate-500 pb-2 px-1">Nb</th>
+                    <th className="text-right font-extrabold text-slate-500 pb-2 px-1">Budget</th>
+                    <th className="text-center font-extrabold text-slate-500 pb-2 px-1">Phys.</th>
+                    <th className="text-center font-extrabold text-slate-500 pb-2 px-1">Fin.</th>
+                    <th className="text-center font-extrabold text-slate-500 pb-2 px-1">Écart</th>
+                    <th className="text-center font-extrabold text-slate-500 pb-2 pl-1">Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sectorEntries.map(([name, d]) => {
+                    const shortName = SECTEUR_SHORT[name] || name;
+                    const dotColor = SECTEUR_DOT_COLORS[shortName] || "#94a3b8";
+                    const ecart = d.ap - d.af;
+                    const avgPct = (d.ap + d.af) / 2;
+                    const statusColor = avgPct > 75 ? "#10b981" : avgPct > 25 ? "#f59e0b" : "#ef4444";
+                    const statusLabel = avgPct > 75 ? "Bon" : avgPct > 25 ? "Moyen" : "Faible";
+                    return (
+                      <tr key={name} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
+                        <td className="py-2.5 pr-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
+                            <span className="font-bold text-slate-800 truncate max-w-[120px]" title={shortName}>{shortName}</span>
+                          </div>
+                          <div className="mt-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${d.ap}%`, backgroundColor: dotColor }} />
+                          </div>
+                        </td>
+                        <td className="text-center font-bold text-slate-700 px-1">{d.nb}</td>
+                        <td className="text-right font-bold text-slate-700 px-1">{formatBudget(d.cout)}</td>
+                        <td className="text-center font-black px-1" style={{ color: dotColor }}>{d.ap.toFixed(0)}%</td>
+                        <td className="text-center font-black px-1 opacity-70" style={{ color: dotColor }}>{d.af.toFixed(0)}%</td>
+                        <td className="text-center font-black px-1" style={{ color: ecart >= 0 ? "#10b981" : "#ef4444" }}>
+                          {ecart >= 0 ? "+" : ""}{ecart.toFixed(1)}
+                        </td>
+                        <td className="text-center pl-1">
+                          <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold text-white" style={{ backgroundColor: statusColor }}>
+                            {statusLabel}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Commune Cards with Mini Gauges ── */}
         <div>
           <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
             <MapPin className="h-4 w-4" style={{ color: provColor }} />
             Avancement par commune
             {(isHistoricalWeek || isHistoricalMonth) && <span className="text-[9px] font-bold text-slate-400 ml-1">({timeLabel})</span>}
           </h4>
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {Object.entries(byCommune)
               .sort(([, a], [, b]) => b.cout - a.cout)
               .map(([name, d]) => {
                 const commColor = communeColorMap[name] || provColor;
-                // Delta for commune
                 const prevCommAP = isHistoricalWeek
                   ? simulateProgressAtWeek(d.currentAp / d.nb, Math.max(1, selectedWeekNum! - 1))
                   : isHistoricalMonth
@@ -785,36 +987,49 @@ export default function Home() {
                   : d.ap;
                 const commDelta = d.ap - prevCommAP;
                 return (
-                  <div key={name} className="rounded-xl border p-3" style={{ borderColor: commColor + "25", backgroundColor: commColor + "04" }}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full shadow" style={{ backgroundColor: commColor }} />
-                        <span className="text-xs font-extrabold text-slate-800">{name}</span>
-                        <Badge className="text-[8px] font-bold px-1.5 py-0 border-0" style={{ backgroundColor: commColor + "18", color: commColor }}>{d.nb}P</Badge>
+                  <div key={name} className="bg-white rounded-xl border shadow-sm p-3 hover:shadow-md transition-shadow" style={{ borderColor: commColor + "30" }}>
+                    <div className="flex items-start gap-2.5">
+                      {/* Mini gauge */}
+                      <div className="relative shrink-0 mt-0.5">
+                        <MiniGauge value={d.ap} color={commColor} size={38} />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-[7px] font-black" style={{ color: commColor }}>{d.ap.toFixed(0)}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3 text-[10px] font-bold">
-                        <span style={{ color: commColor }}>Phys. {d.ap.toFixed(0)}%</span>
-                        <span className="text-slate-300">|</span>
-                        <span style={{ color: commColor }} className="opacity-70">Fin. {d.af.toFixed(0)}%</span>
-                        {commDelta !== 0 && (
-                          <span className={`flex items-center gap-0.5 ${commDelta > 0 ? "text-emerald-500" : "text-red-500"}`}>
-                            {commDelta > 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-                            {commDelta > 0 ? "+" : ""}{commDelta.toFixed(1)}
-                          </span>
-                        )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span className="text-xs font-extrabold text-slate-800 truncate">{name}</span>
+                          <Badge className="text-[7px] font-bold px-1.5 py-0 border-0 shrink-0" style={{ backgroundColor: commColor + "18", color: commColor }}>{d.nb}P</Badge>
+                        </div>
+                        <p className="text-[9px] font-bold text-slate-400 mb-2">{formatBudget(d.cout)}</p>
+                        {/* Physique bar */}
+                        <div className="mb-1.5">
+                          <div className="flex justify-between items-center mb-0.5">
+                            <span className="text-[8px] font-bold text-slate-500">Physique</span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-[9px] font-black" style={{ color: commColor }}>{d.ap.toFixed(0)}%</span>
+                              {commDelta !== 0 && (
+                                <span className={`text-[7px] font-bold ${commDelta > 0 ? "text-emerald-600" : "text-red-500"}`}>
+                                  {commDelta > 0 ? "▲" : "▼"}{commDelta > 0 ? "+" : ""}{commDelta.toFixed(1)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${d.ap}%`, background: `linear-gradient(90deg, ${commColor}, ${commColor}BB)` }} />
+                          </div>
+                        </div>
+                        {/* Financier bar */}
+                        <div>
+                          <div className="flex justify-between items-center mb-0.5">
+                            <span className="text-[8px] font-bold text-slate-500">Financier</span>
+                            <span className="text-[9px] font-black opacity-70" style={{ color: commColor }}>{d.af.toFixed(0)}%</span>
+                          </div>
+                          <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${d.af}%`, background: `linear-gradient(90deg, ${commColor}AA, ${commColor}77)` }} />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex gap-1.5 h-2.5">
-                      <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
-                        <div className="h-full rounded-full" style={{ width: `${d.ap}%`, backgroundColor: commColor }} />
-                      </div>
-                      <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
-                        <div className="h-full rounded-full opacity-60" style={{ width: `${d.af}%`, backgroundColor: commColor }} />
-                      </div>
-                    </div>
-                    <div className="flex justify-between mt-1 text-[9px] text-slate-400 font-semibold">
-                      <span>Physique</span>
-                      <span>Financier</span>
                     </div>
                   </div>
                 );

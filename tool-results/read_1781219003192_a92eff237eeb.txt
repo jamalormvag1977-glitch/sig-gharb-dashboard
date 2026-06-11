@@ -1,0 +1,502 @@
+   380→      } else {
+   381→        // Deterministic: use a fixed step based on index
+   382→        const step = 3 + (i * 1.5);
+   383→        result.push(Math.max(0, currentValue - step * i));
+   384→      }
+   385→    }
+   386→    return result;
+   387→  };
+   388→
+   389→  // Render a full province-specific suivi view
+   390→  const renderProvinceSuivi = (province: string, provColor: string) => {
+   391→    if (!data) return null;
+   392→
+   393→    // Get province projects with filters
+   394→    let projects = data.projects.filter(p => p.province === province);
+   395→    if (filterSecteur !== "all") projects = projects.filter(p => (SECTEUR_SHORT[p.intitule_rubrique] || p.intitule_rubrique) === filterSecteur);
+   396→    if (filterStatut !== "all") projects = projects.filter(p => p.statut === filterStatut);
+   397→    if (filterCommune !== "all") projects = projects.filter(p => p.commune === filterCommune);
+   398→
+   399→    // All communes for this province (for dropdown)
+   400→    const allCommunes = [...new Set(data.projects.filter(p => p.province === province).map(p => p.commune))].sort();
+   401→
+   402→    // Determine the time reference point
+   403→    const currentWeek = getCurrentWeek();
+   404→    const currentMonth = new Date().getMonth() + 1;
+   405→    const isHistoricalWeek = selectedWeekNum !== null;
+   406→    const isHistoricalMonth = selectedMonthNum !== null;
+   407→    const displayWeek = isHistoricalWeek ? selectedWeekNum! : currentWeek;
+   408→    const displayMonth = isHistoricalMonth ? selectedMonthNum! : (isHistoricalWeek ? WEEKS_2026.find(w => w.value === filterSemaine)?.month ?? currentMonth : currentMonth);
+   409→
+   410→    // Compute current (actual) metrics
+   411→    const totalProjects = projects.length;
+   412→    const currentAP = totalProjects > 0 ? projects.reduce((s, p) => s + p.avancement_physique, 0) / totalProjects : 0;
+   413→    const currentAF = totalProjects > 0 ? projects.reduce((s, p) => s + p.avancement_financier, 0) / totalProjects : 0;
+   414→
+   415→    // Apply time-based simulation
+   416→    let avancementPhysique = currentAP;
+   417→    let avancementFinancier = currentAF;
+   418→    if (isHistoricalWeek) {
+   419→      avancementPhysique = simulateProgressAtWeek(currentAP, selectedWeekNum!);
+   420→      avancementFinancier = simulateProgressAtWeek(currentAF, selectedWeekNum!);
+   421→    } else if (isHistoricalMonth) {
+   422→      avancementPhysique = simulateProgressAtMonth(currentAP, selectedMonthNum!);
+   423→      avancementFinancier = simulateProgressAtMonth(currentAF, selectedMonthNum!);
+   424→    }
+   425→
+   426→    // Compute deltas vs previous period
+   427→    const prevWeekAP = isHistoricalWeek ? simulateProgressAtWeek(currentAP, Math.max(1, selectedWeekNum! - 1)) : simulateProgressAtWeek(currentAP, Math.max(1, currentWeek - 1));
+   428→    const prevWeekAF = isHistoricalWeek ? simulateProgressAtWeek(currentAF, Math.max(1, selectedWeekNum! - 1)) : simulateProgressAtWeek(currentAF, Math.max(1, currentWeek - 1));
+   429→    const deltaAP = avancementPhysique - prevWeekAP;
+   430→    const deltaAF = avancementFinancier - prevWeekAF;
+   431→
+   432→    // Sector breakdown with time simulation
+   433→    const bySecteur: Record<string, { nb: number; cout: number; ap: number; af: number; currentAp: number; currentAf: number }> = {};
+   434→    projects.forEach(p => {
+   435→      const key = p.intitule_rubrique;
+   436→      if (!bySecteur[key]) bySecteur[key] = { nb: 0, cout: 0, ap: 0, af: 0, currentAp: 0, currentAf: 0 };
+   437→      bySecteur[key].nb++;
+   438→      bySecteur[key].cout += p.cout;
+   439→      bySecteur[key].currentAp += p.avancement_physique;
+   440→      bySecteur[key].currentAf += p.avancement_financier;
+   441→    });
+   442→    Object.keys(bySecteur).forEach(k => {
+   443→      const d = bySecteur[k];
+   444→      const cap = d.nb > 0 ? d.currentAp / d.nb : 0;
+   445→      const caf = d.nb > 0 ? d.currentAf / d.nb : 0;
+   446→      if (isHistoricalWeek) {
+   447→        d.ap = simulateProgressAtWeek(cap, selectedWeekNum!);
+   448→        d.af = simulateProgressAtWeek(caf, selectedWeekNum!);
+   449→      } else if (isHistoricalMonth) {
+   450→        d.ap = simulateProgressAtMonth(cap, selectedMonthNum!);
+   451→        d.af = simulateProgressAtMonth(caf, selectedMonthNum!);
+   452→      } else {
+   453→        d.ap = cap;
+   454→        d.af = caf;
+   455→      }
+   456→    });
+   457→
+   458→    // Commune breakdown with time simulation
+   459→    const byCommune: Record<string, { nb: number; cout: number; ap: number; af: number; currentAp: number; currentAf: number }> = {};
+   460→    projects.forEach(p => {
+   461→      const key = p.commune;
+   462→      if (!byCommune[key]) byCommune[key] = { nb: 0, cout: 0, ap: 0, af: 0, currentAp: 0, currentAf: 0 };
+   463→      byCommune[key].nb++;
+   464→      byCommune[key].cout += p.cout;
+   465→      byCommune[key].currentAp += p.avancement_physique;
+   466→      byCommune[key].currentAf += p.avancement_financier;
+   467→    });
+   468→    Object.keys(byCommune).forEach(k => {
+   469→      const d = byCommune[k];
+   470→      const cap = d.nb > 0 ? d.currentAp / d.nb : 0;
+   471→      const caf = d.nb > 0 ? d.currentAf / d.nb : 0;
+   472→      if (isHistoricalWeek) {
+   473→        d.ap = simulateProgressAtWeek(cap, selectedWeekNum!);
+   474→        d.af = simulateProgressAtWeek(caf, selectedWeekNum!);
+   475→      } else if (isHistoricalMonth) {
+   476→        d.ap = simulateProgressAtMonth(cap, selectedMonthNum!);
+   477→        d.af = simulateProgressAtMonth(caf, selectedMonthNum!);
+   478→      } else {
+   479→        d.ap = cap;
+   480→        d.af = caf;
+   481→      }
+   482→    });
+   483→
+   484→    // Filter weeks by selected month
+   485→    const filteredWeeks = filterMois !== "all"
+   486→      ? WEEKS_2026.filter(w => w.month === parseInt(filterMois))
+   487→      : WEEKS_2026;
+   488→
+   489→    // Time period label
+   490→    const timeLabel = isHistoricalWeek
+   491→      ? `S${selectedWeekNum} — ${WEEKS_2026.find(w => w.value === filterSemaine)?.label ?? ""}`
+   492→      : isHistoricalMonth
+   493→      ? getMonthLabel(filterMois)
+   494→      : `Semaine ${currentWeek} en cours`;
+   495→
+   496→    return (
+   497→      <div className="space-y-6">
+   498→        {/* Province header */}
+   499→        <div className="rounded-2xl overflow-hidden shadow-xl border-2" style={{ borderColor: provColor + "50" }}>
+   500→          <div className="px-6 py-4" style={{ background: `linear-gradient(135deg, ${provColor}, ${provColor}CC)` }}>
+   501→            <div className="flex items-center gap-3">
+   502→              <Gauge className="h-6 w-6 text-white/80" />
+   503→              <div className="flex-1">
+   504→                <h2 className="text-lg font-extrabold text-white">État d&apos;Avancement — {province}</h2>
+   505→                <p className="text-xs mt-0.5 text-white/50">Région du Gharb — ORMVAG — {timeLabel}</p>
+   506→              </div>
+   507→              {/* Historical badge */}
+   508→              {(isHistoricalWeek || isHistoricalMonth) && (
+   509→                <Badge className="text-[10px] font-bold px-3 py-1 border-0 bg-white/20 text-white backdrop-blur-sm">
+   510→                  <Calendar className="h-3 w-3 mr-1" /> Consultation historique
+   511→                </Badge>
+   512→              )}
+   513→            </div>
+   514→          </div>
+   515→
+   516→          {/* Overall progress bars with deltas */}
+   517→          <div className="px-6 py-4 space-y-3" style={{ background: `linear-gradient(135deg, ${provColor}08, ${provColor}03)` }}>
+   518→            <div className="grid grid-cols-2 gap-4">
+   519→              <div>
+   520→                <div className="flex justify-between items-center mb-1.5">
+   521→                  <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1.5"><Wrench className="h-3.5 w-3.5" style={{ color: provColor }} /> Avancement Physique</span>
+   522→                  <div className="flex items-center gap-1.5">
+   523→                    <span className="text-sm font-black" style={{ color: provColor }}>{avancementPhysique.toFixed(1)}%</span>
+   524→                    {deltaAP !== 0 && (
+   525→                      <span className={`text-[10px] font-bold flex items-center gap-0.5 ${deltaAP > 0 ? "text-emerald-600" : "text-red-500"}`}>
+   526→                        {deltaAP > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+   527→                        {deltaAP > 0 ? "+" : ""}{deltaAP.toFixed(1)}
+   528→                      </span>
+   529→                    )}
+   530→                  </div>
+   531→                </div>
+   532→                <div className="w-full bg-slate-200/80 rounded-full h-3.5 overflow-hidden shadow-inner">
+   533→                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${avancementPhysique}%`, backgroundColor: provColor }} />
+   534→                </div>
+   535→              </div>
+   536→              <div>
+   537→                <div className="flex justify-between items-center mb-1.5">
+   538→                  <span className="text-[11px] font-bold text-slate-600 flex items-center gap-1.5"><Wallet className="h-3.5 w-3.5" style={{ color: provColor }} /> Avancement Financier</span>
+   539→                  <div className="flex items-center gap-1.5">
+   540→                    <span className="text-sm font-black" style={{ color: provColor }}>{avancementFinancier.toFixed(1)}%</span>
+   541→                    {deltaAF !== 0 && (
+   542→                      <span className={`text-[10px] font-bold flex items-center gap-0.5 ${deltaAF > 0 ? "text-emerald-600" : "text-red-500"}`}>
+   543→                        {deltaAF > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+   544→                        {deltaAF > 0 ? "+" : ""}{deltaAF.toFixed(1)}
+   545→                      </span>
+   546→                    )}
+   547→                  </div>
+   548→                </div>
+   549→                <div className="w-full bg-slate-200/80 rounded-full h-3.5 overflow-hidden shadow-inner">
+   550→                  <div className="h-full rounded-full transition-all duration-700 opacity-70" style={{ width: `${avancementFinancier}%`, backgroundColor: provColor }} />
+   551→                </div>
+   552→              </div>
+   553→            </div>
+   554→            {/* Quick week navigation */}
+   555→            <div className="flex items-center justify-center gap-1 pt-1">
+   556→              <button
+   557→                onClick={() => {
+   558→                  const firstWeek = WEEKS_2026.length > 0 ? parseInt(WEEKS_2026[0].value) : 23;
+   559→                  const prev = Math.max(firstWeek, displayWeek - 1);
+   560→                  setFilterSemaine(prev.toString());
+   561→                }}
+   562→                className="p-1.5 rounded-lg hover:bg-slate-200/60 transition-colors text-slate-500 hover:text-slate-700"
+   563→                title="Semaine précédente"
+   564→              >
+   565→                <ChevronUp className="h-3.5 w-3.5" />
+   566→              </button>
+   567→              <span className="text-[10px] font-bold text-slate-500 px-2">S{displayWeek}</span>
+   568→              <button
+   569→                onClick={() => {
+   570→                  const lastWeek = WEEKS_2026.length > 0 ? parseInt(WEEKS_2026[WEEKS_2026.length - 1].value) : 52;
+   571→                  const next = Math.min(lastWeek, displayWeek + 1);
+   572→                  setFilterSemaine(next.toString());
+   573→                }}
+   574→                className="p-1.5 rounded-lg hover:bg-slate-200/60 transition-colors text-slate-500 hover:text-slate-700"
+   575→                title="Semaine suivante"
+   576→              >
+   577→                <ChevronDown className="h-3.5 w-3.5" />
+   578→              </button>
+   579→              <button
+   580→                onClick={() => setFilterSemaine("all")}
+   581→                className="ml-2 text-[9px] font-bold text-slate-400 hover:text-slate-600 underline transition-colors"
+   582→              >
+   583→                Réinitialiser
+   584→              </button>
+   585→            </div>
+   586→          </div>
+   587→        </div>
+   588→
+   589→        {/* Filter bar */}
+   590→        <div className="bg-white/90 backdrop-blur-sm rounded-xl border shadow-md p-3" style={{ borderColor: provColor + "40" }}>
+   591→          <div className="flex items-center gap-2 mb-2.5">
+   592→            <Filter className="h-4 w-4" style={{ color: provColor }} />
+   593→            <span className="text-xs font-extrabold text-slate-700">Filtres</span>
+   594→            {(filterSecteur !== "all" || filterStatut !== "all" || filterCommune !== "all" || filterMois !== "all" || filterSemaine !== "all") && (
+   595→              <button
+   596→                onClick={() => { setFilterSecteur("all"); setFilterStatut("all"); setFilterCommune("all"); setFilterMois("all"); setFilterSemaine("all"); }}
+   597→                className="text-[10px] font-bold hover:opacity-70 ml-auto flex items-center gap-1 transition-colors"
+   598→                style={{ color: provColor }}
+   599→              >
+   600→                <XCircle className="h-3 w-3" /> Réinitialiser
+   601→              </button>
+   602→            )}
+   603→          </div>
+   604→          <div className="flex flex-wrap gap-2">
+   605→            {/* Mois filter */}
+   606→            <div className="relative">
+   607→              <select
+   608→                value={filterMois}
+   609→                onChange={e => {
+   610→                  setFilterMois(e.target.value);
+   611→                  setFilterSemaine("all"); // Reset week when month changes
+   612→                }}
+   613→                className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
+   614→              >
+   615→                <option value="all">Tous mois (Juin–Déc)</option>
+   616→                {MONTHS_2026.map(m => (
+   617→                  <option key={m.value} value={m.value}>{m.label}</option>
+   618→                ))}
+   619→              </select>
+   620→              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+   621→            </div>
+   622→            {/* Semaine filter */}
+   623→            <div className="relative">
+   624→              <select
+   625→                value={filterSemaine}
+   626→                onChange={e => setFilterSemaine(e.target.value)}
+   627→                className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors max-w-[220px]"
+   628→              >
+   629→                <option value="all">Toutes semaines (Juin–Déc)</option>
+   630→                {filteredWeeks.map(w => (
+   631→                  <option key={w.value} value={w.value}>{w.label}</option>
+   632→                ))}
+   633→              </select>
+   634→              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+   635→            </div>
+   636→            {/* Secteur filter */}
+   637→            <div className="relative">
+   638→              <select
+   639→                value={filterSecteur}
+   640→                onChange={e => setFilterSecteur(e.target.value)}
+   641→                className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
+   642→              >
+   643→                <option value="all">Tous secteurs</option>
+   644→                {Object.values(SECTEUR_SHORT).map(s => (
+   645→                  <option key={s} value={s}>{s}</option>
+   646→                ))}
+   647→              </select>
+   648→              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+   649→            </div>
+   650→            {/* Statut filter */}
+   651→            <div className="relative">
+   652→              <select
+   653→                value={filterStatut}
+   654→                onChange={e => setFilterStatut(e.target.value)}
+   655→                className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors"
+   656→              >
+   657→                <option value="all">Tous statuts</option>
+   658→                <option value="Terminé">Terminé</option>
+   659→                <option value="En cours">En cours</option>
+   660→                <option value="Non démarré">Non démarré</option>
+   661→              </select>
+   662→              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+   663→            </div>
+   664→            {/* Commune filter */}
+   665→            <div className="relative">
+   666→              <select
+   667→                value={filterCommune}
+   668→                onChange={e => setFilterCommune(e.target.value)}
+   669→                className="appearance-none bg-slate-50 border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 transition-colors max-w-[180px]"
+   670→              >
+   671→                <option value="all">Toutes communes</option>
+   672→                {allCommunes.map(c => (
+   673→                  <option key={c} value={c}>{c}</option>
+   674→                ))}
+   675→              </select>
+   676→              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+   677→            </div>
+   678→          </div>
+   679→          {/* Active filter badges */}
+   680→          {(filterSecteur !== "all" || filterStatut !== "all" || filterCommune !== "all" || filterMois !== "all" || filterSemaine !== "all") && (
+   681→            <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-slate-100">
+   682→              {filterMois !== "all" && (
+   683→                <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: provColor + "15", color: provColor }}>
+   684→                  <Calendar className="h-2.5 w-2.5 mr-0.5" />{getMonthLabel(filterMois)} <button onClick={() => { setFilterMois("all"); setFilterSemaine("all"); }} className="ml-1 hover:opacity-70">×</button>
+   685→                </Badge>
+   686→              )}
+   687→              {filterSemaine !== "all" && (
+   688→                <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: provColor + "15", color: provColor }}>
+   689→                  <Calendar className="h-2.5 w-2.5 mr-0.5" />S{filterSemaine} <button onClick={() => setFilterSemaine("all")} className="ml-1 hover:opacity-70">×</button>
+   690→                </Badge>
+   691→              )}
+   692→              {filterSecteur !== "all" && (
+   693→                <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: (SECTEUR_DOT_COLORS[filterSecteur] || "#94a3b8") + "15", color: SECTEUR_DOT_COLORS[filterSecteur] || "#94a3b8" }}>
+   694→                  {filterSecteur} <button onClick={() => setFilterSecteur("all")} className="ml-1 hover:opacity-70">×</button>
+   695→                </Badge>
+   696→              )}
+   697→              {filterStatut !== "all" && (
+   698→                <Badge className="text-[9px] font-bold px-2 py-0.5 border-0 bg-slate-100 text-slate-600">
+   699→                  {filterStatut} <button onClick={() => setFilterStatut("all")} className="ml-1 hover:opacity-70">×</button>
+   700→                </Badge>
+   701→              )}
+   702→              {filterCommune !== "all" && (
+   703→                <Badge className="text-[9px] font-bold px-2 py-0.5 border-0" style={{ backgroundColor: provColor + "10", color: provColor }}>
+   704→                  {filterCommune} <button onClick={() => setFilterCommune("all")} className="ml-1 hover:opacity-70">×</button>
+   705→                </Badge>
+   706→              )}
+   707→            </div>
+   708→          )}
+   709→        </div>
+   710→
+   711→        {/* Sector advancement */}
+   712→        <div>
+   713→          <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+   714→            <Layers className="h-4 w-4" style={{ color: provColor }} />
+   715→            Avancement par secteur
+   716→            {(isHistoricalWeek || isHistoricalMonth) && <span className="text-[9px] font-bold text-slate-400 ml-1">({timeLabel})</span>}
+   717→          </h4>
+   718→          <div className="space-y-2">
+   719→            {Object.entries(bySecteur)
+   720→              .sort(([, a], [, b]) => b.cout - a.cout)
+   721→              .map(([name, d]) => {
+   722→                const shortName = SECTEUR_SHORT[name] || name;
+   723→                const dotColor = SECTEUR_DOT_COLORS[shortName] || "#94a3b8";
+   724→                // Delta for sector
+   725→                const prevSectAP = isHistoricalWeek
+   726→                  ? simulateProgressAtWeek(d.currentAp / d.nb, Math.max(1, selectedWeekNum! - 1))
+   727→                  : isHistoricalMonth
+   728→                  ? simulateProgressAtMonth(d.currentAp / d.nb, Math.max(1, selectedMonthNum! - 1))
+   729→                  : d.ap;
+   730→                const sectDelta = d.ap - prevSectAP;
+   731→                return (
+   732→                  <div key={name} className="rounded-xl border p-3" style={{ borderColor: dotColor + "25", backgroundColor: dotColor + "04" }}>
+   733→                    <div className="flex items-center justify-between mb-2">
+   734→                      <div className="flex items-center gap-2">
+   735→                        <div className="w-3 h-3 rounded-full shadow" style={{ backgroundColor: dotColor }} />
+   736→                        <span className="text-xs font-extrabold text-slate-800">{shortName}</span>
+   737→                      </div>
+   738→                      <div className="flex items-center gap-3 text-[10px] font-bold">
+   739→                        <span style={{ color: dotColor }}>Phys. {d.ap.toFixed(0)}%</span>
+   740→                        <span className="text-slate-300">|</span>
+   741→                        <span style={{ color: dotColor }} className="opacity-70">Fin. {d.af.toFixed(0)}%</span>
+   742→                        {sectDelta !== 0 && (
+   743→                          <span className={`flex items-center gap-0.5 ${sectDelta > 0 ? "text-emerald-500" : "text-red-500"}`}>
+   744→                            {sectDelta > 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+   745→                            {sectDelta > 0 ? "+" : ""}{sectDelta.toFixed(1)}
+   746→                          </span>
+   747→                        )}
+   748→                      </div>
+   749→                    </div>
+   750→                    <div className="flex gap-1.5 h-2.5">
+   751→                      <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+   752→                        <div className="h-full rounded-full" style={{ width: `${d.ap}%`, backgroundColor: dotColor }} />
+   753→                      </div>
+   754→                      <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+   755→                        <div className="h-full rounded-full opacity-60" style={{ width: `${d.af}%`, backgroundColor: dotColor }} />
+   756→                      </div>
+   757→                    </div>
+   758→                    <div className="flex justify-between mt-1 text-[9px] text-slate-400 font-semibold">
+   759→                      <span>Physique</span>
+   760→                      <span>Financier</span>
+   761→                    </div>
+   762→                  </div>
+   763→                );
+   764→              })}
+   765→          </div>
+   766→        </div>
+   767→
+   768→        {/* Commune advancement */}
+   769→        <div>
+   770→          <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
+   771→            <MapPin className="h-4 w-4" style={{ color: provColor }} />
+   772→            Avancement par commune
+   773→            {(isHistoricalWeek || isHistoricalMonth) && <span className="text-[9px] font-bold text-slate-400 ml-1">({timeLabel})</span>}
+   774→          </h4>
+   775→          <div className="space-y-2">
+   776→            {Object.entries(byCommune)
+   777→              .sort(([, a], [, b]) => b.cout - a.cout)
+   778→              .map(([name, d]) => {
+   779→                const commColor = communeColorMap[name] || provColor;
+   780→                // Delta for commune
+   781→                const prevCommAP = isHistoricalWeek
+   782→                  ? simulateProgressAtWeek(d.currentAp / d.nb, Math.max(1, selectedWeekNum! - 1))
+   783→                  : isHistoricalMonth
+   784→                  ? simulateProgressAtMonth(d.currentAp / d.nb, Math.max(1, selectedMonthNum! - 1))
+   785→                  : d.ap;
+   786→                const commDelta = d.ap - prevCommAP;
+   787→                return (
+   788→                  <div key={name} className="rounded-xl border p-3" style={{ borderColor: commColor + "25", backgroundColor: commColor + "04" }}>
+   789→                    <div className="flex items-center justify-between mb-2">
+   790→                      <div className="flex items-center gap-2">
+   791→                        <div className="w-3 h-3 rounded-full shadow" style={{ backgroundColor: commColor }} />
+   792→                        <span className="text-xs font-extrabold text-slate-800">{name}</span>
+   793→                        <Badge className="text-[8px] font-bold px-1.5 py-0 border-0" style={{ backgroundColor: commColor + "18", color: commColor }}>{d.nb}P</Badge>
+   794→                      </div>
+   795→                      <div className="flex items-center gap-3 text-[10px] font-bold">
+   796→                        <span style={{ color: commColor }}>Phys. {d.ap.toFixed(0)}%</span>
+   797→                        <span className="text-slate-300">|</span>
+   798→                        <span style={{ color: commColor }} className="opacity-70">Fin. {d.af.toFixed(0)}%</span>
+   799→                        {commDelta !== 0 && (
+   800→                          <span className={`flex items-center gap-0.5 ${commDelta > 0 ? "text-emerald-500" : "text-red-500"}`}>
+   801→                            {commDelta > 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+   802→                            {commDelta > 0 ? "+" : ""}{commDelta.toFixed(1)}
+   803→                          </span>
+   804→                        )}
+   805→                      </div>
+   806→                    </div>
+   807→                    <div className="flex gap-1.5 h-2.5">
+   808→                      <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+   809→                        <div className="h-full rounded-full" style={{ width: `${d.ap}%`, backgroundColor: commColor }} />
+   810→                      </div>
+   811→                      <div className="flex-1 bg-slate-200/80 rounded-full overflow-hidden shadow-inner">
+   812→                        <div className="h-full rounded-full opacity-60" style={{ width: `${d.af}%`, backgroundColor: commColor }} />
+   813→                      </div>
+   814→                    </div>
+   815→                    <div className="flex justify-between mt-1 text-[9px] text-slate-400 font-semibold">
+   816→                      <span>Physique</span>
+   817→                      <span>Financier</span>
+   818→                    </div>
+   819→                  </div>
+   820→                );
+   821→              })}
+   822→          </div>
+   823→        </div>
+   824→      </div>
+   825→    );
+   826→  };
+   827→
+   828→  const handleCommuneClick = useCallback((commune: string) => {
+   829→    setSelectedCommune(commune);
+   830→    setTimeout(() => {
+   831→      setSelectedCommune(null);
+   832→    }, 4000);
+   833→  }, []);
+   834→
+   835→  if (!data) {
+   836→    return (
+   837→      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+   838→        <div className="text-center">
+   839→          <div className="relative">
+   840→            <Droplets className="h-14 w-14 text-blue-500 mx-auto animate-pulse" />
+   841→            <div className="absolute -inset-4 bg-blue-400/20 rounded-full blur-xl animate-pulse" />
+   842→          </div>
+   843→          <p className="mt-6 text-lg font-semibold text-gray-700">
+   844→            Chargement du dashboard...
+   845→          </p>
+   846→          <p className="mt-1 text-sm text-gray-400">SIG Gharb - Projets Inondations</p>
+   847→        </div>
+   848→      </div>
+   849→    );
+   850→  }
+   851→
+   852→  const getKpiColors = (index: number) => {
+   853→    if (selectedProvince) {
+   854→      if (selectedProvince === "Kénitra") return [KENITRA_COLOR, KENITRA_COLOR, KENITRA_COLOR, KENITRA_COLOR][index];
+   855→      if (selectedProvince === "Sidi Kacem") return [SIDI_KACEM_COLOR, SIDI_KACEM_COLOR, SIDI_KACEM_COLOR, SIDI_KACEM_COLOR][index];
+   856→      if (selectedProvince === "Sidi Slimane") return [SIDI_SLIMANE_COLOR, SIDI_SLIMANE_COLOR, SIDI_SLIMANE_COLOR, SIDI_SLIMANE_COLOR][index];
+   857→    }
+   858→    return [KENITRA_COLOR, SIDI_KACEM_COLOR, SIDI_SLIMANE_COLOR, DEFAULT_KPI][index];
+   859→  };
+   860→
+   861→  return (
+   862→    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
+   863→      {/* SIDEBAR */}
+   864→      <aside
+   865→        className={`${
+   866→          sidebarOpen ? "w-72" : "w-[68px]"
+   867→        } bg-gradient-to-b from-[#0c1222] via-[#111a2e] to-[#0c1222] text-white flex flex-col shrink-0 border-r border-white/[0.06] transition-all duration-300 ease-in-out relative`}
+   868→      >
+   869→        <div className="p-3 flex items-center justify-between border-b border-white/[0.06]">
+   870→          {sidebarOpen && (
+   871→            <div className="flex items-center gap-2.5 min-w-0">
+   872→              <div className="bg-gradient-to-br from-green-600 to-emerald-700 p-2 rounded-lg shadow-lg shadow-green-600/20 shrink-0">
+   873→                <svg viewBox="0 0 24 24" className="h-4 w-4 text-white" fill="currentColor">
+   874→                  <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z"/>
+   875→                </svg>
+   876→              </div>
+   877→              <div className="min-w-0">
+   878→                <h1 className="text-sm font-bold tracking-tight truncate">ORMVAG — SIG Gharb</h1>
+   879→                <p className="text-[10px] text-slate-400 mt-0.5 truncate">Inondations 2026</p>
+
+[showing lines 380-879 of 2809; use offset=880 with limit to continue reading]
