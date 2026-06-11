@@ -909,27 +909,29 @@ export default function Home() {
           </div>
 
           {/* Sector table (3 cols) */}
-          <div className="lg:col-span-3 bg-white rounded-2xl border shadow-lg p-5" style={{ borderColor: provColor + "30" }}>
-            <h4 className="text-sm font-extrabold text-slate-800 mb-4 flex items-center gap-2">
-              <Layers className="h-4 w-4" style={{ color: provColor }} />
-              Avancement par Secteur
-              {(isHistoricalWeek || isHistoricalMonth) && <span className="text-[9px] font-bold text-slate-400 ml-1">({timeLabel})</span>}
-            </h4>
-            <div className="overflow-x-auto">
+          <div className="lg:col-span-3 bg-white rounded-2xl border shadow-lg overflow-hidden" style={{ borderColor: provColor + "30" }}>
+            <div className="px-5 pt-4 pb-2" style={{ background: `linear-gradient(135deg, ${provColor}08, transparent)` }}>
+              <h4 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                <Layers className="h-4 w-4" style={{ color: provColor }} />
+                Avancement par Secteur
+                {(isHistoricalWeek || isHistoricalMonth) && <span className="text-[9px] font-bold text-slate-400 ml-1">({timeLabel})</span>}
+              </h4>
+            </div>
+            <div className="overflow-x-auto px-2 pb-3">
               <table className="w-full text-[11px]">
                 <thead>
-                  <tr className="border-b border-slate-200">
-                    <th className="text-left font-extrabold text-slate-500 pb-2 pr-2">Secteur</th>
-                    <th className="text-center font-extrabold text-slate-500 pb-2 px-1">Nb</th>
-                    <th className="text-right font-extrabold text-slate-500 pb-2 px-1">Budget</th>
-                    <th className="text-center font-extrabold text-slate-500 pb-2 px-1">Phys.</th>
-                    <th className="text-center font-extrabold text-slate-500 pb-2 px-1">Fin.</th>
-                    <th className="text-center font-extrabold text-slate-500 pb-2 px-1">Écart</th>
-                    <th className="text-center font-extrabold text-slate-500 pb-2 pl-1">Statut</th>
+                  <tr style={{ background: `linear-gradient(135deg, ${provColor}15, ${provColor}05)` }}>
+                    <th className="text-left font-extrabold pb-2.5 pt-2 pr-2 pl-3 rounded-tl-lg" style={{ color: provColor + "CC" }}>Secteur</th>
+                    <th className="text-center font-extrabold pb-2.5 pt-2 px-1" style={{ color: provColor + "CC" }}>Nb</th>
+                    <th className="text-right font-extrabold pb-2.5 pt-2 px-1" style={{ color: provColor + "CC" }}>Budget</th>
+                    <th className="text-center font-extrabold pb-2.5 pt-2 px-1" style={{ color: provColor + "CC" }}>Phys.</th>
+                    <th className="text-center font-extrabold pb-2.5 pt-2 px-1" style={{ color: provColor + "CC" }}>Fin.</th>
+                    <th className="text-center font-extrabold pb-2.5 pt-2 px-1" style={{ color: provColor + "CC" }}>Écart</th>
+                    <th className="text-center font-extrabold pb-2.5 pt-2 pl-1 pr-3 rounded-tr-lg" style={{ color: provColor + "CC" }}>Statut</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {sectorEntries.map(([name, d]) => {
+                  {sectorEntries.map(([name, d], idx) => {
                     const shortName = SECTEUR_SHORT[name] || name;
                     const dotColor = SECTEUR_DOT_COLORS[shortName] || "#94a3b8";
                     const ecart = d.ap - d.af;
@@ -937,25 +939,27 @@ export default function Home() {
                     const statusColor = avgPct > 75 ? "#10b981" : avgPct > 25 ? "#f59e0b" : "#ef4444";
                     const statusLabel = avgPct > 75 ? "Bon" : avgPct > 25 ? "Moyen" : "Faible";
                     return (
-                      <tr key={name} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
-                        <td className="py-2.5 pr-2">
+                      <tr key={name} className={`border-b transition-colors duration-150 ${idx % 2 === 0 ? "bg-white" : ""} hover:shadow-sm`} style={{ borderColor: dotColor + "15", background: idx % 2 !== 0 ? `${dotColor}06` : undefined }}>
+                        <td className="py-2.5 pr-2 pl-3">
                           <div className="flex items-center gap-2">
-                            <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
+                            <div className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: dotColor, boxShadow: `0 0 4px ${dotColor}40` }} />
                             <span className="font-bold text-slate-800 truncate max-w-[120px]" title={shortName}>{shortName}</span>
                           </div>
-                          <div className="mt-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${d.ap}%`, backgroundColor: dotColor }} />
+                          <div className="mt-1.5 h-2 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${d.ap}%`, backgroundColor: dotColor, boxShadow: `inset 0 1px 2px ${dotColor}30` }} />
                           </div>
                         </td>
-                        <td className="text-center font-bold text-slate-700 px-1">{d.nb}</td>
-                        <td className="text-right font-bold text-slate-700 px-1">{formatBudget(d.cout)}</td>
-                        <td className="text-center font-black px-1" style={{ color: dotColor }}>{d.ap.toFixed(0)}%</td>
-                        <td className="text-center font-black px-1 opacity-70" style={{ color: dotColor }}>{d.af.toFixed(0)}%</td>
-                        <td className="text-center font-black px-1" style={{ color: ecart >= 0 ? "#10b981" : "#ef4444" }}>
-                          {ecart >= 0 ? "+" : ""}{ecart.toFixed(1)}
+                        <td className="text-center font-bold text-slate-700 px-1"><span className="inline-flex items-center justify-center w-6 h-6 rounded-md text-[10px] font-black" style={{ backgroundColor: dotColor + "15", color: dotColor }}>{d.nb}</span></td>
+                        <td className="text-right font-extrabold px-1" style={{ color: "#059669" }}>{formatBudget(d.cout)}</td>
+                        <td className="text-center font-black px-1"><span className="text-[12px]" style={{ color: dotColor }}>{d.ap.toFixed(0)}%</span></td>
+                        <td className="text-center font-black px-1"><span className="text-[12px] opacity-75" style={{ color: dotColor }}>{d.af.toFixed(0)}%</span></td>
+                        <td className="text-center font-black px-1">
+                          <span className="inline-flex items-center gap-0.5 text-[10px] font-black px-1.5 py-0.5 rounded-full" style={{ backgroundColor: ecart >= 0 ? "#10b98112" : "#ef444412", color: ecart >= 0 ? "#10b981" : "#ef4444" }}>
+                            {ecart >= 0 ? "▲" : "▼"}{Math.abs(ecart).toFixed(1)}
+                          </span>
                         </td>
-                        <td className="text-center pl-1">
-                          <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold text-white" style={{ backgroundColor: statusColor }}>
+                        <td className="text-center pl-1 pr-3">
+                          <span className="inline-block px-2.5 py-1 rounded-full text-[9px] font-bold text-white shadow-sm" style={{ backgroundColor: statusColor, boxShadow: `0 2px 4px ${statusColor}40` }}>
                             {statusLabel}
                           </span>
                         </td>
@@ -1043,19 +1047,19 @@ export default function Home() {
             <ClipboardCheck className="h-4 w-4" style={{ color: provColor }} />
             Consultations Négociées — Détail des Marchés
           </h4>
-          <div className="overflow-x-auto rounded-xl border shadow-sm" style={{ borderColor: provColor + "20" }}>
+          <div className="overflow-x-auto rounded-xl border shadow-md" style={{ borderColor: provColor + "25" }}>
             <Table>
               <TableHeader>
-                <TableRow style={{ backgroundColor: provColor + "0A", borderBottomColor: provColor + "20" }}>
-                  <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2" style={{ color: provColor + "BB" }}>N° Cons.</TableHead>
-                  <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2" style={{ color: provColor + "BB" }}>Projet</TableHead>
-                  <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2" style={{ color: provColor + "BB" }}>Société Titulaire</TableHead>
-                  <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Ouv. Plis</TableHead>
-                  <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Jugement</TableHead>
-                  <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>OSC</TableHead>
-                  <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Délai</TableHead>
-                  <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Récept. Prov.</TableHead>
-                  <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Statut</TableHead>
+                <TableRow style={{ background: `linear-gradient(135deg, ${provColor}18, ${provColor}08)`, borderBottom: `2px solid ${provColor}30` }}>
+                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5" style={{ color: provColor }}>N° Cons.</TableHead>
+                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5" style={{ color: provColor }}>Projet</TableHead>
+                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5" style={{ color: provColor }}>Société Titulaire</TableHead>
+                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-center" style={{ color: provColor }}>Ouv. Plis</TableHead>
+                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-center" style={{ color: provColor }}>Jugement</TableHead>
+                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-center" style={{ color: provColor }}>OSC</TableHead>
+                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-center" style={{ color: provColor }}>Délai</TableHead>
+                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-center" style={{ color: provColor }}>Récept. Prov.</TableHead>
+                  <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-center" style={{ color: provColor }}>Statut</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1063,49 +1067,51 @@ export default function Home() {
                   const fmtDate = (d: string) => {
                     if (!d) return <span className="text-slate-300">—</span>;
                     const dt = new Date(d);
-                    return <span className="text-[9px] font-semibold text-slate-700 whitespace-nowrap">{dt.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}</span>;
+                    return <span className="text-[9px] font-bold whitespace-nowrap inline-flex items-center gap-1" style={{ color: provColor + "CC" }}>{dt.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}</span>;
                   };
-                  const statusConfig: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
-                    "Terminé": { bg: "bg-emerald-100", text: "text-emerald-700", icon: CheckCircle2 },
-                    "En cours": { bg: "bg-amber-100", text: "text-amber-700", icon: Clock },
-                    "Non démarré": { bg: "bg-red-100", text: "text-red-700", icon: CircleDot },
+                  const statusConfig: Record<string, { bg: string; text: string; border: string; icon: React.ElementType }> = {
+                    "Terminé": { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", icon: CheckCircle2 },
+                    "En cours": { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", icon: Clock },
+                    "Non démarré": { bg: "bg-red-50", text: "text-red-600", border: "border-red-200", icon: CircleDot },
                   };
                   const sc = statusConfig[p.statut] || statusConfig["Non démarré"];
                   // OSC status: has OSC = green, no OSC but has jugement = yellow, no jugement = red
                   const oscStatus = p.date_osc ? "active" : p.date_jugement ? "pending" : "waiting";
+                  const rowBg = i % 2 === 0 ? "bg-white" : "";
+                  const rowAltBg = i % 2 !== 0 ? provColor + "06" : undefined;
                   return (
-                    <TableRow key={i} className={`border-b border-slate-100/80 ${i % 2 === 0 ? "bg-white" : "bg-slate-50/40"}`} style={{ borderLeftWidth: "3px", borderLeftColor: provColor + "25" }}>
-                      <TableCell className="py-2 px-2">
-                        <span className="text-[9px] font-bold text-slate-600 whitespace-nowrap">{p.numero_consultation || "—"}</span>
+                    <TableRow key={i} className={`border-b transition-colors duration-150 hover:shadow-sm ${rowBg}`} style={{ borderLeftWidth: "3px", borderLeftColor: provColor + "40", borderBottomColor: provColor + "10", background: rowAltBg }}>
+                      <TableCell className="py-2.5 px-2.5">
+                        <span className="text-[9px] font-bold whitespace-nowrap inline-flex items-center justify-center w-6 h-5 rounded" style={{ backgroundColor: provColor + "12", color: provColor }}>{p.numero_consultation || "—"}</span>
                       </TableCell>
-                      <TableCell className="py-2 px-2 text-[9px] text-slate-600 max-w-[200px] leading-relaxed whitespace-normal">{p.consistance.substring(0, 50)}{p.consistance.length > 50 ? "..." : ""}</TableCell>
-                      <TableCell className="py-2 px-2">
+                      <TableCell className="py-2.5 px-2.5 text-[9px] font-semibold text-slate-700 max-w-[200px] leading-relaxed whitespace-normal">{p.consistance.substring(0, 50)}{p.consistance.length > 50 ? "..." : ""}</TableCell>
+                      <TableCell className="py-2.5 px-2.5">
                         {p.societe_titulaire ? (
-                          <span className="text-[9px] font-bold text-slate-800 whitespace-nowrap">{p.societe_titulaire}</span>
+                          <span className="text-[9px] font-bold text-slate-800 whitespace-nowrap inline-flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />{p.societe_titulaire}</span>
                         ) : (
-                          <span className="text-[9px] text-slate-400 italic">En attente</span>
+                          <span className="text-[9px] text-slate-400 italic inline-flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-slate-300 shrink-0" />En attente</span>
                         )}
                       </TableCell>
-                      <TableCell className="py-2 px-2 text-center">{fmtDate(p.date_ouverture_plis)}</TableCell>
-                      <TableCell className="py-2 px-2 text-center">{fmtDate(p.date_jugement)}</TableCell>
-                      <TableCell className="py-2 px-2 text-center">
+                      <TableCell className="py-2.5 px-2.5 text-center">{fmtDate(p.date_ouverture_plis)}</TableCell>
+                      <TableCell className="py-2.5 px-2.5 text-center">{fmtDate(p.date_jugement)}</TableCell>
+                      <TableCell className="py-2.5 px-2.5 text-center">
                         {p.date_osc ? (
                           <div className="flex flex-col items-center">
                             {fmtDate(p.date_osc)}
-                            <Badge className="text-[7px] font-bold px-1.5 py-0 border-0 bg-emerald-100 text-emerald-700 mt-0.5">Lancé</Badge>
+                            <Badge className="text-[7px] font-bold px-1.5 py-0.5 border-0 shadow-sm" style={{ backgroundColor: "#10b98120", color: "#059669" }}>Lancé</Badge>
                           </div>
                         ) : (
-                          <Badge className={`text-[7px] font-bold px-1.5 py-0 border-0 ${oscStatus === "pending" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-400"}`}>
+                          <Badge className={`text-[7px] font-bold px-1.5 py-0.5 border-0 ${oscStatus === "pending" ? "bg-amber-50 text-amber-700 border border-amber-200" : "bg-slate-50 text-slate-400"}`}>
                             {oscStatus === "pending" ? "En attente OSC" : "Non lancé"}
                           </Badge>
                         )}
                       </TableCell>
-                      <TableCell className="py-2 px-2 text-center">
-                        <span className="text-[9px] font-bold text-slate-700">{p.delai_execution ? `${p.delai_execution}j` : "—"}</span>
+                      <TableCell className="py-2.5 px-2.5 text-center">
+                        <span className="text-[9px] font-bold inline-flex items-center gap-0.5" style={{ color: provColor + "CC" }}><Clock className="h-2.5 w-2.5" style={{ color: provColor + "80" }} />{p.delai_execution ? `${p.delai_execution}j` : "—"}</span>
                       </TableCell>
-                      <TableCell className="py-2 px-2 text-center">{fmtDate(p.date_reception_provisoire)}</TableCell>
-                      <TableCell className="py-2 px-2 text-center">
-                        <Badge className={`${sc.bg} ${sc.text} text-[8px] font-bold px-1.5 py-0.5 border-0`}>
+                      <TableCell className="py-2.5 px-2.5 text-center">{fmtDate(p.date_reception_provisoire)}</TableCell>
+                      <TableCell className="py-2.5 px-2.5 text-center">
+                        <Badge className={`${sc.bg} ${sc.text} ${sc.border} border text-[8px] font-bold px-2 py-0.5 shadow-sm`}>
                           <sc.icon className="h-2.5 w-2.5 mr-0.5" />{p.statut}
                         </Badge>
                       </TableCell>
@@ -2238,10 +2244,10 @@ export default function Home() {
                     </h4>
                     <div className="space-y-6">
                       {(() => {
-                        const statusConfig: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
-                          "Terminé": { bg: "bg-emerald-100", text: "text-emerald-700", icon: CheckCircle2 },
-                          "En cours": { bg: "bg-amber-100", text: "text-amber-700", icon: Clock },
-                          "Non démarré": { bg: "bg-red-100", text: "text-red-700", icon: CircleDot },
+                        const statusConfig: Record<string, { bg: string; text: string; border: string; icon: React.ElementType }> = {
+                          "Terminé": { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", icon: CheckCircle2 },
+                          "En cours": { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", icon: Clock },
+                          "Non démarré": { bg: "bg-red-50", text: "text-red-600", border: "border-red-200", icon: CircleDot },
                         };
                         const getApColor = (v: number) => v >= 75 ? "#10b981" : v >= 50 ? "#f59e0b" : v >= 25 ? "#f97316" : "#ef4444";
 
@@ -2320,21 +2326,21 @@ export default function Home() {
                               </div>
 
                               {/* Province project table */}
-                              <div className="overflow-x-auto">
+                              <div className="overflow-x-auto rounded-lg border" style={{ borderColor: provColor + "20" }}>
                                 <Table>
                                   <TableHeader>
-                                    <TableRow style={{ backgroundColor: provColor + "0A", borderBottomColor: provColor + "20" }}>
-                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2" style={{ color: provColor + "BB" }}>Commune</TableHead>
-                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2" style={{ color: provColor + "BB" }}>Projet</TableHead>
-                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-right" style={{ color: provColor + "BB" }}>Budget</TableHead>
-                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2" style={{ color: provColor + "BB" }}>Société</TableHead>
-                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Ouv. Plis</TableHead>
-                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Jugement</TableHead>
-                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>OSC</TableHead>
-                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Délai</TableHead>
-                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Phys.</TableHead>
-                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Fin.</TableHead>
-                                      <TableHead className="text-[9px] font-bold uppercase tracking-wider py-2 px-2 text-center" style={{ color: provColor + "BB" }}>Statut</TableHead>
+                                    <TableRow style={{ background: `linear-gradient(135deg, ${provColor}18, ${provColor}08)`, borderBottom: `2px solid ${provColor}30` }}>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5" style={{ color: provColor }}>Commune</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5" style={{ color: provColor }}>Projet</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-right" style={{ color: provColor }}>Budget</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5" style={{ color: provColor }}>Société</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center" style={{ color: provColor }}>Ouv. Plis</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center" style={{ color: provColor }}>Jugement</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center" style={{ color: provColor }}>OSC</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center" style={{ color: provColor }}>Délai</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center" style={{ color: provColor }}>Phys.</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center" style={{ color: provColor }}>Fin.</TableHead>
+                                      <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-center" style={{ color: provColor }}>Statut</TableHead>
                                     </TableRow>
                                   </TableHeader>
                                   <TableBody>
@@ -2346,57 +2352,59 @@ export default function Home() {
                                       const fmtDate = (d: string) => {
                                         if (!d) return <span className="text-slate-300">—</span>;
                                         const dt = new Date(d);
-                                        return <span className="text-[8px] font-semibold text-slate-700 whitespace-nowrap">{dt.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" })}</span>;
+                                        return <span className="text-[8px] font-bold whitespace-nowrap" style={{ color: provColor + "BB" }}>{dt.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" })}</span>;
                                       };
+                                      const rowBg = i % 2 === 0 ? "bg-white" : "";
+                                      const rowAltBg = i % 2 !== 0 ? provColor + "06" : undefined;
                                       return (
-                                        <TableRow key={i} className={`border-b border-slate-100/80 ${i % 2 === 0 ? "bg-white" : "bg-slate-50/40"}`} style={{ borderLeftWidth: "3px", borderLeftColor: provColor + "30" }}>
-                                          <TableCell className="py-2 px-2">
-                                            <span className="text-[9px] font-bold text-slate-700 whitespace-nowrap">{p.commune}</span>
+                                        <TableRow key={i} className={`border-b transition-colors duration-150 hover:shadow-sm ${rowBg}`} style={{ borderLeftWidth: "3px", borderLeftColor: provColor + "40", borderBottomColor: provColor + "10", background: rowAltBg }}>
+                                          <TableCell className="py-2.5 px-2.5">
+                                            <span className="text-[9px] font-bold whitespace-nowrap inline-flex items-center gap-1" style={{ color: provColor }}><MapPin className="h-2.5 w-2.5" style={{ color: provColor + "80" }} />{p.commune}</span>
                                           </TableCell>
-                                          <TableCell className="py-2 px-2 text-[9px] text-slate-600 max-w-[200px] leading-relaxed whitespace-normal">{p.consistance.substring(0, 50)}{p.consistance.length > 50 ? "..." : ""}</TableCell>
-                                          <TableCell className="py-2 px-2 text-[9px] font-bold text-slate-700 text-right">{(p.cout / 1e6).toFixed(2)} M</TableCell>
-                                          <TableCell className="py-2 px-2">
+                                          <TableCell className="py-2.5 px-2.5 text-[9px] font-semibold text-slate-700 max-w-[200px] leading-relaxed whitespace-normal">{p.consistance.substring(0, 50)}{p.consistance.length > 50 ? "..." : ""}</TableCell>
+                                          <TableCell className="py-2.5 px-2.5 text-[9px] font-extrabold text-right" style={{ color: "#059669" }}>{(p.cout / 1e6).toFixed(2)} M</TableCell>
+                                          <TableCell className="py-2.5 px-2.5">
                                             {p.societe_titulaire ? (
-                                              <span className="text-[8px] font-bold text-slate-800 whitespace-nowrap">{p.societe_titulaire}</span>
+                                              <span className="text-[8px] font-bold text-slate-800 whitespace-nowrap inline-flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />{p.societe_titulaire}</span>
                                             ) : (
-                                              <span className="text-[8px] text-slate-400 italic">Attente</span>
+                                              <span className="text-[8px] text-slate-400 italic inline-flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-slate-300 shrink-0" />Attente</span>
                                             )}
                                           </TableCell>
-                                          <TableCell className="py-2 px-2 text-center">{fmtDate(p.date_ouverture_plis)}</TableCell>
-                                          <TableCell className="py-2 px-2 text-center">{fmtDate(p.date_jugement)}</TableCell>
-                                          <TableCell className="py-2 px-2 text-center">
+                                          <TableCell className="py-2.5 px-2.5 text-center">{fmtDate(p.date_ouverture_plis)}</TableCell>
+                                          <TableCell className="py-2.5 px-2.5 text-center">{fmtDate(p.date_jugement)}</TableCell>
+                                          <TableCell className="py-2.5 px-2.5 text-center">
                                             {p.date_osc ? (
                                               <div className="flex flex-col items-center">
                                                 {fmtDate(p.date_osc)}
-                                                <Badge className="text-[6px] font-bold px-1 py-0 border-0 bg-emerald-100 text-emerald-700">Lancé</Badge>
+                                                <Badge className="text-[6px] font-bold px-1 py-0 border-0 shadow-sm" style={{ backgroundColor: "#10b98120", color: "#059669" }}>Lancé</Badge>
                                               </div>
                                             ) : (
-                                              <Badge className={`text-[6px] font-bold px-1 py-0 border-0 ${p.date_jugement ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-400"}`}>
+                                              <Badge className={`text-[6px] font-bold px-1 py-0 border-0 ${p.date_jugement ? "bg-amber-50 text-amber-700" : "bg-slate-50 text-slate-400"}`}>
                                                 {p.date_jugement ? "Attente" : "—"}
                                               </Badge>
                                             )}
                                           </TableCell>
-                                          <TableCell className="py-2 px-2 text-center">
-                                            <span className="text-[8px] font-bold text-slate-700">{p.delai_execution ? `${p.delai_execution}j` : "—"}</span>
+                                          <TableCell className="py-2.5 px-2.5 text-center">
+                                            <span className="text-[8px] font-bold inline-flex items-center gap-0.5" style={{ color: provColor + "CC" }}>{p.delai_execution ? `${p.delai_execution}j` : "—"}</span>
                                           </TableCell>
-                                          <TableCell className="py-2 px-2 text-center">
+                                          <TableCell className="py-2.5 px-2.5 text-center">
                                             <div className="flex items-center justify-center gap-1">
-                                              <div className="w-10 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
-                                                <div className="h-full rounded-full" style={{ width: `${p.avancement_physique}%`, backgroundColor: apColor }} />
+                                              <div className="w-12 bg-slate-100 rounded-full h-2 overflow-hidden shadow-inner">
+                                                <div className="h-full rounded-full transition-all duration-700" style={{ width: `${p.avancement_physique}%`, backgroundColor: apColor }} />
                                               </div>
-                                              <span className="text-[9px] font-black" style={{ color: apColor }}>{p.avancement_physique}%</span>
+                                              <span className="text-[9px] font-black min-w-[32px]" style={{ color: apColor }}>{p.avancement_physique}%</span>
                                             </div>
                                           </TableCell>
-                                          <TableCell className="py-2 px-2 text-center">
+                                          <TableCell className="py-2.5 px-2.5 text-center">
                                             <div className="flex items-center justify-center gap-1">
-                                              <div className="w-10 bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
-                                                <div className="h-full rounded-full" style={{ width: `${p.avancement_financier}%`, backgroundColor: afColor }} />
+                                              <div className="w-12 bg-slate-100 rounded-full h-2 overflow-hidden shadow-inner">
+                                                <div className="h-full rounded-full transition-all duration-700" style={{ width: `${p.avancement_financier}%`, backgroundColor: afColor }} />
                                               </div>
-                                              <span className="text-[9px] font-black" style={{ color: afColor }}>{p.avancement_financier}%</span>
+                                              <span className="text-[9px] font-black min-w-[32px]" style={{ color: afColor }}>{p.avancement_financier}%</span>
                                             </div>
                                           </TableCell>
-                                          <TableCell className="py-2 px-2 text-center">
-                                            <Badge className={`${sc.bg} ${sc.text} text-[8px] font-bold px-1.5 py-0.5 border-0`}>
+                                          <TableCell className="py-2.5 px-2.5 text-center">
+                                            <Badge className={`${sc.bg} ${sc.text} ${sc.border} border text-[8px] font-bold px-2 py-0.5 shadow-sm`}>
                                               <sc.icon className="h-2.5 w-2.5 mr-0.5" />
                                               {p.statut}
                                             </Badge>
@@ -2408,21 +2416,21 @@ export default function Home() {
                                       );
                                     })}
                                     {/* Province total row */}
-                                    <TableRow style={{ background: `linear-gradient(135deg, ${provColor}18, ${provColor}08)` }}>
-                                      <TableCell className="py-2.5 px-2 text-[10px] font-extrabold text-slate-800" colSpan={3}>
+                                    <TableRow style={{ background: `linear-gradient(135deg, ${provColor}20, ${provColor}08)`, borderTop: `2px solid ${provColor}30` }}>
+                                      <TableCell className="py-3 px-2.5 text-[10px] font-extrabold" style={{ color: provColor }} colSpan={3}>
                                         Total {province}
                                       </TableCell>
-                                      <TableCell className="py-2.5 px-2 text-[9px] font-extrabold text-slate-600" colSpan={4}>
+                                      <TableCell className="py-3 px-2.5 text-[9px] font-extrabold" style={{ color: provColor + "CC" }} colSpan={4}>
                                         {provProjects.reduce((s, p) => s + (p.societe_titulaire ? 1 : 0), 0)} marchés attribués
                                       </TableCell>
-                                      <TableCell className="py-2.5 px-2 text-center">
-                                        <span className="text-[9px] font-black" style={{ color: provColor }}>{provAvgPhys.toFixed(0)}%</span>
+                                      <TableCell className="py-3 px-2.5 text-center">
+                                        <span className="text-[10px] font-black" style={{ color: provColor }}>{provAvgPhys.toFixed(0)}%</span>
                                       </TableCell>
-                                      <TableCell className="py-2.5 px-2 text-center">
-                                        <span className="text-[9px] font-black" style={{ color: provColor }}>{provAvgFin.toFixed(0)}%</span>
+                                      <TableCell className="py-3 px-2.5 text-center">
+                                        <span className="text-[10px] font-black" style={{ color: provColor }}>{provAvgFin.toFixed(0)}%</span>
                                       </TableCell>
-                                      <TableCell className="py-2.5 px-2 text-center">
-                                        <span className="text-[8px] font-bold text-slate-500">{provProjects.length} projets</span>
+                                      <TableCell className="py-3 px-2.5 text-center">
+                                        <Badge className="text-[8px] font-bold px-2 py-0.5 border-0 shadow-sm" style={{ backgroundColor: provColor + "20", color: provColor }}>{provProjects.length} projets</Badge>
                                       </TableCell>
                                     </TableRow>
                                   </TableBody>
@@ -2523,20 +2531,20 @@ export default function Home() {
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-gradient-to-r from-slate-100 to-slate-50 border-b-2 border-slate-300">
-                        <TableHead className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider py-3">
+                      <TableRow className="border-b-2" style={{ background: `linear-gradient(135deg, #1e293b, #334155)` }}>
+                        <TableHead className="text-[11px] font-extrabold text-slate-200 uppercase tracking-wider py-3.5 pl-5">
                           Commune
                         </TableHead>
-                        <TableHead className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider text-right py-3">
+                        <TableHead className="text-[11px] font-extrabold text-slate-200 uppercase tracking-wider text-right py-3.5">
                           Projets
                         </TableHead>
-                        <TableHead className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider text-right py-3">
+                        <TableHead className="text-[11px] font-extrabold text-emerald-300 uppercase tracking-wider text-right py-3.5">
                           Coût (MDH)
                         </TableHead>
-                        <TableHead className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider text-right py-3">
+                        <TableHead className="text-[11px] font-extrabold text-slate-200 uppercase tracking-wider text-right py-3.5">
                           Répartition
                         </TableHead>
-                        <TableHead className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider py-3">
+                        <TableHead className="text-[11px] font-extrabold text-slate-200 uppercase tracking-wider py-3.5 pr-5">
                           Secteur principal
                         </TableHead>
                       </TableRow>
@@ -2556,31 +2564,31 @@ export default function Home() {
                               return (
                                 <TableRow
                                   key={name}
-                                  className={`border-b border-slate-100 transition-all duration-200 ${
-                                    idx % 2 === 0 ? "bg-white" : "bg-slate-50/40"
-                                  } hover:bg-blue-50/60 hover:shadow-sm`}
-                                  style={{ borderLeftWidth: "3px", borderLeftColor: commColor }}
+                                  className={`border-b transition-all duration-200 ${
+                                    idx % 2 === 0 ? "bg-white" : ""
+                                  } hover:shadow-sm`}
+                                  style={{ borderLeftWidth: "3px", borderLeftColor: commColor, borderBottomColor: commColor + "15", background: idx % 2 !== 0 ? `${commColor}06` : undefined }}
                                 >
-                                  <TableCell className="text-xs font-bold py-3 text-slate-800">
+                                  <TableCell className="text-xs font-bold py-3 pl-5 text-slate-800">
                                     <div className="flex items-center gap-2">
-                                      <div className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm ring-1 ring-white/50" style={{ backgroundColor: commColor }} />
+                                      <div className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm ring-1 ring-white/50" style={{ backgroundColor: commColor, boxShadow: `0 0 4px ${commColor}30` }} />
                                       {name}
                                     </div>
                                   </TableCell>
                                   <TableCell className="text-xs text-right py-3">
                                     <Badge
-                                      className="text-[10px] font-bold px-2 py-0.5 border-0 shadow-sm"
+                                      className="text-[10px] font-bold px-2.5 py-0.5 border-0 shadow-sm"
                                       style={{ backgroundColor: commColor + "18", color: commColor }}
                                     >
                                       {d.nb_projets}
                                     </Badge>
                                   </TableCell>
-                                  <TableCell className="text-xs text-right py-3 font-extrabold" style={{ color: "#059669" }}>
+                                  <TableCell className="text-xs text-right py-3 font-extrabold text-emerald-600">
                                     {(d.cout_total / 1e6).toFixed(2)}
                                   </TableCell>
                                   <TableCell className="text-xs text-right py-3">
                                     <div className="flex items-center justify-end gap-2">
-                                      <div className="w-16 h-3 rounded-full bg-slate-200/80 overflow-hidden shadow-inner">
+                                      <div className="w-20 h-3 rounded-full bg-slate-100 overflow-hidden shadow-inner">
                                         <div
                                           className="h-full rounded-full transition-all duration-500"
                                           style={{ width: `${Math.min(coutPct, 100)}%`, backgroundColor: commColor }}
@@ -2589,11 +2597,11 @@ export default function Home() {
                                       <span className="font-bold text-[10px] text-slate-600 w-10 text-right">{coutPct.toFixed(1)}%</span>
                                     </div>
                                   </TableCell>
-                                  <TableCell className="text-xs py-3">
+                                  <TableCell className="text-xs py-3 pr-5">
                                     <span
-                                      className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-2 py-1 rounded-full shadow-sm"
+                                      className="inline-flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full shadow-sm"
                                       style={{
-                                        backgroundColor: (SECTEUR_DOT_COLORS[shortSecteur] || "#94a3b8") + "15",
+                                        backgroundColor: (SECTEUR_DOT_COLORS[shortSecteur] || "#94a3b8") + "12",
                                         color: SECTEUR_DOT_COLORS[shortSecteur] || "#94a3b8",
                                       }}
                                     >
@@ -2605,14 +2613,14 @@ export default function Home() {
                               );
                             })}
                             {/* Total row */}
-                            <TableRow className="bg-gradient-to-r from-slate-800 to-slate-700 font-bold">
-                              <TableCell className="text-xs font-extrabold py-3 text-white pl-4">Total</TableCell>
+                            <TableRow style={{ background: `linear-gradient(135deg, #1e293b, #334155)` }}>
+                              <TableCell className="text-xs font-extrabold py-3 text-white pl-5">Total</TableCell>
                               <TableCell className="text-xs text-right py-3">
-                                <Badge className="bg-white/20 text-white text-[10px] font-bold px-2 border-0">{summaryTotalProjects}</Badge>
+                                <Badge className="bg-white/15 text-white text-[10px] font-bold px-2.5 border-0 shadow-sm">{summaryTotalProjects}</Badge>
                               </TableCell>
                               <TableCell className="text-xs text-right font-extrabold text-emerald-400 py-3">{(summaryTotalCost / 1e6).toFixed(2)}</TableCell>
                               <TableCell className="text-xs text-right font-extrabold py-3 text-white">100%</TableCell>
-                              <TableCell className="text-xs py-3"></TableCell>
+                              <TableCell className="text-xs py-3 pr-5"></TableCell>
                             </TableRow>
                           </>
                         );
