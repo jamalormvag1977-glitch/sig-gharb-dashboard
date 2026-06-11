@@ -72,11 +72,11 @@ export interface DashboardData {
 }
 
 export const SECTEUR_COLORS: Record<string, string> = {
-  "Entretien et réparation du réseau d'assainissement et de drainage": "#e74c3c",
-  "Travaux de pistes": "#3498db",
-  "Entretien et réparation des stations de pompage": "#f39c12",
-  "Travaux de réhabilitation des équipements": "#2ecc71",
-  "Travaux de réhabilitation des ouvrages de génie civil": "#9b59b6",
+  "Entretien et réparation du réseau d'assainissement et de drainage": "#f87171",
+  "Travaux de pistes": "#60a5fa",
+  "Entretien et réparation des stations de pompage": "#fbbf24",
+  "Travaux de réhabilitation des équipements": "#34d399",
+  "Travaux de réhabilitation des ouvrages de génie civil": "#a78bfa",
 };
 
 export const SECTEUR_SHORT: Record<string, string> = {
@@ -88,7 +88,7 @@ export const SECTEUR_SHORT: Record<string, string> = {
 };
 
 export const PROVINCE_COLORS: Record<string, string> = {
-  "Kénitra": "#d4a017",
-  "Sidi Slimane": "#5bb58a",
-  "Sidi Kacem": "#c76e7e",
+  "Kénitra": "#f59e0b",
+  "Sidi Slimane": "#34d399",
+  "Sidi Kacem": "#fb7185",
 };

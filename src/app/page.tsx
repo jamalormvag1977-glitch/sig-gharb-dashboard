@@ -95,11 +95,11 @@ const PROVINCE_MAP: Record<ViewType, string | null> = {
 };
 
 const SECTEUR_DOT_COLORS: Record<string, string> = {
-  "Assainissement & Drainage": "#ef4444",
-  "Pistes agricoles": "#3b82f6",
-  "Stations de pompage": "#f59e0b",
-  "Réhabilitation équipements": "#10b981",
-  "Génie civil": "#8b5cf6",
+  "Assainissement & Drainage": "#f87171",
+  "Pistes agricoles": "#60a5fa",
+  "Stations de pompage": "#fbbf24",
+  "Réhabilitation équipements": "#34d399",
+  "Génie civil": "#a78bfa",
 };
 
 const CONVENTION_PDF: Record<string, string> = {
@@ -110,19 +110,19 @@ const CONVENTION_PDF: Record<string, string> = {
 
 // 30-color palette for communes (same as MapComponent)
 const COMMUNE_PALETTE = [
-  "#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6",
-  "#ec4899", "#06b6d4", "#f97316", "#14b8a6", "#6366f1",
-  "#84cc16", "#e11d48", "#0ea5e9", "#d946ef", "#65a30d",
-  "#dc2626", "#0891b2", "#c026d3", "#059669", "#ea580c",
-  "#2563eb", "#db2777", "#0d9488", "#9333ea", "#ca8a04",
-  "#7c3aed", "#16a34a", "#e4d214", "#4f46e5", "#a21caf",
+  "#60a5fa", "#f87171", "#34d399", "#fbbf24", "#a78bfa",
+  "#f472b6", "#22d3ee", "#fb923c", "#2dd4bf", "#818cf8",
+  "#a3e635", "#fb7185", "#38bdf8", "#e879f9", "#84cc16",
+  "#f87171", "#06b6d4", "#d946ef", "#4ade80", "#fdba74",
+  "#93c5fd", "#f9a8d4", "#5eead4", "#c084fc", "#fcd34d",
+  "#a78bfa", "#86efac", "#fde047", "#818cf8", "#f472b6",
 ];
 
 // Province-matched KPI colors (matching ORMVAG official map)
-const KENITRA_COLOR = { gradient: "from-amber-500 to-yellow-600", bgGradient: "from-amber-50 to-yellow-50", textColor: "text-amber-700", iconBg: "bg-amber-100", iconColor: "text-amber-600" };
-const SIDI_KACEM_COLOR = { gradient: "from-rose-500 to-pink-600", bgGradient: "from-rose-50 to-pink-50", textColor: "text-rose-700", iconBg: "bg-rose-100", iconColor: "text-rose-600" };
-const SIDI_SLIMANE_COLOR = { gradient: "from-emerald-500 to-teal-600", bgGradient: "from-emerald-50 to-teal-50", textColor: "text-emerald-700", iconBg: "bg-emerald-100", iconColor: "text-emerald-600" };
-const DEFAULT_KPI = { gradient: "from-violet-500 to-purple-600", bgGradient: "from-violet-50 to-purple-50", textColor: "text-violet-700", iconBg: "bg-violet-100", iconColor: "text-violet-600" };
+const KENITRA_COLOR = { gradient: "from-amber-400 to-yellow-500", bgGradient: "from-amber-50 to-yellow-50", textColor: "text-amber-600", iconBg: "bg-amber-100", iconColor: "text-amber-500" };
+const SIDI_KACEM_COLOR = { gradient: "from-rose-400 to-pink-500", bgGradient: "from-rose-50 to-pink-50", textColor: "text-rose-600", iconBg: "bg-rose-100", iconColor: "text-rose-500" };
+const SIDI_SLIMANE_COLOR = { gradient: "from-emerald-400 to-teal-500", bgGradient: "from-emerald-50 to-teal-50", textColor: "text-emerald-600", iconBg: "bg-emerald-100", iconColor: "text-emerald-500" };
+const DEFAULT_KPI = { gradient: "from-violet-400 to-purple-500", bgGradient: "from-violet-50 to-purple-50", textColor: "text-violet-600", iconBg: "bg-violet-100", iconColor: "text-violet-500" };
 
 export default function Home() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -514,25 +514,25 @@ export default function Home() {
         <div className="flex flex-col items-center relative">
           <svg width={size + 16} height={size + 16} className="transform -rotate-90" style={{ margin: -8 }}>
             {/* Outer subtle shadow ring */}
-            <circle cx={center + 8} cy={center + 8} r={radius + strokeWidth / 2 + 1} fill="none" stroke={color} strokeWidth="1" opacity="0.08" />
+            <circle cx={center + 8} cy={center + 8} r={radius + strokeWidth / 2 + 1} fill="none" stroke={color} strokeWidth="1" opacity="0.15" />
             {/* Background track with gradient feel */}
-            <circle cx={center + 8} cy={center + 8} r={radius} fill="none" stroke="#1e293b" strokeWidth={strokeWidth} opacity="0.12" />
+            <circle cx={center + 8} cy={center + 8} r={radius} fill="none" stroke="#cbd5e1" strokeWidth={strokeWidth} opacity="0.35" />
             {/* Inner decorative ring */}
-            <circle cx={center + 8} cy={center + 8} r={innerR} fill="none" stroke={color} strokeWidth="0.5" opacity="0.15" />
+            <circle cx={center + 8} cy={center + 8} r={innerR} fill="none" stroke={color} strokeWidth="0.5" opacity="0.25" />
             {/* Progress arc with glow */}
-            <circle cx={center + 8} cy={center + 8} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth} strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" className="transition-all duration-1000" style={{ filter: `drop-shadow(0 0 6px ${color}60)` }} />
+            <circle cx={center + 8} cy={center + 8} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth} strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" className="transition-all duration-1000" style={{ filter: `drop-shadow(0 0 8px ${color}90)` }} />
             {/* Second lighter arc for 3D effect */}
-            {progress > 0 && <circle cx={center + 8} cy={center + 8} r={radius - strokeWidth * 0.3} fill="none" stroke={color} strokeWidth={strokeWidth * 0.15} strokeDasharray={circumference * 0.95} strokeDashoffset={offset * 0.95} strokeLinecap="round" opacity="0.3" className="transition-all duration-1000" />}
+            {progress > 0 && <circle cx={center + 8} cy={center + 8} r={radius - strokeWidth * 0.3} fill="none" stroke={color} strokeWidth={strokeWidth * 0.15} strokeDasharray={circumference * 0.95} strokeDashoffset={offset * 0.95} strokeLinecap="round" opacity="0.4" className="transition-all duration-1000" />}
           </svg>
           {/* Tick marks overlay (not rotated) */}
           <svg width={size + 16} height={size + 16} className="absolute" style={{ top: -8, left: -8 }} >
             {ticks.map((t, i) => (
-              <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke={color} strokeWidth="1.5" opacity="0.2" strokeLinecap="round" />
+              <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke={color} strokeWidth="1.5" opacity="0.35" strokeLinecap="round" />
             ))}
           </svg>
           {/* Center content */}
           <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ width: size, height: size }}>
-            <div className="rounded-full flex flex-col items-center justify-center" style={{ width: innerR * 1.6, height: innerR * 1.6, background: `radial-gradient(circle, ${color}08 0%, transparent 70%)` }}>
+            <div className="rounded-full flex flex-col items-center justify-center" style={{ width: innerR * 1.6, height: innerR * 1.6, background: `radial-gradient(circle, ${color}15 0%, transparent 70%)` }}>
               <span className="text-2xl font-black tracking-tight" style={{ color }}>{value.toFixed(1)}%</span>
               {delta !== undefined && delta !== 0 && (
                 <span className={`text-[10px] font-bold flex items-center gap-0.5 ${delta > 0 ? "text-emerald-600" : "text-red-500"}`}>
@@ -541,7 +541,7 @@ export default function Home() {
               )}
             </div>
           </div>
-          <span className="text-[11px] font-extrabold uppercase tracking-wider mt-2" style={{ color: color + "BB" }}>{label}</span>
+          <span className="text-[11px] font-extrabold uppercase tracking-wider mt-2" style={{ color: color + "DD" }}>{label}</span>
         </div>
       );
     };
@@ -556,8 +556,8 @@ export default function Home() {
       const c = size / 2;
       return (
         <svg width={size} height={size} className="transform -rotate-90 shrink-0">
-          <circle cx={c} cy={c} r={r} fill="none" stroke="#1e293b" strokeWidth={sw} opacity="0.12" />
-          <circle cx={c} cy={c} r={r} fill="none" stroke={color} strokeWidth={sw} strokeDasharray={circ} strokeDashoffset={off} strokeLinecap="round" style={{ filter: `drop-shadow(0 0 3px ${color}40)` }} />
+          <circle cx={c} cy={c} r={r} fill="none" stroke="#cbd5e1" strokeWidth={sw} opacity="0.35" />
+          <circle cx={c} cy={c} r={r} fill="none" stroke={color} strokeWidth={sw} strokeDasharray={circ} strokeDashoffset={off} strokeLinecap="round" style={{ filter: `drop-shadow(0 0 5px ${color}80)` }} />
         </svg>
       );
     };
@@ -947,7 +947,7 @@ export default function Home() {
             <div className="overflow-x-auto px-2 pb-3">
               <table className="w-full text-[11px]">
                 <thead>
-                  <tr style={{ background: `linear-gradient(135deg, #1e293b, #334155)` }}>
+                  <tr style={{ background: `linear-gradient(135deg, #475569, #64748b)` }}>
                     <th className="text-left font-extrabold pb-2.5 pt-2 pr-2 pl-3 rounded-tl-lg text-slate-200">Secteur</th>
                     <th className="text-center font-extrabold pb-2.5 pt-2 px-1 text-slate-200">Nb</th>
                     <th className="text-right font-extrabold pb-2.5 pt-2 px-1 text-emerald-300">Budget</th>
@@ -1077,7 +1077,7 @@ export default function Home() {
           <div className="overflow-x-auto rounded-xl border shadow-md" style={{ borderColor: provColor + "25" }}>
             <Table>
               <TableHeader>
-                <TableRow style={{ background: `linear-gradient(135deg, #1e293b, #334155)`, borderBottom: `2px solid ${provColor}50` }}>
+                <TableRow style={{ background: `linear-gradient(135deg, #475569, #64748b)`, borderBottom: `2px solid ${provColor}50` }}>
                   <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-slate-200">N° Cons.</TableHead>
                   <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-slate-200">Projet</TableHead>
                   <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-3 px-2.5 text-slate-200">Société Titulaire</TableHead>
@@ -1197,7 +1197,7 @@ export default function Home() {
         <div className="p-3 flex items-center justify-between border-b border-white/[0.06]">
           {sidebarOpen && (
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="bg-gradient-to-br from-green-600 to-emerald-700 p-2 rounded-lg shadow-lg shadow-green-600/20 shrink-0">
+              <div className="bg-gradient-to-br from-emerald-500 to-teal-500 p-2 rounded-lg shadow-lg shadow-emerald-400/20 shrink-0">
                 <svg viewBox="0 0 24 24" className="h-4 w-4 text-white" fill="currentColor">
                   <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z"/>
                 </svg>
@@ -1226,16 +1226,16 @@ export default function Home() {
         <nav className="flex-1 p-2 space-y-0.5">
           {NAV_ITEMS.map((item) => {
             const isActive = activeView === item.id;
-            let activeBg = "from-emerald-600 to-teal-600";
-            let activeShadow = "shadow-emerald-600/25";
-            if (item.id === "kenitra") { activeBg = "from-amber-500 to-yellow-600"; activeShadow = "shadow-amber-500/25"; }
-            if (item.id === "sidi-kacem") { activeBg = "from-rose-500 to-pink-600"; activeShadow = "shadow-rose-500/25"; }
-            if (item.id === "sidi-slimane") { activeBg = "from-emerald-500 to-teal-600"; activeShadow = "shadow-emerald-500/25"; }
-            if (item.id === "rapport") { activeBg = "from-amber-500 to-orange-600"; activeShadow = "shadow-amber-500/25"; }
-            if (item.id === "suivi-avancement") { activeBg = "from-indigo-500 to-violet-600"; activeShadow = "shadow-indigo-500/25"; }
-            if (item.id === "suivi-kenitra") { activeBg = "from-amber-500 to-yellow-600"; activeShadow = "shadow-amber-500/25"; }
-            if (item.id === "suivi-sidi-kacem") { activeBg = "from-rose-500 to-pink-600"; activeShadow = "shadow-rose-500/25"; }
-            if (item.id === "suivi-sidi-slimane") { activeBg = "from-emerald-500 to-teal-600"; activeShadow = "shadow-emerald-500/25"; }
+            let activeBg = "from-emerald-400 to-teal-500";
+            let activeShadow = "shadow-emerald-400/25";
+            if (item.id === "kenitra") { activeBg = "from-amber-400 to-yellow-500"; activeShadow = "shadow-amber-400/25"; }
+            if (item.id === "sidi-kacem") { activeBg = "from-rose-400 to-pink-500"; activeShadow = "shadow-rose-400/25"; }
+            if (item.id === "sidi-slimane") { activeBg = "from-emerald-400 to-teal-500"; activeShadow = "shadow-emerald-400/25"; }
+            if (item.id === "rapport") { activeBg = "from-amber-400 to-orange-500"; activeShadow = "shadow-amber-400/25"; }
+            if (item.id === "suivi-avancement") { activeBg = "from-indigo-400 to-violet-500"; activeShadow = "shadow-indigo-400/25"; }
+            if (item.id === "suivi-kenitra") { activeBg = "from-amber-400 to-yellow-500"; activeShadow = "shadow-amber-400/25"; }
+            if (item.id === "suivi-sidi-kacem") { activeBg = "from-rose-400 to-pink-500"; activeShadow = "shadow-rose-400/25"; }
+            if (item.id === "suivi-sidi-slimane") { activeBg = "from-emerald-400 to-teal-500"; activeShadow = "shadow-emerald-400/25"; }
 
             return (
               <button
@@ -1264,11 +1264,11 @@ export default function Home() {
 
         <div className="p-3 border-t border-white/[0.06]">
           {sidebarOpen ? (
-            <div className="bg-gradient-to-r from-emerald-600/20 to-teal-600/10 rounded-xl p-3 text-center border border-emerald-500/10">
-              <p className="text-[9px] text-emerald-400/80 uppercase tracking-widest font-bold">
+            <div className="bg-gradient-to-r from-emerald-500/20 to-teal-500/10 rounded-xl p-3 text-center border border-emerald-400/10">
+              <p className="text-[9px] text-emerald-300/80 uppercase tracking-widest font-bold">
                 Total Gharb
               </p>
-              <p className="text-2xl font-black text-emerald-400 mt-1">
+              <p className="text-2xl font-black text-emerald-300 mt-1">
                 {(totalCost / 1e6).toFixed(1)}
                 <span className="text-sm font-bold ml-0.5">MDH</span>
               </p>
@@ -1582,7 +1582,7 @@ export default function Home() {
                       <div className="bg-amber-50 rounded-xl p-4 border border-amber-200/60 flex items-start gap-3">
                         <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
                         <div>
-                          <p className="text-xs font-bold text-amber-800 mb-1">Constat clé — Disparité inter-provinciale</p>
+                          <p className="text-xs font-bold text-amber-700 mb-1">Constat clé — Disparité inter-provinciale</p>
                           <p className="text-[11px] text-amber-700 leading-relaxed">
                             L&apos;écart entre la province la plus dotée ({provEntries[0][0]}, {maxPct.toFixed(1)}%) et la moins dotée
                             ({provEntries[provEntries.length - 1][0]}, {minPct.toFixed(1)}%) est de <strong>{ecart.toFixed(1)} points</strong>.
@@ -1727,7 +1727,7 @@ export default function Home() {
                         <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200/60 flex items-start gap-3">
                           <Activity className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
                           <div>
-                            <p className="text-xs font-bold text-emerald-800 mb-1">Concentration des investissements</p>
+                            <p className="text-xs font-bold text-emerald-700 mb-1">Concentration des investissements</p>
                             <p className="text-[11px] text-emerald-700 leading-relaxed">
                               Les 5 communes les mieux dotées concentrent <strong>{top5Pct.toFixed(1)}%</strong> du budget total
                               ({(top5Cost / 1e6).toFixed(1)} MDH sur {(data.totalCost / 1e6).toFixed(1)} MDH). Le coût moyen par projet
@@ -1983,7 +1983,7 @@ export default function Home() {
                     }
                     const tauxPaiement = totalCostFiltered > 0 ? (payeFiltered / totalCostFiltered) * 100 : 0;
                     const tauxOrdonnancement = totalCostFiltered > 0 ? (ordonneFiltered / totalCostFiltered) * 100 : 0;
-                    const getStatusColor = (val: number) => val >= 75 ? "#10b981" : val >= 50 ? "#3b82f6" : val >= 25 ? "#8b5cf6" : "#ef4444";
+                    const getStatusColor = (val: number) => val >= 75 ? "#34d399" : val >= 50 ? "#60a5fa" : val >= 25 ? "#a78bfa" : "#f87171";
                     const GaugeRing = ({ value, label, color, icon: Icon }: { value: number; label: string; color: string; icon: React.ElementType }) => {
                       const radius = 48;
                       const circ = 2 * Math.PI * radius;
@@ -2005,30 +2005,30 @@ export default function Home() {
                           <div className="relative w-36 h-36">
                             <svg className="w-36 h-36 -rotate-90" viewBox="0 0 120 120">
                               {/* Shadow ring */}
-                              <circle cx="60" cy="60" r={radius + 1} fill="none" stroke={color} strokeWidth="1" opacity="0.06" />
+                              <circle cx="60" cy="60" r={radius + 1} fill="none" stroke={color} strokeWidth="1" opacity="0.15" />
                               {/* Background track */}
-                              <circle cx="60" cy="60" r={radius} fill="none" stroke="#1e293b" strokeWidth="10" opacity="0.12" />
+                              <circle cx="60" cy="60" r={radius} fill="none" stroke="#cbd5e1" strokeWidth="10" opacity="0.35" />
                               {/* Inner decorative ring */}
-                              <circle cx="60" cy="60" r={innerR} fill="none" stroke={color} strokeWidth="0.5" opacity="0.12" />
+                              <circle cx="60" cy="60" r={innerR} fill="none" stroke={color} strokeWidth="0.5" opacity="0.25" />
                               {/* Progress arc with glow */}
-                              <circle cx="60" cy="60" r={radius} fill="none" stroke={color} strokeWidth="10" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset} className="transition-all duration-1000" style={{ filter: `drop-shadow(0 0 5px ${color}50)` }} />
+                              <circle cx="60" cy="60" r={radius} fill="none" stroke={color} strokeWidth="10" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset} className="transition-all duration-1000" style={{ filter: `drop-shadow(0 0 8px ${color}90)` }} />
                               {/* 3D inner arc */}
-                              {progress > 0 && <circle cx="60" cy="60" r={radius - 3} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeDasharray={circ * 0.95} strokeDashoffset={offset * 0.95} opacity="0.25" className="transition-all duration-1000" />}
+                              {progress > 0 && <circle cx="60" cy="60" r={radius - 3} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeDasharray={circ * 0.95} strokeDashoffset={offset * 0.95} opacity="0.4" className="transition-all duration-1000" />}
                             </svg>
                             {/* Tick marks */}
                             <svg className="absolute inset-0 w-36 h-36" viewBox="0 0 120 120">
                               {ticks.map((t, i) => (
-                                <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke={color} strokeWidth="1.5" opacity="0.18" strokeLinecap="round" />
+                                <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke={color} strokeWidth="1.5" opacity="0.35" strokeLinecap="round" />
                               ))}
                             </svg>
                             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                              <div className="rounded-full flex flex-col items-center justify-center" style={{ width: innerR * 1.3, height: innerR * 1.3, background: `radial-gradient(circle, ${color}08 0%, transparent 70%)` }}>
+                              <div className="rounded-full flex flex-col items-center justify-center" style={{ width: innerR * 1.3, height: innerR * 1.3, background: `radial-gradient(circle, ${color}15 0%, transparent 70%)` }}>
                                 <Icon className="h-4 w-4 mb-0.5" style={{ color }} />
                                 <span className="text-xl font-black tracking-tight" style={{ color }}>{value.toFixed(0)}%</span>
                               </div>
                             </div>
                           </div>
-                          <p className="text-[10px] font-extrabold uppercase tracking-wider text-center" style={{ color: color + "BB" }}>{label}</p>
+                          <p className="text-[10px] font-extrabold uppercase tracking-wider text-center" style={{ color: color + "DD" }}>{label}</p>
                         </div>
                       );
                     };
@@ -2043,19 +2043,19 @@ export default function Home() {
                         <div className="grid grid-cols-4 gap-3 mt-4">
                           <div className="bg-indigo-50 rounded-xl p-3 border border-indigo-200/60 text-center">
                             <p className="text-[9px] font-bold text-indigo-600 uppercase tracking-widest mb-1">Budget total</p>
-                            <p className="text-lg font-black text-indigo-800">{(totalCostFiltered / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+                            <p className="text-lg font-black text-indigo-700">{(totalCostFiltered / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
                           </div>
                           <div className="bg-violet-50 rounded-xl p-3 border border-violet-200/60 text-center">
                             <p className="text-[9px] font-bold text-violet-600 uppercase tracking-widest mb-1">Ordonnancé</p>
-                            <p className="text-lg font-black text-violet-800">{(ordonneFiltered / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+                            <p className="text-lg font-black text-violet-700">{(ordonneFiltered / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
                           </div>
                           <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-200/60 text-center">
                             <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Payé</p>
-                            <p className="text-lg font-black text-emerald-800">{(payeFiltered / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+                            <p className="text-lg font-black text-emerald-700">{(payeFiltered / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
                           </div>
                           <div className="bg-amber-50 rounded-xl p-3 border border-amber-200/60 text-center">
                             <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest mb-1">Reste à payer</p>
-                            <p className="text-lg font-black text-amber-800">{((totalCostFiltered - payeFiltered) / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+                            <p className="text-lg font-black text-amber-700">{((totalCostFiltered - payeFiltered) / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
                           </div>
                         </div>
                         {totalFiltered < sd.totalProjects && (
@@ -2384,7 +2384,7 @@ export default function Home() {
                               <div className="overflow-x-auto rounded-lg border" style={{ borderColor: provColor + "20" }}>
                                 <Table>
                                   <TableHeader>
-                                    <TableRow style={{ background: `linear-gradient(135deg, #1e293b, #334155)`, borderBottom: `2px solid ${provColor}50` }}>
+                                    <TableRow style={{ background: `linear-gradient(135deg, #475569, #64748b)`, borderBottom: `2px solid ${provColor}50` }}>
                                       <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-slate-200">Commune</TableHead>
                                       <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-slate-200">Projet</TableHead>
                                       <TableHead className="text-[9px] font-extrabold uppercase tracking-wider py-2.5 px-2.5 text-right text-emerald-300">Budget</TableHead>
@@ -2586,7 +2586,7 @@ export default function Home() {
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="border-b-2" style={{ background: `linear-gradient(135deg, #1e293b, #334155)` }}>
+                      <TableRow className="border-b-2" style={{ background: `linear-gradient(135deg, #475569, #64748b)` }}>
                         <TableHead className="text-[11px] font-extrabold text-slate-200 uppercase tracking-wider py-3.5 pl-5">
                           Commune
                         </TableHead>
@@ -2668,7 +2668,7 @@ export default function Home() {
                               );
                             })}
                             {/* Total row */}
-                            <TableRow style={{ background: `linear-gradient(135deg, #1e293b, #334155)` }}>
+                            <TableRow style={{ background: `linear-gradient(135deg, #475569, #64748b)` }}>
                               <TableCell className="text-xs font-extrabold py-3 text-white pl-5">Total</TableCell>
                               <TableCell className="text-xs text-right py-3">
                                 <Badge className="bg-white/15 text-white text-[10px] font-bold px-2.5 border-0 shadow-sm">{summaryTotalProjects}</Badge>
@@ -2824,7 +2824,7 @@ export default function Home() {
                           <div className="overflow-x-auto">
                             <Table>
                               <TableHeader>
-                                <TableRow style={{ background: `linear-gradient(135deg, #1e293b, #334155)`, borderBottom: `2px solid ${commColor}50` }}>
+                                <TableRow style={{ background: `linear-gradient(135deg, #475569, #64748b)`, borderBottom: `2px solid ${commColor}50` }}>
                                   <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[18%] text-slate-200">
                                     Rubrique
                                   </TableHead>
@@ -3061,7 +3061,7 @@ export default function Home() {
                             <div className="overflow-x-auto rounded-lg border border-slate-200/60">
                               <Table>
                                 <TableHeader>
-                                  <TableRow style={{ background: `linear-gradient(135deg, #1e293b, #334155)`, borderBottom: `2px solid ${dotColor}50` }}>
+                                  <TableRow style={{ background: `linear-gradient(135deg, #475569, #64748b)`, borderBottom: `2px solid ${dotColor}50` }}>
                                     <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[18%] text-slate-200">Commune</TableHead>
                                     <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[25%] text-slate-200">Projet</TableHead>
                                     <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[35%] text-slate-200">Consistance</TableHead>
@@ -3294,7 +3294,7 @@ export default function Home() {
                                 <div className="overflow-x-auto rounded-lg border border-slate-200/60">
                                   <Table>
                                     <TableHeader>
-                                      <TableRow style={{ background: `linear-gradient(135deg, #1e293b, #334155)`, borderBottom: `2px solid ${dotColor}50` }}>
+                                      <TableRow style={{ background: `linear-gradient(135deg, #475569, #64748b)`, borderBottom: `2px solid ${dotColor}50` }}>
                                         <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[18%] text-slate-200">Commune</TableHead>
                                         <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[25%] text-slate-200">Projet</TableHead>
                                         <TableHead className="text-[10px] font-extrabold uppercase tracking-wider w-[35%] text-slate-200">Consistance</TableHead>
