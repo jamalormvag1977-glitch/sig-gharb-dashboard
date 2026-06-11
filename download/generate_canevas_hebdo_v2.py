@@ -52,7 +52,7 @@ PROVINCE_FILLS = {
 }
 
 # ── Load project data ──────────────────────────────────────────
-DATA_PATH = "/tmp/sig-gharb-extract/src/data/dashboard_data.json"
+DATA_PATH = "/home/z/my-project/src/data/dashboard_data.json"
 with open(DATA_PATH, "r", encoding="utf-8") as f:
     data = json.load(f)
 projects = data["projects"]
@@ -265,8 +265,36 @@ WEEKLY_WIDTHS = {
 }
 
 DATA_ROW_START = 5
-NUM_WEEKS = 4
+NUM_WEEKS = 52
 WEEK_NAMES = [f"S{w:02d}" for w in range(1, NUM_WEEKS + 1)]
+
+# ISO week date ranges for 2026
+WEEK_DATES = {}
+jan4 = __import__("datetime").datetime(2026, 1, 4)
+jan4_day = jan4.isoweekday()  # Monday=1..Sunday=7
+from datetime import datetime, timedelta
+monday_w1 = jan4 - timedelta(days=jan4_day - 1)
+for w in range(1, NUM_WEEKS + 1):
+    monday = monday_w1 + timedelta(weeks=w - 1)
+    sunday = monday + timedelta(days=6)
+    if monday.year > 2026:
+        NUM_WEEKS = w - 1
+        WEEK_NAMES = WEEK_NAMES[:NUM_WEEKS]
+        break
+    WEEK_DATES[w] = (monday, sunday)
+
+# Month mapping: which weeks belong to which month
+MONTH_NAMES_FR = {
+    1: "Janvier", 2: "Février", 3: "Mars", 4: "Avril",
+    5: "Mai", 6: "Juin", 7: "Juillet", 8: "Août",
+    9: "Septembre", 10: "Octobre", 11: "Novembre", 12: "Décembre"
+}
+MONTH_ORDER = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+WEEKS_BY_MONTH = {m: [] for m in MONTH_ORDER}
+for w in range(1, NUM_WEEKS + 1):
+    monday = WEEK_DATES[w][0]
+    month = monday.month
+    WEEKS_BY_MONTH[month].append(w)
 
 # ── Section header rows (row 3 is used for section group labels) ──
 # We'll use a merged section header above the column headers
@@ -357,18 +385,22 @@ ws_ref.sheet_properties.tabColor = PRIMARY
 for week_idx, week_name in enumerate(WEEK_NAMES):
     ws = wb.create_sheet(title=week_name)
 
-    week_label = f"Semaine {week_idx + 1}"
+    week_num = week_idx + 1
+    monday, sunday = WEEK_DATES[week_num]
+    month_name = MONTH_NAMES_FR[monday.month]
+    week_label = f"Semaine {week_num} ({monday.strftime('%d/%m')} - {sunday.strftime('%d/%m')}) — {month_name} 2026"
     title_text = f"Suivi Hebdomadaire - {week_label} - Exécution Physique et Financière"
     setup_sheet(ws, title=title_text, last_col=COL_END)
 
     # Row 3: Section group labels + date input
     ws.row_dimensions[3].height = 22
 
-    # Date input
+    # Date input (pre-filled with week's Monday)
     ws.cell(row=3, column=2, value="Date :")
     ws.cell(row=3, column=2).font = Font(name=FONT_NAME, size=10, bold=HEADER_BOLD, color=PRIMARY)
     ws.merge_cells(start_row=3, start_column=3, end_row=3, end_column=4)
     date_cell = ws.cell(row=3, column=3)
+    date_cell.value = monday
     date_cell.number_format = 'YYYY-MM-DD'
     date_cell.font = Font(name=FONT_NAME, size=11, color="0000FF")
     date_cell.fill = PatternFill("solid", fgColor="FFFFCC")
@@ -720,9 +752,22 @@ for week_idx, week_name in enumerate(WEEK_NAMES):
 
     ws.cell(row=3, column=3).protection = Protection(locked=False)
 
-    # Tab colors
-    tab_colors = ["4472C4", "ED7D31", "70AD47", "FFC000"]
-    ws.sheet_properties.tabColor = tab_colors[week_idx % len(tab_colors)]
+    # Tab colors by month
+    month_tab_colors = {
+        1: "4472C4",   # January - Blue
+        2: "5B9BD5",   # February - Light Blue
+        3: "70AD47",   # March - Green
+        4: "A9D18E",   # April - Light Green
+        5: "FFC000",   # May - Gold
+        6: "ED7D31",   # June - Orange
+        7: "C55A11",   # July - Dark Orange
+        8: "FF0000",   # August - Red
+        9: "C00000",   # September - Dark Red
+        10: "7030A0",  # October - Purple
+        11: "BF8F00",  # November - Dark Gold
+        12: "375623",  # December - Dark Green
+    }
+    ws.sheet_properties.tabColor = month_tab_colors.get(monday.month, "4472C4")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -731,7 +776,7 @@ for week_idx, week_name in enumerate(WEEK_NAMES):
 ws_recap = wb.create_sheet(title="Récapitulatif")
 LAST_RECAP_COL = 14
 
-setup_sheet(ws_recap, title="Récapitulatif Hebdomadaire - Suivi d'Exécution", last_col=LAST_RECAP_COL)
+setup_sheet(ws_recap, title="Récapitulatif Hebdomadaire - Suivi d'Exécution 2026", last_col=LAST_RECAP_COL)
 
 last_week = WEEK_NAMES[-1]
 tr_last = DATA_ROW_START + N
@@ -765,50 +810,53 @@ for ki, (label, val) in enumerate(kpi_data):
         ws_recap.cell(row=r, column=3).number_format = '#,##0'
     ws_recap.cell(row=r, column=3).font = Font(name=FONT_NAME, size=11, color="008000")
 
-# ── Section 2: Évolution Hebdomadaire ─────────────────────────
+# ── Section 2: Évolution Hebdomadaire (ALL 52 WEEKS) ──────────
 trend_start = 14
-ws_recap.cell(row=trend_start, column=2, value="Évolution Hebdomadaire")
+ws_recap.cell(row=trend_start, column=2, value="Évolution Hebdomadaire 2026 — Toutes les Semaines")
 ws_recap.cell(row=trend_start, column=2).font = font_subheader()
 ws_recap.merge_cells(start_row=trend_start, start_column=2, end_row=trend_start, end_column=9)
 
 trend_hdr_row = trend_start + 1
 trend_headers = [
-    "Semaine", "Avanc. Phys. %", "Accroiss. Phys. %",
+    "Semaine", "Période", "Avanc. Phys. %", "Accroiss. Phys. %",
     "Qté Réalisée Cumul", "Avanc. Fin. %", "Accroiss. Fin. %",
     "Décaissé (DH)", "Écart Phys.-Fin."
 ]
 
 for col_idx, h in enumerate(trend_headers, start=2):
     ws_recap.cell(row=trend_hdr_row, column=col_idx, value=h)
-style_header_row(ws_recap, row_num=trend_hdr_row, col_start=2, col_end=9)
+style_header_row(ws_recap, row_num=trend_hdr_row, col_start=2, col_end=10)
 
 for wi, wn in enumerate(WEEK_NAMES):
     r = trend_hdr_row + 1 + wi
+    week_num = wi + 1
+    monday, sunday = WEEK_DATES[week_num]
     tr = DATA_ROW_START + N
     ws_recap.cell(row=r, column=2, value=wn)
-    ws_recap.cell(row=r, column=3).value = f"='{wn}'!N{tr}"
-    ws_recap.cell(row=r, column=3).number_format = '0.0%'
-    ws_recap.cell(row=r, column=4).value = f"='{wn}'!P{tr}"
+    ws_recap.cell(row=r, column=3, value=f"{monday.strftime('%d/%m')}-{sunday.strftime('%d/%m')}")
+    ws_recap.cell(row=r, column=4).value = f"='{wn}'!N{tr}"
     ws_recap.cell(row=r, column=4).number_format = '0.0%'
-    ws_recap.cell(row=r, column=5).value = f"='{wn}'!M{tr}"
-    ws_recap.cell(row=r, column=5).number_format = '#,##0.0'
-    ws_recap.cell(row=r, column=6).value = f"='{wn}'!T{tr}"
-    ws_recap.cell(row=r, column=6).number_format = '0.0%'
-    ws_recap.cell(row=r, column=7).value = f"='{wn}'!V{tr}"
+    ws_recap.cell(row=r, column=5).value = f"='{wn}'!P{tr}"
+    ws_recap.cell(row=r, column=5).number_format = '0.0%'
+    ws_recap.cell(row=r, column=6).value = f"='{wn}'!M{tr}"
+    ws_recap.cell(row=r, column=6).number_format = '#,##0.0'
+    ws_recap.cell(row=r, column=7).value = f"='{wn}'!T{tr}"
     ws_recap.cell(row=r, column=7).number_format = '0.0%'
-    ws_recap.cell(row=r, column=8).value = f"='{wn}'!Q{tr}"
-    ws_recap.cell(row=r, column=8).number_format = '#,##0'
-    ws_recap.cell(row=r, column=9).value = f"='{wn}'!W{tr}"
-    ws_recap.cell(row=r, column=9).number_format = '0.0%'
+    ws_recap.cell(row=r, column=8).value = f"='{wn}'!V{tr}"
+    ws_recap.cell(row=r, column=8).number_format = '0.0%'
+    ws_recap.cell(row=r, column=9).value = f"='{wn}'!Q{tr}"
+    ws_recap.cell(row=r, column=9).number_format = '#,##0'
+    ws_recap.cell(row=r, column=10).value = f"='{wn}'!W{tr}"
+    ws_recap.cell(row=r, column=10).number_format = '0.0%'
 
-    style_data_row(ws_recap, row_num=r, col_start=2, col_end=9, row_index=wi)
-    for col in range(3, 10):
+    style_data_row(ws_recap, row_num=r, col_start=2, col_end=10, row_index=wi)
+    for col in range(4, 11):
         ws_recap.cell(row=r, column=col).font = Font(name=FONT_NAME, size=11, color="008000")
 
 # Conditional formatting on trend
 td_start = trend_hdr_row + 1
 td_end = trend_hdr_row + NUM_WEEKS
-for trend_col in ['D', 'G']:
+for trend_col in ['E', 'H']:
     ws_recap.conditional_formatting.add(
         f'{trend_col}{td_start}:{trend_col}{td_end}',
         CellIsRule(operator='greaterThan', formula=['0'],
@@ -820,8 +868,90 @@ for trend_col in ['D', 'G']:
                    font=CF_NEGATIVE_FONT, fill=CF_NEGATIVE_FILL)
     )
 
-# ── Section 3: Résumé par Province ────────────────────────────
-prov_start = td_end + 3
+# ── Section 3: Résumé Mensuel ─────────────────────────────────
+monthly_start = td_end + 3
+ws_recap.cell(row=monthly_start, column=2, value="Résumé Mensuel 2026")
+ws_recap.cell(row=monthly_start, column=2).font = font_subheader()
+ws_recap.merge_cells(start_row=monthly_start, start_column=2, end_row=monthly_start, end_column=10)
+
+monthly_hdr_row = monthly_start + 1
+monthly_headers = [
+    "Mois", "Semaines", "Avanc. Phys. Fin %", "Avanc. Phys. Fin %",
+    "Accroiss. Phys. %", "Avanc. Fin. Fin %", "Accroiss. Fin. %",
+    "Décaissé (DH)", "Écart Phys.-Fin."
+]
+for col_idx, h in enumerate(monthly_headers, start=2):
+    ws_recap.cell(row=monthly_hdr_row, column=col_idx, value=h)
+style_header_row(ws_recap, row_num=monthly_hdr_row, col_start=2, col_end=10)
+
+for mi, month_num in enumerate(MONTH_ORDER):
+    r = monthly_hdr_row + 1 + mi
+    month_name = MONTH_NAMES_FR[month_num]
+    weeks_in_month = WEEKS_BY_MONTH[month_num]
+    last_week_in_month = f"S{weeks_in_month[-1]:02d}" if weeks_in_month else WEEK_NAMES[0]
+    first_week_in_month = f"S{weeks_in_month[0]:02d}" if weeks_in_month else WEEK_NAMES[0]
+
+    ws_recap.cell(row=r, column=2, value=f"{month_name} 2026")
+    ws_recap.cell(row=r, column=2).font = Font(name=FONT_NAME, size=11, bold=HEADER_BOLD, color=PRIMARY)
+    ws_recap.cell(row=r, column=3, value=f"S{weeks_in_month[0]:02d}-S{weeks_in_month[-1]:02d}" if weeks_in_month else "-")
+
+    # Avancement Physique Fin du mois = from last week of month
+    ws_recap.cell(row=r, column=4).value = f"='{last_week_in_month}'!N{tr_last}"
+    ws_recap.cell(row=r, column=4).number_format = '0.0%'
+
+    # Avancement Physique Début du mois = from first week of month (previous week)
+    if weeks_in_month[0] > 1:
+        prev_week = f"S{weeks_in_month[0] - 1:02d}"
+        ws_recap.cell(row=r, column=5).value = f"='{prev_week}'!N{tr_last}"
+    else:
+        ws_recap.cell(row=r, column=5, value=0)
+    ws_recap.cell(row=r, column=5).number_format = '0.0%'
+
+    # Accroissement Physique Mensuel = Fin - Début
+    ws_recap.cell(row=r, column=6).value = f"=D{r}-E{r}"
+    ws_recap.cell(row=r, column=6).number_format = '0.0%'
+
+    # Avancement Financier Fin du mois
+    ws_recap.cell(row=r, column=7).value = f"='{last_week_in_month}'!T{tr_last}"
+    ws_recap.cell(row=r, column=7).number_format = '0.0%'
+
+    # Accroissement Financier Mensuel
+    if weeks_in_month[0] > 1:
+        prev_week = f"S{weeks_in_month[0] - 1:02d}"
+        ws_recap.cell(row=r, column=8).value = f"='{last_week_in_month}'!T{tr_last}-'{prev_week}'!T{tr_last}"
+    else:
+        ws_recap.cell(row=r, column=8).value = f"='{last_week_in_month}'!T{tr_last}"
+    ws_recap.cell(row=r, column=8).number_format = '0.0%'
+
+    # Décaissé Fin du mois
+    ws_recap.cell(row=r, column=9).value = f"='{last_week_in_month}'!Q{tr_last}"
+    ws_recap.cell(row=r, column=9).number_format = '#,##0'
+
+    # Écart
+    ws_recap.cell(row=r, column=10).value = f"=D{r}-G{r}"
+    ws_recap.cell(row=r, column=10).number_format = '0.0%'
+
+    style_data_row(ws_recap, row_num=r, col_start=2, col_end=10, row_index=mi)
+    for col in range(4, 11):
+        ws_recap.cell(row=r, column=col).font = Font(name=FONT_NAME, size=11, color="008000")
+
+# Conditional formatting on monthly accr.
+md_start = monthly_hdr_row + 1
+md_end = monthly_hdr_row + 12
+for monthly_col in ['F', 'H']:
+    ws_recap.conditional_formatting.add(
+        f'{monthly_col}{md_start}:{monthly_col}{md_end}',
+        CellIsRule(operator='greaterThan', formula=['0'],
+                   font=CF_POSITIVE_FONT, fill=CF_POSITIVE_FILL)
+    )
+    ws_recap.conditional_formatting.add(
+        f'{monthly_col}{md_start}:{monthly_col}{md_end}',
+        CellIsRule(operator='lessThan', formula=['0'],
+                   font=CF_NEGATIVE_FONT, fill=CF_NEGATIVE_FILL)
+    )
+
+# ── Section 4: Résumé par Province ────────────────────────────
+prov_start = md_end + 3
 ws_recap.cell(row=prov_start, column=2, value="Résumé par Province")
 ws_recap.cell(row=prov_start, column=2).font = font_subheader()
 ws_recap.merge_cells(start_row=prov_start, start_column=2, end_row=prov_start, end_column=9)
@@ -895,7 +1025,7 @@ ws_recap.cell(row=prov_total_row, column=9).value = f"=E{prov_total_row}-G{prov_
 ws_recap.cell(row=prov_total_row, column=9).number_format = '0.0%'
 style_total_row(ws_recap, row_num=prov_total_row, col_start=2, col_end=9)
 
-# ── Section 4: Détail Unités Physiques par Province ──────────
+# ── Section 5: Détail Unités Physiques par Province ──────────
 units_start = prov_total_row + 3
 ws_recap.cell(row=units_start, column=2, value="Détail des Unités Physiques Utilisées")
 ws_recap.cell(row=units_start, column=2).font = font_subheader()
@@ -925,7 +1055,6 @@ for ui, (unite, indices) in enumerate(sorted(unit_groups.items())):
     ws_recap.cell(row=r, column=4).number_format = '#,##0'
 
     # Qté Réalisée Cumul (from last week sheet)
-    # Build SUMPRODUCT formula matching unité in column J
     ws_recap.cell(row=r, column=5).value = f'=SUMPRODUCT((\'{last_week}\'!J{DATA_ROW_START}:J{DATA_ROW_START+N-1}="{unite}")*\'{last_week}\'!M{DATA_ROW_START}:M{DATA_ROW_START+N-1})'
     ws_recap.cell(row=r, column=5).number_format = '#,##0.0'
 
@@ -947,7 +1076,7 @@ ws_recap.conditional_formatting.add(
                 color=ACCENT_POSITIVE, showValue=True)
 )
 
-RECAP_WIDTHS = {2: 24, 3: 12, 4: 18, 5: 18, 6: 18, 7: 18, 8: 18, 9: 16}
+RECAP_WIDTHS = {2: 24, 3: 14, 4: 18, 5: 18, 6: 18, 7: 18, 8: 18, 9: 16, 10: 16}
 for c, w in RECAP_WIDTHS.items():
     ws_recap.column_dimensions[get_column_letter(c)].width = w
 
@@ -963,14 +1092,16 @@ setup_sheet(ws_guide, title="Guide d'Utilisation du Canevas Hebdomadaire", last_
 
 guide_items = [
     ("CODE COULEUR", "Jaune = Saisie | Vert = Formule auto inter-feuille | Noir = Formule calculée | Bleu = Valeur saisie"),
-    ("SAISIE HEBDOMADAIRE", "Dans les feuilles S01-S04, saisissez uniquement les cellules jaunes : Qté Réalisée Semaine, Montants, Avancement Financier %, Observations"),
+    ("SAISIE HEBDOMADAIRE", f"Dans les feuilles S01-S{NUM_WEEKS:02d}, saisissez uniquement les cellules jaunes : Qté Réalisée Semaine, Montants, Avancement Financier %, Observations. Chaque feuille correspond à une semaine ISO de 2026 avec la date pré-remplie."),
+    ("52 SEMAINES 2026", f"Le classeur contient {NUM_WEEKS} feuilles hebdomadaires (S01 à S{NUM_WEEKS:02d}), couvrant toute l'année 2026. Les couleurs des onglets changent par mois pour faciliter la navigation."),
     ("INDICATEURS PHYSIQUES", "Chaque projet a une Unité (ml, km, m², m³, U) et une Qté Prévue définies dans 'Liste Projets'. L'Avancement Physique % est calculé automatiquement : Qté Réalisée Cumul / Qté Prévue"),
-    ("CUMUL AUTOMATIQUE", "La Qté Réalisée Cumul = Cumul sem. précédente + Qté réalisée cette semaine. Le lien entre semaines est automatique."),
-    ("AJOUTER SEMAINES", "Dupliquez S04, renommez en S05. Modifiez les formules des colonnes M (Cumul), O (% Préc.), U (% Fin. Préc.) pour référencer S04."),
+    ("CUMUL AUTOMATIQUE", "La Qté Réalisée Cumul = Cumul sem. précédente + Qté réalisée cette semaine. Le lien entre semaines est automatique (S02 référence S01, S03 référence S02, etc.)."),
+    ("SUIVI MENSUEL", f"L'onglet 'Récapitulatif' contient un Résumé Mensuel avec l'avancement en fin de mois, l'accroissement mensuel et l'écart physique-financier pour chaque mois de 2026. Les semaines de chaque mois sont indiquées (ex: S01-S04 pour Janvier)."),
     ("PROTECTION", "Cellules de référence et formules verrouillées. Mot de passe : ormvag2026"),
     ("MODIFIER UNITÉS/QTÉ", "Allez dans 'Liste Projets' pour modifier les Unités et Qté Prévue. Ces valeurs sont reportées dans les feuilles hebdomadaires."),
     ("FORMAT POURCENTAGE", "Saisir 0.25 pour 25%, 0.50 pour 50%, 1.00 pour 100%. Valeurs entre 0 et 1."),
     ("ÉCART PHYS.-FIN.", "Positif = le physique avance plus vite que le financier. Négatif = le financier avance plus vite. Problème si > 5% d'écart."),
+    ("DATES PRÉ-REMPLIES", f"Chaque feuille hebdomadaire a la date du lundi de la semaine pré-remplie dans la cellule C3. Par exemple, S24 correspond au 08/06/2026 - 14/06/2026."),
 ]
 
 for gi, (rubrique, desc) in enumerate(guide_items):

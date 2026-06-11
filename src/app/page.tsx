@@ -1022,8 +1022,8 @@ export default function Home() {
                     const XLSX = await import("xlsx");
                     const arrayBuffer = await file.arrayBuffer();
                     const workbook = XLSX.read(arrayBuffer, { type: "array" });
-                    // Try to find the latest weekly sheet (S04, S03, S02, S01) or fallback to first sheet
-                    const weekSheetNames = ["S04", "S03", "S02", "S01"];
+                    // Try to find the latest weekly sheet (S52 down to S01) or fallback to first sheet
+                    const weekSheetNames = Array.from({ length: 52 }, (_, i) => `S${String(52 - i).padStart(2, "0")}`);
                     let sheetName = weekSheetNames.find(n => workbook.SheetNames.includes(n)) || workbook.SheetNames[0];
                     const sheet = workbook.Sheets[sheetName];
                     const rows: Record<string, unknown>[] = XLSX.utils.sheet_to_json(sheet, { defval: "" });

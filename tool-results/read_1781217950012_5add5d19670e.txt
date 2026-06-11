@@ -1,0 +1,1008 @@
+     1→#!/usr/bin/env python3
+     2→"""
+     3→Canevas Hebdomadaire V2 - Suivi d'Exécution Physique et Financière
+     4→ORMVAG - Région du Gharb
+     5→Avec indicateurs physiques par prestation (linéaire, volume, nombre...)
+     6→L'avancement physique % est calculé automatiquement à partir des quantités.
+     7→"""
+     8→
+     9→import json
+    10→import sys
+    11→import os
+    12→import re
+    13→
+    14→# ── Skill imports ──────────────────────────────────────────────
+    15→XLSX_SKILL_DIR = "/home/z/my-project/skills/xlsx"
+    16→for sub in [XLSX_SKILL_DIR, os.path.join(XLSX_SKILL_DIR, "templates")]:
+    17→    if sub not in sys.path:
+    18→        sys.path.insert(0, sub)
+    19→
+    20→from openpyxl import Workbook
+    21→from openpyxl.styles import PatternFill, Font, Border, Side, Alignment, numbers, Protection
+    22→from openpyxl.utils import get_column_letter
+    23→from openpyxl.formatting.rule import CellIsRule, DataBarRule, ColorScaleRule
+    24→from openpyxl.worksheet.datavalidation import DataValidation
+    25→from copy import copy
+    26→from templates.base import (
+    27→    setup_sheet, style_header_row, style_data_row, style_total_row,
+    28→    font_title, font_header, font_subheader, font_body, font_caption, font_kpi, font_kpi_label,
+    29→    fill_header, fill_total, fill_data_row,
+    30→    border_header, border_total,
+    31→    align_title, align_header, align_number, align_text, align_date,
+    32→    COLUMN_WIDTHS, FORMATS, ROW_HEIGHTS,
+    33→    PRIMARY, PRIMARY_LIGHT, SECONDARY,
+    34→    ACCENT_POSITIVE, ACCENT_NEGATIVE, ACCENT_WARNING,
+    35→    NEUTRAL_900, NEUTRAL_600, NEUTRAL_200, NEUTRAL_100, NEUTRAL_0,
+    36→    HEADER_BOLD, FONT_NAME, HEADER_TEXT,
+    37→    CF_POSITIVE_FILL, CF_POSITIVE_FONT, CF_NEGATIVE_FILL, CF_NEGATIVE_FONT,
+    38→    CF_WARNING_FILL, CF_WARNING_FONT,
+    39→    auto_fit_columns,
+    40→)
+    41→
+    42→# Province colors from the GIS dashboard
+    43→PROVINCE_COLORS = {
+    44→    "Kénitra": "D4A017",
+    45→    "Sidi Kacem": "C76E7E",
+    46→    "Sidi Slimane": "5BB58A",
+    47→}
+    48→PROVINCE_FILLS = {
+    49→    "Kénitra": PatternFill("solid", fgColor="FFF8DC"),
+    50→    "Sidi Kacem": PatternFill("solid", fgColor="FFF0F3"),
+    51→    "Sidi Slimane": PatternFill("solid", fgColor="F0FFF4"),
+    52→}
+    53→
+    54→# ── Load project data ──────────────────────────────────────────
+    55→DATA_PATH = "/tmp/sig-gharb-extract/src/data/dashboard_data.json"
+    56→with open(DATA_PATH, "r", encoding="utf-8") as f:
+    57→    data = json.load(f)
+    58→projects = data["projects"]
+    59→N = len(projects)
+    60→
+    61→# ── Determine physical unit and estimated quantity per project ──
+    62→def infer_physical_indicator(consistance, rubrique, cout):
+    63→    """
+    64→    Infer the physical unit and an estimated planned quantity
+    65→    based on the consistance description and rubrique.
+    66→    Returns (unité, quantité_prévue_estimée)
+    67→    """
+    68→    c = (consistance or "").lower()
+    69→    r = (rubrique or "").lower()
+    70→    intitule = ""
+    71→
+    72→    # ── Canal / Collecteur / Curage → ml (linéaire) ─────────
+    73→    if any(kw in c for kw in ["curage des collecteurs", "curage du canal", "curage des canaux",
+    74→                                "curage des émissaires", "curage des emissaires",
+    75→                                "curage du collecteur", "canal d'assainissement",
+    76→                                "canaux d'assainissement"]):
+    77→        # Estimate: ~500-3000 DH/ml for canal work
+    78→        qte = max(100, round(cout / 2000))
+    79→        return ("ml", qte)
+    80→
+    81→    # ── Pistes agricoles → km ───────────────────────────────
+    82→    if any(kw in c for kw in ["pistes agricoles", "piste agricole"]):
+    83→        qte = max(1, round(cout / 500000))
+    84→        return ("km", qte)
+    85→
+    86→    # ── Canaux portés → ml ──────────────────────────────────
+    87→    if any(kw in c for kw in ["canaux porté", "canaux porte", "recalage"]):
+    88→        qte = max(50, round(cout / 3000))
+    89→        return ("ml", qte)
+    90→
+    91→    # ── Débitmètres → U (nombre d'équipements) ─────────────
+    92→    if "débitmètre" in c or "debitmetre" in c:
+    93→        # Count from description
+    94→        nums = re.findall(r'(\d+)\s*débitmètre', c)
+    95→        if nums:
+    96→            return ("U", int(nums[0]))
+    97→        if "sept" in c or "7" in c:
+    98→            return ("U", 7)
+    99→        if "trois" in c or "3" in c:
+   100→            return ("U", 3)
+   101→        if "quatre" in c or "4" in c:
+   102→            return ("U", 4)
+   103→        if "deux" in c or "2" in c:
+   104→            return ("U", 2)
+   105→        return ("U", 1)
+   106→
+   107→    # ── Moteurs électriques → U ────────────────────────────
+   108→    if "moteur" in c:
+   109→        nums = re.findall(r'(\d+)\s*moteur', c)
+   110→        if nums:
+   111→            return ("U", int(nums[0]))
+   112→        if "trois" in c:
+   113→            return ("U", 3)
+   114→        if "deux" in c:
+   115→            return ("U", 2)
+   116→        return ("U", 1)
+   117→
+   118→    # ── Pompes → U ─────────────────────────────────────────
+   119→    if "pompe" in c and "station" in c:
+   120→        nums = re.findall(r'(\d+)\s*pompe', c)
+   121→        if nums:
+   122→            return ("U", int(nums[0]))
+   123→        if "cinq" in c:
+   124→            return ("U", 5)
+   125→        return ("U", 1)
+   126→
+   127→    # ── Gabions / Reno → m³ ────────────────────────────────
+   128→    if "gabion" in c or "reno" in c:
+   129→        qte = max(10, round(cout / 1500))
+   130→        return ("m³", qte)
+   131→
+   132→    # ── Murs clôture → ml ──────────────────────────────────
+   133→    if "mur" in c and ("clôture" in c or "cloture" in c):
+   134→        # Extract meter count from description if available
+   135→        nums = re.findall(r'(\d+)\s*m', c)
+   136→        if nums:
+   137→            return ("ml", int(nums[0]))
+   138→        qte = max(20, round(cout / 3000))
+   139→        return ("ml", qte)
+   140→
+   141→    # ── Étanchéité / Génie civil locaux → m² ──────────────
+   142→    if "étanchéité" in c or "etanchéité" in c or "etanchéite" in c or "locaux" in c:
+   143→        qte = max(20, round(cout / 2000))
+   144→        return ("m²", qte)
+   145→
+   146→    # ── Ouvrages génie civil → U ──────────────────────────
+   147→    if "ouvrage" in c or "génie civil" in c or "genie civil" in c:
+   148→        qte = max(1, round(cout / 500000))
+   149→        return ("U", qte)
+   150→
+   151→    # ── Bornes → U ────────────────────────────────────────
+   152→    if "bornes" in c:
+   153→        return ("U", max(10, round(cout / 500)))
+   154→
+   155→    # ── Capteurs → U ──────────────────────────────────────
+   156→    if "capteur" in c:
+   157→        nums = re.findall(r'(\d+)', c)
+   158→        if nums:
+   159→            return ("U", int(nums[0]))
+   160→        return ("U", 1)
+   161→
+   162→    # ── Siphons / dalots / bâche → ml ─────────────────────
+   163→    if any(kw in c for kw in ["siphon", "dalot", "bâche", "bach", "prise"]):
+   164→        qte = max(10, round(cout / 3000))
+   165→        return ("ml", qte)
+   166→
+   167→    # ── Éclairage → U ─────────────────────────────────────
+   168→    if "éclairage" in c or "eclairage" in c:
+   169→        return ("U", 1)
+   170→
+   171→    # ── Contrôleurs → U ───────────────────────────────────
+   172→    if "contrôleur" in c or "controleur" in c:
+   173→        nums = re.findall(r'(\d+)', c)
+   174→        if nums:
+   175→            return ("U", int(nums[0]))
+   176→        return ("U", 1)
+   177→
+   178→    # ── Grilles → U ───────────────────────────────────────
+   179→    if "grille" in c:
+   180→        return ("U", 1)
+   181→
+   182→    # ── Stabilisation berge → ml ──────────────────────────
+   183→    if "berge" in c or "stabilisation" in c:
+   184→        qte = max(20, round(cout / 4000))
+   185→        return ("ml", qte)
+   186→
+   187→    # ── Expertise → U ─────────────────────────────────────
+   188→    if "expertise" in c:
+   189→        return ("U", 1)
+   190→
+   191→    # ── Default → U (unité) ──────────────────────────────
+   192→    return ("U", 1)
+   193→
+   194→
+   195→# Compute indicators for all projects
+   196→project_indicators = []
+   197→for p in projects:
+   198→    unite, qte_prevue = infer_physical_indicator(
+   199→        p.get("consistance", ""),
+   200→        p.get("intitule_rubrique", ""),
+   201→        p.get("cout", 0)
+   202→    )
+   203→    project_indicators.append((unite, qte_prevue))
+   204→
+   205→
+   206→# ═══════════════════════════════════════════════════════════════
+   207→# COLUMN LAYOUT FOR WEEKLY SHEETS
+   208→# ═══════════════════════════════════════════════════════════════
+   209→# Section A: Identification (B-I) - locked reference
+   210→# Section B: Indicateurs Physiques (J-P) - input + auto
+   211→# Section C: Indicateurs Financiers (Q-X) - input + auto
+   212→# Section D: Écart + Obs (Y-Z)
+   213→
+   214→WEEKLY_HEADERS = [
+   215→    # A: Identification
+   216→    "N°",                # B=2
+   217→    "Province",          # C=3
+   218→    "Commune",           # D=4
+   219→    "Rubrique",          # E=5
+   220→    "Intitulé Rubrique", # F=6
+   221→    "Projet",            # G=7
+   222→    "Consistance",       # H=8
+   223→    "Coût Total (DH)",   # I=9
+   224→    # B: Indicateurs Physiques
+   225→    "Unité",             # J=10
+   226→    "Qté Prévue",        # K=11
+   227→    "Qté Réalisée Sem.", # L=12  ← INPUT
+   228→    "Qté Réalisée Cumul",# M=13  ← AUTO
+   229→    "Avancement Physique %", # N=14  ← AUTO (M/K)
+   230→    "% Phys. Sem. Préc.", # O=15  ← AUTO (from prev sheet)
+   231→    "Accroissement Phys. %", # P=16  ← AUTO (N-O)
+   232→    # C: Indicateurs Financiers
+   233→    "Montant Décaissé (DH)", # Q=17  ← INPUT
+   234→    "Montant Payé (DH)",     # R=18  ← INPUT
+   235→    "Montant Ordonné (DH)",  # S=19  ← INPUT
+   236→    "Avancement Financier %", # T=20  ← INPUT
+   237→    "% Fin. Sem. Préc.",     # U=21  ← AUTO
+   238→    "Accroissement Fin. %",  # V=22  ← AUTO
+   239→    # D: Écart + Obs
+   240→    "Écart Phys.-Fin.",  # W=23  ← AUTO
+   241→    "Observations",      # X=24  ← INPUT
+   242→]
+   243→
+   244→COL_START = 2
+   245→COL_END = COL_START + len(WEEKLY_HEADERS) - 1  # X = 24
+   246→
+   247→# Column classifications
+   248→REF_COLS = list(range(2, 10))        # B-I: locked reference
+   249→REF_EDITABLE = [10, 11]              # J-K: Unité, Qté Prévue (editable in Liste Projets, locked in weekly)
+   250→PHYS_INPUT_COLS = [12]               # L: Qté Réalisée Sem.
+   251→PHYS_AUTO_COLS = [13, 14, 15, 16]    # M, N, O, P
+   252→FIN_INPUT_COLS = [17, 18, 19, 20]    # Q, R, S, T
+   253→FIN_AUTO_COLS = [21, 22]             # U, V
+   254→ECART_AUTO = [23]                    # W
+   255→OBS_INPUT = [24]                     # X
+   256→
+   257→ALL_INPUT_COLS = PHYS_INPUT_COLS + FIN_INPUT_COLS + OBS_INPUT  # [12, 17, 18, 19, 20, 24]
+   258→ALL_AUTO_COLS = PHYS_AUTO_COLS + FIN_AUTO_COLS + ECART_AUTO    # [13,14,15,16,21,22,23]
+   259→
+   260→WEEKLY_WIDTHS = {
+   261→    2: 5, 3: 14, 4: 18, 5: 9, 6: 32, 7: 28, 8: 34, 9: 14,
+   262→    10: 8, 11: 12, 12: 14, 13: 14, 14: 14, 15: 14, 16: 14,
+   263→    17: 16, 18: 16, 19: 16, 20: 14, 21: 14, 22: 14,
+   264→    23: 14, 24: 24,
+   265→}
+   266→
+   267→DATA_ROW_START = 5
+   268→NUM_WEEKS = 4
+   269→WEEK_NAMES = [f"S{w:02d}" for w in range(1, NUM_WEEKS + 1)]
+   270→
+   271→# ── Section header rows (row 3 is used for section group labels) ──
+   272→# We'll use a merged section header above the column headers
+   273→
+   274→
+   275→# ═══════════════════════════════════════════════════════════════
+   276→# Create Workbook
+   277→# ═══════════════════════════════════════════════════════════════
+   278→wb = Workbook()
+   279→wb.properties.creator = "Z.ai"
+   280→
+   281→
+   282→# ═══════════════════════════════════════════════════════════════
+   283→# SHEET 1: Liste Projets (Master Reference)
+   284→# ═══════════════════════════════════════════════════════════════
+   285→ws_ref = wb.active
+   286→ws_ref.title = "Liste Projets"
+   287→LAST_REF_COL = 11  # up to K
+   288→
+   289→REF_HEADERS = [
+   290→    "N°", "Province", "Commune", "Rubrique", "Intitulé Rubrique",
+   291→    "Projet", "Consistance", "Coût Total (DH)",
+   292→    "Unité", "Qté Prévue"
+   293→]
+   294→
+   295→setup_sheet(ws_ref, title="Liste Référentielle des Projets - Indicateurs Physiques", last_col=LAST_REF_COL)
+   296→
+   297→# Section label row (row 3)
+   298→ws_ref.cell(row=3, column=2, value="Identification")
+   299→ws_ref.cell(row=3, column=2).font = Font(name=FONT_NAME, size=9, bold=True, color=NEUTRAL_600)
+   300→ws_ref.merge_cells(start_row=3, start_column=2, end_row=3, end_column=9)
+   301→ws_ref.cell(row=3, column=10, value="Indicateurs Physiques")
+   302→ws_ref.cell(row=3, column=10).font = Font(name=FONT_NAME, size=9, bold=True, color=ACCENT_POSITIVE)
+   303→ws_ref.merge_cells(start_row=3, start_column=10, end_row=3, end_column=11)
+   304→
+   305→# Headers
+   306→for col_idx, h in enumerate(REF_HEADERS, start=2):
+   307→    ws_ref.cell(row=4, column=col_idx, value=h)
+   308→style_header_row(ws_ref, row_num=4, col_start=2, col_end=LAST_REF_COL)
+   309→
+   310→for i, p in enumerate(projects):
+   311→    r = DATA_ROW_START + i
+   312→    unite, qte = project_indicators[i]
+   313→
+   314→    ws_ref.cell(row=r, column=2, value=i + 1)
+   315→    ws_ref.cell(row=r, column=3, value=p["province"])
+   316→    ws_ref.cell(row=r, column=4, value=p["commune"])
+   317→    ws_ref.cell(row=r, column=5, value=p["rubrique"])
+   318→    ws_ref.cell(row=r, column=6, value=p["intitule_rubrique"])
+   319→    ws_ref.cell(row=r, column=7, value=p.get("intitule_projet", ""))
+   320→    ws_ref.cell(row=r, column=8, value=p["consistance"])
+   321→    ws_ref.cell(row=r, column=9, value=p["cout"])
+   322→    ws_ref.cell(row=r, column=9).number_format = '#,##0'
+   323→    ws_ref.cell(row=r, column=10, value=unite)
+   324→    ws_ref.cell(row=r, column=11, value=qte)
+   325→    ws_ref.cell(row=r, column=11).number_format = '#,##0'
+   326→
+   327→    style_data_row(ws_ref, row_num=r, col_start=2, col_end=LAST_REF_COL, row_index=i)
+   328→
+   329→    # Province color accent
+   330→    prov = p["province"]
+   331→    if prov in PROVINCE_FILLS:
+   332→        ws_ref.cell(row=r, column=3).fill = PROVINCE_FILLS[prov]
+   333→        ws_ref.cell(row=r, column=3).font = Font(name=FONT_NAME, size=11, bold=HEADER_BOLD, color=PROVINCE_COLORS.get(prov, NEUTRAL_900))
+   334→
+   335→    # Unité + Qté Prévue in green accent
+   336→    ws_ref.cell(row=r, column=10).font = Font(name=FONT_NAME, size=11, bold=HEADER_BOLD, color=ACCENT_POSITIVE)
+   337→    ws_ref.cell(row=r, column=11).font = Font(name=FONT_NAME, size=11, bold=HEADER_BOLD, color=ACCENT_POSITIVE)
+   338→
+   339→# Totals
+   340→tr = DATA_ROW_START + N
+   341→ws_ref.cell(row=tr, column=2, value="TOTAL")
+   342→ws_ref.cell(row=tr, column=9).value = f"=SUM(I{DATA_ROW_START}:I{tr - 1})"
+   343→ws_ref.cell(row=tr, column=9).number_format = '#,##0'
+   344→style_total_row(ws_ref, row_num=tr, col_start=2, col_end=LAST_REF_COL)
+   345→
+   346→REF_WIDTHS = {2: 5, 3: 14, 4: 18, 5: 9, 6: 32, 7: 28, 8: 34, 9: 14, 10: 8, 11: 12}
+   347→for c, w in REF_WIDTHS.items():
+   348→    ws_ref.column_dimensions[get_column_letter(c)].width = w
+   349→
+   350→ws_ref.freeze_panes = "C5"
+   351→ws_ref.sheet_properties.tabColor = PRIMARY
+   352→
+   353→
+   354→# ═══════════════════════════════════════════════════════════════
+   355→# SHEETS S01-S04: Weekly Entry Sheets
+   356→# ═══════════════════════════════════════════════════════════════
+   357→for week_idx, week_name in enumerate(WEEK_NAMES):
+   358→    ws = wb.create_sheet(title=week_name)
+   359→
+   360→    week_label = f"Semaine {week_idx + 1}"
+   361→    title_text = f"Suivi Hebdomadaire - {week_label} - Exécution Physique et Financière"
+   362→    setup_sheet(ws, title=title_text, last_col=COL_END)
+   363→
+   364→    # Row 3: Section group labels + date input
+   365→    ws.row_dimensions[3].height = 22
+   366→
+   367→    # Date input
+   368→    ws.cell(row=3, column=2, value="Date :")
+   369→    ws.cell(row=3, column=2).font = Font(name=FONT_NAME, size=10, bold=HEADER_BOLD, color=PRIMARY)
+   370→    ws.merge_cells(start_row=3, start_column=3, end_row=3, end_column=4)
+   371→    date_cell = ws.cell(row=3, column=3)
+   372→    date_cell.number_format = 'YYYY-MM-DD'
+   373→    date_cell.font = Font(name=FONT_NAME, size=11, color="0000FF")
+   374→    date_cell.fill = PatternFill("solid", fgColor="FFFFCC")
+   375→    date_cell.protection = Protection(locked=False)
+   376→
+   377→    # Section headers (visual grouping)
+   378→    # Identification: B-I
+   379→    ws.merge_cells(start_row=3, start_column=5, end_row=3, end_column=9)
+   380→    ws.cell(row=3, column=5, value="IDENTIFICATION")
+   381→    ws.cell(row=3, column=5).font = Font(name=FONT_NAME, size=9, bold=True, color=NEUTRAL_600)
+   382→    ws.cell(row=3, column=5).alignment = Alignment(horizontal="center")
+   383→
+   384→    # Indicateurs Physiques: J-P
+   385→    ws.merge_cells(start_row=3, start_column=10, end_row=3, end_column=16)
+   386→    ws.cell(row=3, column=10, value="INDICATEURS PHYSIQUES")
+   387→    ws.cell(row=3, column=10).font = Font(name=FONT_NAME, size=9, bold=True, color=ACCENT_POSITIVE)
+   388→    ws.cell(row=3, column=10).alignment = Alignment(horizontal="center")
+   389→    ws.cell(row=3, column=10).fill = PatternFill("solid", fgColor="E8F5E9")
+   390→
+   391→    # Indicateurs Financiers: Q-V
+   392→    ws.merge_cells(start_row=3, start_column=17, end_row=3, end_column=22)
+   393→    ws.cell(row=3, column=17, value="INDICATEURS FINANCIERS")
+   394→    ws.cell(row=3, column=17).font = Font(name=FONT_NAME, size=9, bold=True, color=ACCENT_WARNING)
+   395→    ws.cell(row=3, column=17).alignment = Alignment(horizontal="center")
+   396→    ws.cell(row=3, column=17).fill = PatternFill("solid", fgColor="FEF9E7")
+   397→
+   398→    # Écart + Obs: W-X
+   399→    ws.merge_cells(start_row=3, start_column=23, end_row=3, end_column=24)
+   400→    ws.cell(row=3, column=23, value="SYNTHÈSE")
+   401→    ws.cell(row=3, column=23).font = Font(name=FONT_NAME, size=9, bold=True, color=ACCENT_NEGATIVE)
+   402→    ws.cell(row=3, column=23).alignment = Alignment(horizontal="center")
+   403→    ws.cell(row=3, column=23).fill = PatternFill("solid", fgColor="FDEDEC")
+   404→
+   405→    # Column headers (row 4)
+   406→    for col_idx, h in enumerate(WEEKLY_HEADERS, start=COL_START):
+   407→        ws.cell(row=4, column=col_idx, value=h)
+   408→    style_header_row(ws, row_num=4, col_start=COL_START, col_end=COL_END)
+   409→
+   410→    # Sub-color the physical columns header in green tint
+   411→    for c in range(10, 17):
+   412→        cell = ws.cell(row=4, column=c)
+   413→        cell.fill = PatternFill("solid", fgColor="1B7D46")  # Darker green for physical header
+   414→        cell.font = Font(name=FONT_NAME, size=11, bold=HEADER_BOLD, color="FFFFFF")
+   415→
+   416→    # Sub-color the financial columns header in amber tint
+   417→    for c in range(17, 23):
+   418→        cell = ws.cell(row=4, column=c)
+   419→        cell.fill = PatternFill("solid", fgColor="B8650A")  # Darker amber for financial header
+   420→        cell.font = Font(name=FONT_NAME, size=11, bold=HEADER_BOLD, color="FFFFFF")
+   421→
+   422→    # Écart + Obs header
+   423→    for c in [23, 24]:
+   424→        cell = ws.cell(row=4, column=c)
+   425→        cell.fill = PatternFill("solid", fgColor="A0322B")  # Darker red
+   426→        cell.font = Font(name=FONT_NAME, size=11, bold=HEADER_BOLD, color="FFFFFF")
+   427→
+   428→    # ── Data rows ──────────────────────────────────────────────
+   429→    for i, p in enumerate(projects):
+   430→        r = DATA_ROW_START + i
+   431→        unite, qte = project_indicators[i]
+   432→
+   433→        # A: Identification (B-I) - locked reference
+   434→        ws.cell(row=r, column=2, value=i + 1)
+   435→        ws.cell(row=r, column=3, value=p["province"])
+   436→        ws.cell(row=r, column=4, value=p["commune"])
+   437→        ws.cell(row=r, column=5, value=p["rubrique"])
+   438→        ws.cell(row=r, column=6, value=p["intitule_rubrique"])
+   439→        ws.cell(row=r, column=7, value=p.get("intitule_projet", ""))
+   440→        ws.cell(row=r, column=8, value=p["consistance"])
+   441→        ws.cell(row=r, column=9, value=p["cout"])
+   442→        ws.cell(row=r, column=9).number_format = '#,##0'
+   443→
+   444→        # B: Indicateurs Physiques
+   445→        # J=10: Unité (reference from Liste Projets)
+   446→        ws.cell(row=r, column=10, value=unite)
+   447→        ws.cell(row=r, column=10).font = Font(name=FONT_NAME, size=11, color=ACCENT_POSITIVE)
+   448→
+   449→        # K=11: Qté Prévue (reference from Liste Projets)
+   450→        ws.cell(row=r, column=11, value=qte)
+   451→        ws.cell(row=r, column=11).number_format = '#,##0'
+   452→        ws.cell(row=r, column=11).font = Font(name=FONT_NAME, size=11, color=ACCENT_POSITIVE)
+   453→
+   454→        # L=12: Qté Réalisée Semaine ← INPUT
+   455→        ws.cell(row=r, column=12).number_format = '#,##0.0'
+   456→        ws.cell(row=r, column=12).fill = PatternFill("solid", fgColor="FFFFCC")
+   457→        ws.cell(row=r, column=12).font = Font(name=FONT_NAME, size=11, color="0000FF")
+   458→
+   459→        # M=13: Qté Réalisée Cumul ← AUTO
+   460→        if week_idx == 0:
+   461→            # First week: cumulative = this week's realization
+   462→            ws.cell(row=r, column=13).value = f"=L{r}"
+   463→        else:
+   464→            prev_sheet = WEEK_NAMES[week_idx - 1]
+   465→            ws.cell(row=r, column=13).value = f"='{prev_sheet}'!M{r}+L{r}"
+   466→            ws.cell(row=r, column=13).font = Font(name=FONT_NAME, size=11, color="008000")
+   467→        ws.cell(row=r, column=13).number_format = '#,##0.0'
+   468→
+   469→        # N=14: Avancement Physique % ← AUTO = M/K
+   470→        ws.cell(row=r, column=14).value = f"=IFERROR(M{r}/K{r},0)"
+   471→        ws.cell(row=r, column=14).number_format = '0.0%'
+   472→
+   473→        # O=15: % Physique Sem. Préc. ← AUTO
+   474→        if week_idx == 0:
+   475→            ws.cell(row=r, column=15, value=0)
+   476→        else:
+   477→            prev_sheet = WEEK_NAMES[week_idx - 1]
+   478→            ws.cell(row=r, column=15).value = f"='{prev_sheet}'!N{r}"
+   479→            ws.cell(row=r, column=15).font = Font(name=FONT_NAME, size=11, color="008000")
+   480→        ws.cell(row=r, column=15).number_format = '0.0%'
+   481→
+   482→        # P=16: Accroissement Physique % ← AUTO = N - O
+   483→        ws.cell(row=r, column=16).value = f"=N{r}-O{r}"
+   484→        ws.cell(row=r, column=16).number_format = '0.0%'
+   485→
+   486→        # C: Indicateurs Financiers
+   487→        # Q=17: Montant Décaissé ← INPUT
+   488→        ws.cell(row=r, column=17).number_format = '#,##0'
+   489→        ws.cell(row=r, column=17).fill = PatternFill("solid", fgColor="FFFFCC")
+   490→        ws.cell(row=r, column=17).font = Font(name=FONT_NAME, size=11, color="0000FF")
+   491→
+   492→        # R=18: Montant Payé ← INPUT
+   493→        ws.cell(row=r, column=18).number_format = '#,##0'
+   494→        ws.cell(row=r, column=18).fill = PatternFill("solid", fgColor="FFFFCC")
+   495→        ws.cell(row=r, column=18).font = Font(name=FONT_NAME, size=11, color="0000FF")
+   496→
+   497→        # S=19: Montant Ordonné ← INPUT
+   498→        ws.cell(row=r, column=19).number_format = '#,##0'
+   499→        ws.cell(row=r, column=19).fill = PatternFill("solid", fgColor="FFFFCC")
+   500→        ws.cell(row=r, column=19).font = Font(name=FONT_NAME, size=11, color="0000FF")
+   501→
+   502→        # T=20: Avancement Financier % ← INPUT
+   503→        ws.cell(row=r, column=20).number_format = '0.0%'
+   504→        ws.cell(row=r, column=20).fill = PatternFill("solid", fgColor="FFFFCC")
+   505→        ws.cell(row=r, column=20).font = Font(name=FONT_NAME, size=11, color="0000FF")
+   506→
+   507→        # U=21: % Financier Sem. Préc. ← AUTO
+   508→        if week_idx == 0:
+   509→            ws.cell(row=r, column=21, value=0)
+   510→        else:
+   511→            prev_sheet = WEEK_NAMES[week_idx - 1]
+   512→            ws.cell(row=r, column=21).value = f"='{prev_sheet}'!T{r}"
+   513→            ws.cell(row=r, column=21).font = Font(name=FONT_NAME, size=11, color="008000")
+   514→        ws.cell(row=r, column=21).number_format = '0.0%'
+   515→
+   516→        # V=22: Accroissement Financier % ← AUTO
+   517→        ws.cell(row=r, column=22).value = f"=T{r}-U{r}"
+   518→        ws.cell(row=r, column=22).number_format = '0.0%'
+   519→
+   520→        # D: Écart + Obs
+   521→        # W=23: Écart Phys.-Fin. ← AUTO
+   522→        ws.cell(row=r, column=23).value = f"=N{r}-T{r}"
+   523→        ws.cell(row=r, column=23).number_format = '0.0%'
+   524→
+   525→        # X=24: Observations ← INPUT
+   526→        ws.cell(row=r, column=24).fill = PatternFill("solid", fgColor="FFFFCC")
+   527→        ws.cell(row=r, column=24).font = Font(name=FONT_NAME, size=11, color="0000FF")
+   528→
+   529→        # ── Base styling ────────────────────────────────────────
+   530→        style_data_row(ws, row_num=r, col_start=COL_START, col_end=COL_END, row_index=i)
+   531→
+   532→        # Province color accent on column C
+   533→        prov = p["province"]
+   534→        if prov in PROVINCE_FILLS:
+   535→            ws.cell(row=r, column=3).fill = PROVINCE_FILLS[prov]
+   536→            ws.cell(row=r, column=3).font = Font(name=FONT_NAME, size=11, bold=HEADER_BOLD, color=PROVINCE_COLORS.get(prov, NEUTRAL_900))
+   537→
+   538→        # Re-apply INPUT cell styling (overwritten by style_data_row)
+   539→        for ic in ALL_INPUT_COLS:
+   540→            c_cell = ws.cell(row=r, column=ic)
+   541→            c_cell.fill = PatternFill("solid", fgColor="FFFFCC")
+   542→            c_cell.font = Font(name=FONT_NAME, size=11, color="0000FF")
+   543→
+   544→        # Re-apply AUTO cell styling
+   545→        for ac in ALL_AUTO_COLS:
+   546→            c_cell = ws.cell(row=r, column=ac)
+   547→            c_cell.font = font_body()
+   548→
+   549→        # Cross-sheet ref styling for cumulative & sem. préc.
+   550→        if week_idx > 0:
+   551→            ws.cell(row=r, column=13).font = Font(name=FONT_NAME, size=11, color="008000")
+   552→            ws.cell(row=r, column=15).font = Font(name=FONT_NAME, size=11, color="008000")
+   553→            ws.cell(row=r, column=21).font = Font(name=FONT_NAME, size=11, color="008000")
+   554→
+   555→        # Unité + Qté Prévue in green
+   556→        ws.cell(row=r, column=10).font = Font(name=FONT_NAME, size=11, color=ACCENT_POSITIVE)
+   557→        ws.cell(row=r, column=11).font = Font(name=FONT_NAME, size=11, color=ACCENT_POSITIVE)
+   558→
+   559→        # Number formats (re-apply after style_data_row)
+   560→        ws.cell(row=r, column=9).number_format = '#,##0'
+   561→        ws.cell(row=r, column=11).number_format = '#,##0'
+   562→        ws.cell(row=r, column=12).number_format = '#,##0.0'
+   563→        ws.cell(row=r, column=13).number_format = '#,##0.0'
+   564→        for pct_col in [14, 15, 16, 20, 21, 22, 23]:
+   565→            ws.cell(row=r, column=pct_col).number_format = '0.0%'
+   566→        for amt_col in [17, 18, 19]:
+   567→            ws.cell(row=r, column=amt_col).number_format = '#,##0'
+   568→
+   569→    # ── Totals row ─────────────────────────────────────────────
+   570→    total_r = DATA_ROW_START + N
+   571→    ws.cell(row=total_r, column=2, value="TOTAL")
+   572→
+   573→    # Coût total
+   574→    ws.cell(row=total_r, column=9).value = f"=SUM(I{DATA_ROW_START}:I{total_r - 1})"
+   575→    ws.cell(row=total_r, column=9).number_format = '#,##0'
+   576→
+   577→    # Qté Réalisée Semaine
+   578→    ws.cell(row=total_r, column=12).value = f"=SUM(L{DATA_ROW_START}:L{total_r - 1})"
+   579→    ws.cell(row=total_r, column=12).number_format = '#,##0.0'
+   580→
+   581→    # Qté Réalisée Cumul
+   582→    ws.cell(row=total_r, column=13).value = f"=SUM(M{DATA_ROW_START}:M{total_r - 1})"
+   583→    ws.cell(row=total_r, column=13).number_format = '#,##0.0'
+   584→
+   585→    # Avancement Physique % (weighted by cost)
+   586→    ws.cell(row=total_r, column=14).value = f'=IFERROR(SUMPRODUCT(N{DATA_ROW_START}:N{total_r-1},I{DATA_ROW_START}:I{total_r-1})/I{total_r},0)'
+   587→    ws.cell(row=total_r, column=14).number_format = '0.0%'
+   588→
+   589→    # % Physique Sem. Préc. (weighted)
+   590→    ws.cell(row=total_r, column=15).value = f'=IFERROR(SUMPRODUCT(O{DATA_ROW_START}:O{total_r-1},I{DATA_ROW_START}:I{total_r-1})/I{total_r},0)'
+   591→    ws.cell(row=total_r, column=15).number_format = '0.0%'
+   592→
+   593→    # Accroissement Physique %
+   594→    ws.cell(row=total_r, column=16).value = f"=N{total_r}-O{total_r}"
+   595→    ws.cell(row=total_r, column=16).number_format = '0.0%'
+   596→
+   597→    # Montant Décaissé
+   598→    ws.cell(row=total_r, column=17).value = f"=SUM(Q{DATA_ROW_START}:Q{total_r - 1})"
+   599→    ws.cell(row=total_r, column=17).number_format = '#,##0'
+   600→
+   601→    # Montant Payé
+   602→    ws.cell(row=total_r, column=18).value = f"=SUM(R{DATA_ROW_START}:R{total_r - 1})"
+   603→    ws.cell(row=total_r, column=18).number_format = '#,##0'
+   604→
+   605→    # Montant Ordonné
+   606→    ws.cell(row=total_r, column=19).value = f"=SUM(S{DATA_ROW_START}:S{total_r - 1})"
+   607→    ws.cell(row=total_r, column=19).number_format = '#,##0'
+   608→
+   609→    # Avancement Financier % (weighted)
+   610→    ws.cell(row=total_r, column=20).value = f'=IFERROR(SUMPRODUCT(T{DATA_ROW_START}:T{total_r-1},I{DATA_ROW_START}:I{total_r-1})/I{total_r},0)'
+   611→    ws.cell(row=total_r, column=20).number_format = '0.0%'
+   612→
+   613→    # % Financier Sem. Préc. (weighted)
+   614→    ws.cell(row=total_r, column=21).value = f'=IFERROR(SUMPRODUCT(U{DATA_ROW_START}:U{total_r-1},I{DATA_ROW_START}:I{total_r-1})/I{total_r},0)'
+   615→    ws.cell(row=total_r, column=21).number_format = '0.0%'
+   616→
+   617→    # Accroissement Financier %
+   618→    ws.cell(row=total_r, column=22).value = f"=T{total_r}-U{total_r}"
+   619→    ws.cell(row=total_r, column=22).number_format = '0.0%'
+   620→
+   621→    # Écart
+   622→    ws.cell(row=total_r, column=23).value = f"=N{total_r}-T{total_r}"
+   623→    ws.cell(row=total_r, column=23).number_format = '0.0%'
+   624→
+   625→    style_total_row(ws, row_num=total_r, col_start=COL_START, col_end=COL_END)
+   626→
+   627→    # ── Conditional formatting ──────────────────────────────────
+   628→    # Accroissement Physique (P=16): green > 0, red < 0
+   629→    ws.conditional_formatting.add(
+   630→        f'P{DATA_ROW_START}:P{total_r - 1}',
+   631→        CellIsRule(operator='greaterThan', formula=['0'],
+   632→                   font=CF_POSITIVE_FONT, fill=CF_POSITIVE_FILL)
+   633→    )
+   634→    ws.conditional_formatting.add(
+   635→        f'P{DATA_ROW_START}:P{total_r - 1}',
+   636→        CellIsRule(operator='lessThan', formula=['0'],
+   637→                   font=CF_NEGATIVE_FONT, fill=CF_NEGATIVE_FILL)
+   638→    )
+   639→
+   640→    # Accroissement Financier (V=22)
+   641→    ws.conditional_formatting.add(
+   642→        f'V{DATA_ROW_START}:V{total_r - 1}',
+   643→        CellIsRule(operator='greaterThan', formula=['0'],
+   644→                   font=CF_POSITIVE_FONT, fill=CF_POSITIVE_FILL)
+   645→    )
+   646→    ws.conditional_formatting.add(
+   647→        f'V{DATA_ROW_START}:V{total_r - 1}',
+   648→        CellIsRule(operator='lessThan', formula=['0'],
+   649→                   font=CF_NEGATIVE_FONT, fill=CF_NEGATIVE_FILL)
+   650→    )
+   651→
+   652→    # Écart Phys.-Fin. (W=23)
+   653→    ws.conditional_formatting.add(
+   654→        f'W{DATA_ROW_START}:W{total_r - 1}',
+   655→        CellIsRule(operator='greaterThan', formula=['0.05'],
+   656→                   font=CF_POSITIVE_FONT, fill=CF_POSITIVE_FILL)
+   657→    )
+   658→    ws.conditional_formatting.add(
+   659→        f'W{DATA_ROW_START}:W{total_r - 1}',
+   660→        CellIsRule(operator='lessThan', formula=['-0.05'],
+   661→                   font=CF_NEGATIVE_FONT, fill=CF_NEGATIVE_FILL)
+   662→    )
+   663→    ws.conditional_formatting.add(
+   664→        f'W{DATA_ROW_START}:W{total_r - 1}',
+   665→        CellIsRule(operator='between', formula=['-0.05', '0.05'],
+   666→                   font=CF_WARNING_FONT, fill=CF_WARNING_FILL)
+   667→    )
+   668→
+   669→    # Data bars on Avancement Physique % (N=14)
+   670→    ws.conditional_formatting.add(
+   671→        f'N{DATA_ROW_START}:N{total_r - 1}',
+   672→        DataBarRule(start_type='num', start_value=0, end_type='num', end_value=1,
+   673→                    color=ACCENT_POSITIVE, showValue=True)
+   674→    )
+   675→
+   676→    # Data bars on Avancement Financier % (T=20)
+   677→    ws.conditional_formatting.add(
+   678→        f'T{DATA_ROW_START}:T{total_r - 1}',
+   679→        DataBarRule(start_type='num', start_value=0, end_type='num', end_value=1,
+   680→                    color=ACCENT_WARNING, showValue=True)
+   681→    )
+   682→
+   683→    # ── Data validation ────────────────────────────────────────
+   684→    # % validation (0-100%)
+   685→    dv_pct = DataValidation(type="decimal", operator="between", formula1=0, formula2=1, allow_blank=True)
+   686→    dv_pct.error = "Valeur entre 0% et 100%"
+   687→    dv_pct.errorTitle = "Invalide"
+   688→    dv_pct.prompt = "Entrez 0.25 pour 25%"
+   689→    dv_pct.promptTitle = "Avancement %"
+   690→    ws.add_data_validation(dv_pct)
+   691→    dv_pct.add(f'T{DATA_ROW_START}:T{total_r - 1}')
+   692→
+   693→    # Quantity validation (>=0)
+   694→    dv_qte = DataValidation(type="decimal", operator="greaterThanOrEqual", formula1=0, allow_blank=True)
+   695→    dv_qte.error = "Quantité doit être >= 0"
+   696→    dv_qte.errorTitle = "Invalide"
+   697→    dv_qte.prompt = "Entrez la quantité réalisée cette semaine"
+   698→    dv_qte.promptTitle = "Qté Réalisée"
+   699→    ws.add_data_validation(dv_qte)
+   700→    dv_qte.add(f'L{DATA_ROW_START}:L{total_r - 1}')
+   701→
+   702→    # ── Column widths ──────────────────────────────────────────
+   703→    for c, w in WEEKLY_WIDTHS.items():
+   704→        ws.column_dimensions[get_column_letter(c)].width = w
+   705→
+   706→    # ── Freeze panes ───────────────────────────────────────────
+   707→    ws.freeze_panes = "C5"
+   708→
+   709→    # ── Protection ─────────────────────────────────────────────
+   710→    ws.protection.sheet = True
+   711→    ws.protection.password = 'ormvag2026'
+   712→    for i in range(N):
+   713→        r = DATA_ROW_START + i
+   714→        # Lock reference + auto cols
+   715→        for c in REF_COLS + REF_EDITABLE + ALL_AUTO_COLS:
+   716→            ws.cell(row=r, column=c).protection = Protection(locked=True)
+   717→        # Unlock input cols
+   718→        for c in ALL_INPUT_COLS:
+   719→            ws.cell(row=r, column=c).protection = Protection(locked=False)
+   720→
+   721→    ws.cell(row=3, column=3).protection = Protection(locked=False)
+   722→
+   723→    # Tab colors
+   724→    tab_colors = ["4472C4", "ED7D31", "70AD47", "FFC000"]
+   725→    ws.sheet_properties.tabColor = tab_colors[week_idx % len(tab_colors)]
+   726→
+   727→
+   728→# ═══════════════════════════════════════════════════════════════
+   729→# SHEET: Récapitulatif Hebdomadaire
+   730→# ═══════════════════════════════════════════════════════════════
+   731→ws_recap = wb.create_sheet(title="Récapitulatif")
+   732→LAST_RECAP_COL = 14
+   733→
+   734→setup_sheet(ws_recap, title="Récapitulatif Hebdomadaire - Suivi d'Exécution", last_col=LAST_RECAP_COL)
+   735→
+   736→last_week = WEEK_NAMES[-1]
+   737→tr_last = DATA_ROW_START + N
+   738→
+   739→# ── Section 1: KPI ────────────────────────────────────────────
+   740→kpi_labels = ["Indicateur", "Valeur"]
+   741→for col_idx, label in enumerate(kpi_labels, start=2):
+   742→    ws_recap.cell(row=4, column=col_idx, value=label)
+   743→style_header_row(ws_recap, row_num=4, col_start=2, col_end=3)
+   744→
+   745→kpi_data = [
+   746→    ("Total Projets", N),
+   747→    ("Coût Total (DH)", f"='{last_week}'!I{tr_last}"),
+   748→    ("Avancement Physique Moy. %", f"='{last_week}'!N{tr_last}"),
+   749→    ("Avancement Financier Moy. %", f"='{last_week}'!T{tr_last}"),
+   750→    ("Montant Décaissé Total (DH)", f"='{last_week}'!Q{tr_last}"),
+   751→    ("Montant Payé Total (DH)", f"='{last_week}'!R{tr_last}"),
+   752→    ("Écart Physique-Financier", f"='{last_week}'!W{tr_last}"),
+   753→]
+   754→
+   755→for ki, (label, val) in enumerate(kpi_data):
+   756→    r = 5 + ki
+   757→    ws_recap.cell(row=r, column=2, value=label)
+   758→    ws_recap.cell(row=r, column=2).font = font_body()
+   759→    ws_recap.cell(row=r, column=3, value=val)
+   760→    ws_recap.cell(row=r, column=3).font = font_kpi()
+   761→    ws_recap.cell(row=r, column=3).alignment = align_number()
+   762→    if "%" in label:
+   763→        ws_recap.cell(row=r, column=3).number_format = '0.0%'
+   764→    elif "DH" in label:
+   765→        ws_recap.cell(row=r, column=3).number_format = '#,##0'
+   766→    ws_recap.cell(row=r, column=3).font = Font(name=FONT_NAME, size=11, color="008000")
+   767→
+   768→# ── Section 2: Évolution Hebdomadaire ─────────────────────────
+   769→trend_start = 14
+   770→ws_recap.cell(row=trend_start, column=2, value="Évolution Hebdomadaire")
+   771→ws_recap.cell(row=trend_start, column=2).font = font_subheader()
+   772→ws_recap.merge_cells(start_row=trend_start, start_column=2, end_row=trend_start, end_column=9)
+   773→
+   774→trend_hdr_row = trend_start + 1
+   775→trend_headers = [
+   776→    "Semaine", "Avanc. Phys. %", "Accroiss. Phys. %",
+   777→    "Qté Réalisée Cumul", "Avanc. Fin. %", "Accroiss. Fin. %",
+   778→    "Décaissé (DH)", "Écart Phys.-Fin."
+   779→]
+   780→
+   781→for col_idx, h in enumerate(trend_headers, start=2):
+   782→    ws_recap.cell(row=trend_hdr_row, column=col_idx, value=h)
+   783→style_header_row(ws_recap, row_num=trend_hdr_row, col_start=2, col_end=9)
+   784→
+   785→for wi, wn in enumerate(WEEK_NAMES):
+   786→    r = trend_hdr_row + 1 + wi
+   787→    tr = DATA_ROW_START + N
+   788→    ws_recap.cell(row=r, column=2, value=wn)
+   789→    ws_recap.cell(row=r, column=3).value = f"='{wn}'!N{tr}"
+   790→    ws_recap.cell(row=r, column=3).number_format = '0.0%'
+   791→    ws_recap.cell(row=r, column=4).value = f"='{wn}'!P{tr}"
+   792→    ws_recap.cell(row=r, column=4).number_format = '0.0%'
+   793→    ws_recap.cell(row=r, column=5).value = f"='{wn}'!M{tr}"
+   794→    ws_recap.cell(row=r, column=5).number_format = '#,##0.0'
+   795→    ws_recap.cell(row=r, column=6).value = f"='{wn}'!T{tr}"
+   796→    ws_recap.cell(row=r, column=6).number_format = '0.0%'
+   797→    ws_recap.cell(row=r, column=7).value = f"='{wn}'!V{tr}"
+   798→    ws_recap.cell(row=r, column=7).number_format = '0.0%'
+   799→    ws_recap.cell(row=r, column=8).value = f"='{wn}'!Q{tr}"
+   800→    ws_recap.cell(row=r, column=8).number_format = '#,##0'
+   801→    ws_recap.cell(row=r, column=9).value = f"='{wn}'!W{tr}"
+   802→    ws_recap.cell(row=r, column=9).number_format = '0.0%'
+   803→
+   804→    style_data_row(ws_recap, row_num=r, col_start=2, col_end=9, row_index=wi)
+   805→    for col in range(3, 10):
+   806→        ws_recap.cell(row=r, column=col).font = Font(name=FONT_NAME, size=11, color="008000")
+   807→
+   808→# Conditional formatting on trend
+   809→td_start = trend_hdr_row + 1
+   810→td_end = trend_hdr_row + NUM_WEEKS
+   811→for trend_col in ['D', 'G']:
+   812→    ws_recap.conditional_formatting.add(
+   813→        f'{trend_col}{td_start}:{trend_col}{td_end}',
+   814→        CellIsRule(operator='greaterThan', formula=['0'],
+   815→                   font=CF_POSITIVE_FONT, fill=CF_POSITIVE_FILL)
+   816→    )
+   817→    ws_recap.conditional_formatting.add(
+   818→        f'{trend_col}{td_start}:{trend_col}{td_end}',
+   819→        CellIsRule(operator='lessThan', formula=['0'],
+   820→                   font=CF_NEGATIVE_FONT, fill=CF_NEGATIVE_FILL)
+   821→    )
+   822→
+   823→# ── Section 3: Résumé par Province ────────────────────────────
+   824→prov_start = td_end + 3
+   825→ws_recap.cell(row=prov_start, column=2, value="Résumé par Province")
+   826→ws_recap.cell(row=prov_start, column=2).font = font_subheader()
+   827→ws_recap.merge_cells(start_row=prov_start, start_column=2, end_row=prov_start, end_column=9)
+   828→
+   829→prov_hdr_row = prov_start + 1
+   830→prov_headers = [
+   831→    "Province", "Nb Projets", "Coût Total (DH)", "Avanc. Phys. %",
+   832→    "Qté Réalisée Cumul", "Avanc. Fin. %",
+   833→    "Décaissé (DH)", "Écart Phys.-Fin."
+   834→]
+   835→
+   836→for col_idx, h in enumerate(prov_headers, start=2):
+   837→    ws_recap.cell(row=prov_hdr_row, column=col_idx, value=h)
+   838→style_header_row(ws_recap, row_num=prov_hdr_row, col_start=2, col_end=9)
+   839→
+   840→provinces = ["Kénitra", "Sidi Kacem", "Sidi Slimane"]
+   841→for pi, prov in enumerate(provinces):
+   842→    r = prov_hdr_row + 1 + pi
+   843→    prov_indices = [i for i, p in enumerate(projects) if p["province"] == prov]
+   844→
+   845→    ws_recap.cell(row=r, column=2, value=prov)
+   846→    ws_recap.cell(row=r, column=2).font = Font(name=FONT_NAME, size=11, bold=HEADER_BOLD, color=PROVINCE_COLORS.get(prov, NEUTRAL_900))
+   847→    ws_recap.cell(row=r, column=2).fill = PROVINCE_FILLS.get(prov, PatternFill())
+   848→    ws_recap.cell(row=r, column=3, value=len(prov_indices))
+   849→
+   850→    # Coût total
+   851→    ws_recap.cell(row=r, column=4).value = f'=SUMPRODUCT((\'{last_week}\'!C{DATA_ROW_START}:C{DATA_ROW_START+N-1}="{prov}")*\'{last_week}\'!I{DATA_ROW_START}:I{DATA_ROW_START+N-1})'
+   852→    ws_recap.cell(row=r, column=4).number_format = '#,##0'
+   853→
+   854→    # Avancement Physique % (weighted)
+   855→    ws_recap.cell(row=r, column=5).value = f'=IFERROR(SUMPRODUCT((\'{last_week}\'!C{DATA_ROW_START}:C{DATA_ROW_START+N-1}="{prov}")*\'{last_week}\'!N{DATA_ROW_START}:N{DATA_ROW_START+N-1}*\'{last_week}\'!I{DATA_ROW_START}:I{DATA_ROW_START+N-1})/SUMPRODUCT((\'{last_week}\'!C{DATA_ROW_START}:C{DATA_ROW_START+N-1}="{prov}")*\'{last_week}\'!I{DATA_ROW_START}:I{DATA_ROW_START+N-1}),0)'
+   856→    ws_recap.cell(row=r, column=5).number_format = '0.0%'
+   857→
+   858→    # Qté Réalisée Cumul
+   859→    ws_recap.cell(row=r, column=6).value = f'=SUMPRODUCT((\'{last_week}\'!C{DATA_ROW_START}:C{DATA_ROW_START+N-1}="{prov}")*\'{last_week}\'!M{DATA_ROW_START}:M{DATA_ROW_START+N-1})'
+   860→    ws_recap.cell(row=r, column=6).number_format = '#,##0.0'
+   861→
+   862→    # Avancement Financier % (weighted)
+   863→    ws_recap.cell(row=r, column=7).value = f'=IFERROR(SUMPRODUCT((\'{last_week}\'!C{DATA_ROW_START}:C{DATA_ROW_START+N-1}="{prov}")*\'{last_week}\'!T{DATA_ROW_START}:T{DATA_ROW_START+N-1}*\'{last_week}\'!I{DATA_ROW_START}:I{DATA_ROW_START+N-1})/SUMPRODUCT((\'{last_week}\'!C{DATA_ROW_START}:C{DATA_ROW_START+N-1}="{prov}")*\'{last_week}\'!I{DATA_ROW_START}:I{DATA_ROW_START+N-1}),0)'
+   864→    ws_recap.cell(row=r, column=7).number_format = '0.0%'
+   865→
+   866→    # Décaissé
+   867→    ws_recap.cell(row=r, column=8).value = f'=SUMPRODUCT((\'{last_week}\'!C{DATA_ROW_START}:C{DATA_ROW_START+N-1}="{prov}")*\'{last_week}\'!Q{DATA_ROW_START}:Q{DATA_ROW_START+N-1})'
+   868→    ws_recap.cell(row=r, column=8).number_format = '#,##0'
+   869→
+   870→    # Écart
+   871→    ws_recap.cell(row=r, column=9).value = f"=E{r}-G{r}"
+   872→    ws_recap.cell(row=r, column=9).number_format = '0.0%'
+   873→
+   874→    style_data_row(ws_recap, row_num=r, col_start=2, col_end=9, row_index=pi)
+   875→    ws_recap.cell(row=r, column=2).font = Font(name=FONT_NAME, size=11, bold=HEADER_BOLD, color=PROVINCE_COLORS.get(prov, NEUTRAL_900))
+   876→    ws_recap.cell(row=r, column=2).fill = PROVINCE_FILLS.get(prov, PatternFill())
+   877→    for col in range(4, 10):
+   878→        ws_recap.cell(row=r, column=col).font = Font(name=FONT_NAME, size=11, color="008000")
+   879→
+   880→# Province totals
+   881→prov_total_row = prov_hdr_row + 1 + len(provinces)
+   882→ws_recap.cell(row=prov_total_row, column=2, value="TOTAL")
+   883→ws_recap.cell(row=prov_total_row, column=3).value = f"=SUM(C{prov_hdr_row+1}:C{prov_total_row-1})"
+   884→ws_recap.cell(row=prov_total_row, column=4).value = f"=SUM(D{prov_hdr_row+1}:D{prov_total_row-1})"
+   885→ws_recap.cell(row=prov_total_row, column=4).number_format = '#,##0'
+   886→ws_recap.cell(row=prov_total_row, column=5).value = f"='{last_week}'!N{tr_last}"
+   887→ws_recap.cell(row=prov_total_row, column=5).number_format = '0.0%'
+   888→ws_recap.cell(row=prov_total_row, column=6).value = f"=SUM(F{prov_hdr_row+1}:F{prov_total_row-1})"
+   889→ws_recap.cell(row=prov_total_row, column=6).number_format = '#,##0.0'
+   890→ws_recap.cell(row=prov_total_row, column=7).value = f"='{last_week}'!T{tr_last}"
+   891→ws_recap.cell(row=prov_total_row, column=7).number_format = '0.0%'
+   892→ws_recap.cell(row=prov_total_row, column=8).value = f"=SUM(H{prov_hdr_row+1}:H{prov_total_row-1})"
+   893→ws_recap.cell(row=prov_total_row, column=8).number_format = '#,##0'
+   894→ws_recap.cell(row=prov_total_row, column=9).value = f"=E{prov_total_row}-G{prov_total_row}"
+   895→ws_recap.cell(row=prov_total_row, column=9).number_format = '0.0%'
+   896→style_total_row(ws_recap, row_num=prov_total_row, col_start=2, col_end=9)
+   897→
+   898→# ── Section 4: Détail Unités Physiques par Province ──────────
+   899→units_start = prov_total_row + 3
+   900→ws_recap.cell(row=units_start, column=2, value="Détail des Unités Physiques Utilisées")
+   901→ws_recap.cell(row=units_start, column=2).font = font_subheader()
+   902→ws_recap.merge_cells(start_row=units_start, start_column=2, end_row=units_start, end_column=6)
+   903→
+   904→units_hdr_row = units_start + 1
+   905→units_headers = ["Unité", "Nb Projets", "Qté Prévue Totale", "Qté Réalisée Cumul", "Avancement %"]
+   906→for col_idx, h in enumerate(units_headers, start=2):
+   907→    ws_recap.cell(row=units_hdr_row, column=col_idx, value=h)
+   908→style_header_row(ws_recap, row_num=units_hdr_row, col_start=2, col_end=6)
+   909→
+   910→# Group projects by unit
+   911→from collections import defaultdict
+   912→unit_groups = defaultdict(list)
+   913→for i, (unite, qte) in enumerate(project_indicators):
+   914→    unit_groups[unite].append(i)
+   915→
+   916→for ui, (unite, indices) in enumerate(sorted(unit_groups.items())):
+   917→    r = units_hdr_row + 1 + ui
+   918→    ws_recap.cell(row=r, column=2, value=unite)
+   919→    ws_recap.cell(row=r, column=2).font = Font(name=FONT_NAME, size=11, bold=HEADER_BOLD, color=ACCENT_POSITIVE)
+   920→    ws_recap.cell(row=r, column=3, value=len(indices))
+   921→
+   922→    # Qté Prévue Totale
+   923→    qte_prevue_total = sum(project_indicators[idx][1] for idx in indices)
+   924→    ws_recap.cell(row=r, column=4, value=qte_prevue_total)
+   925→    ws_recap.cell(row=r, column=4).number_format = '#,##0'
+   926→
+   927→    # Qté Réalisée Cumul (from last week sheet)
+   928→    # Build SUMPRODUCT formula matching unité in column J
+   929→    ws_recap.cell(row=r, column=5).value = f'=SUMPRODUCT((\'{last_week}\'!J{DATA_ROW_START}:J{DATA_ROW_START+N-1}="{unite}")*\'{last_week}\'!M{DATA_ROW_START}:M{DATA_ROW_START+N-1})'
+   930→    ws_recap.cell(row=r, column=5).number_format = '#,##0.0'
+   931→
+   932→    # Avancement %
+   933→    ws_recap.cell(row=r, column=6).value = f"=IFERROR(E{r}/D{r},0)"
+   934→    ws_recap.cell(row=r, column=6).number_format = '0.0%'
+   935→
+   936→    style_data_row(ws_recap, row_num=r, col_start=2, col_end=6, row_index=ui)
+   937→    ws_recap.cell(row=r, column=2).font = Font(name=FONT_NAME, size=11, bold=HEADER_BOLD, color=ACCENT_POSITIVE)
+   938→    ws_recap.cell(row=r, column=5).font = Font(name=FONT_NAME, size=11, color="008000")
+   939→    ws_recap.cell(row=r, column=6).font = Font(name=FONT_NAME, size=11, color="008000")
+   940→
+   941→# Data bar on unit avancement
+   942→units_data_start = units_hdr_row + 1
+   943→units_data_end = units_hdr_row + len(unit_groups)
+   944→ws_recap.conditional_formatting.add(
+   945→    f'F{units_data_start}:F{units_data_end}',
+   946→    DataBarRule(start_type='num', start_value=0, end_type='num', end_value=1,
+   947→                color=ACCENT_POSITIVE, showValue=True)
+   948→)
+   949→
+   950→RECAP_WIDTHS = {2: 24, 3: 12, 4: 18, 5: 18, 6: 18, 7: 18, 8: 18, 9: 16}
+   951→for c, w in RECAP_WIDTHS.items():
+   952→    ws_recap.column_dimensions[get_column_letter(c)].width = w
+   953→
+   954→ws_recap.freeze_panes = "C5"
+   955→ws_recap.sheet_properties.tabColor = "7030A0"
+   956→
+   957→
+   958→# ═══════════════════════════════════════════════════════════════
+   959→# SHEET: Guide d'utilisation
+   960→# ═══════════════════════════════════════════════════════════════
+   961→ws_guide = wb.create_sheet(title="Guide")
+   962→setup_sheet(ws_guide, title="Guide d'Utilisation du Canevas Hebdomadaire", last_col=6)
+   963→
+   964→guide_items = [
+   965→    ("CODE COULEUR", "Jaune = Saisie | Vert = Formule auto inter-feuille | Noir = Formule calculée | Bleu = Valeur saisie"),
+   966→    ("SAISIE HEBDOMADAIRE", "Dans les feuilles S01-S04, saisissez uniquement les cellules jaunes : Qté Réalisée Semaine, Montants, Avancement Financier %, Observations"),
+   967→    ("INDICATEURS PHYSIQUES", "Chaque projet a une Unité (ml, km, m², m³, U) et une Qté Prévue définies dans 'Liste Projets'. L'Avancement Physique % est calculé automatiquement : Qté Réalisée Cumul / Qté Prévue"),
+   968→    ("CUMUL AUTOMATIQUE", "La Qté Réalisée Cumul = Cumul sem. précédente + Qté réalisée cette semaine. Le lien entre semaines est automatique."),
+   969→    ("AJOUTER SEMAINES", "Dupliquez S04, renommez en S05. Modifiez les formules des colonnes M (Cumul), O (% Préc.), U (% Fin. Préc.) pour référencer S04."),
+   970→    ("PROTECTION", "Cellules de référence et formules verrouillées. Mot de passe : ormvag2026"),
+   971→    ("MODIFIER UNITÉS/QTÉ", "Allez dans 'Liste Projets' pour modifier les Unités et Qté Prévue. Ces valeurs sont reportées dans les feuilles hebdomadaires."),
+   972→    ("FORMAT POURCENTAGE", "Saisir 0.25 pour 25%, 0.50 pour 50%, 1.00 pour 100%. Valeurs entre 0 et 1."),
+   973→    ("ÉCART PHYS.-FIN.", "Positif = le physique avance plus vite que le financier. Négatif = le financier avance plus vite. Problème si > 5% d'écart."),
+   974→]
+   975→
+   976→for gi, (rubrique, desc) in enumerate(guide_items):
+   977→    r = 4 + gi
+   978→    ws_guide.cell(row=r, column=2, value=rubrique)
+   979→    ws_guide.cell(row=r, column=2).font = Font(name=FONT_NAME, size=11, bold=HEADER_BOLD, color=PRIMARY)
+   980→    ws_guide.cell(row=r, column=3, value=desc)
+   981→    ws_guide.cell(row=r, column=3).font = font_body()
+   982→    ws_guide.cell(row=r, column=3).alignment = Alignment(wrap_text=True, vertical="center")
+   983→    ws_guide.row_dimensions[r].height = 32
+   984→
+   985→ws_guide.column_dimensions['B'].width = 24
+   986→ws_guide.column_dimensions['C'].width = 90
+   987→ws_guide.sheet_properties.tabColor = NEUTRAL_600
+   988→
+   989→
+   990→# ═══════════════════════════════════════════════════════════════
+   991→# Reorder sheets
+   992→# ═══════════════════════════════════════════════════════════════
+   993→desired_order = ["Liste Projets", "Guide"] + WEEK_NAMES + ["Récapitulatif"]
+   994→sheet_map = {ws.title: ws for ws in wb.worksheets}
+   995→wb._sheets = [sheet_map[name] for name in desired_order]
+   996→
+   997→
+   998→# ═══════════════════════════════════════════════════════════════
+   999→# Save
+  1000→# ═══════════════════════════════════════════════════════════════
+  1001→OUTPUT_PATH = "/home/z/my-project/download/Canevas_Hebdomadaire_ORMVAG_Gharb.xlsx"
+  1002→wb.save(OUTPUT_PATH)
+  1003→print(f"Workbook saved to: {OUTPUT_PATH}")
+  1004→print(f"Projects: {N}")
+  1005→print(f"Physical units used: {dict((u, len(idxs)) for u, idxs in sorted(unit_groups.items()))}")
+  1006→print(f"Weekly sheets: {', '.join(WEEK_NAMES)}")
+  1007→print(f"Sheets: {[ws.title for ws in wb.worksheets]}")
+  1008→

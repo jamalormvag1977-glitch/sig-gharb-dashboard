@@ -1,0 +1,514 @@
+     1→import sys, os
+     2→sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'skills', 'xlsx', 'templates'))
+     3→from base import *
+     4→
+     5→from openpyxl import Workbook
+     6→from openpyxl.styles import PatternFill, Font, Border, Side, Alignment, numbers
+     7→from openpyxl.utils import get_column_letter
+     8→from openpyxl.worksheet.datavalidation import DataValidation
+     9→from openpyxl.formatting.rule import CellIsRule, ColorScaleRule, DataBarRule
+    10→
+    11→use_palette_explicit("bloomberg")
+    12→
+    13→wb = Workbook()
+    14→
+    15→# ===================================================================
+    16→# FEUILLE 1: Suivi des Projets
+    17→# ===================================================================
+    18→ws1 = wb.active
+    19→ws1.title = "Suivi des Projets"
+    20→
+    21→headers1 = [
+    22→    "N°",
+    23→    "Province",
+    24→    "Commune",
+    25→    "Rubrique",
+    26→    "Intitulé Rubrique",
+    27→    "Intitulé Projet",
+    28→    "Consistance",
+    29→    "Budget Prévu (DH)",
+    30→    "Avancement Physique (%)",
+    31→    "Avancement Financier (%)",
+    32→    "Montant Décaissé (DH)",
+    33→    "Reste à Décaisser (DH)",
+    34→    "Taux de Décaissement (%)",
+    35→    "Écart Phys.-Fin. (pts)",
+    36→    "Statut",
+    37→    "Observations",
+    38→]
+    39→
+    40→last_col1 = len(headers1) + 1  # +1 because starting from column B
+    41→
+    42→setup_sheet(ws1, title="Suivi Physique et Financier des Projets — Région du Gharb 2026", last_col=last_col1)
+    43→
+    44→# Write headers
+    45→for col_idx, header in enumerate(headers1, start=2):
+    46→    ws1.cell(row=4, column=col_idx, value=header)
+    47→style_header_row(ws1, row_num=4, col_start=2, col_end=last_col1)
+    48→
+    49→# Data rows - 72 projects
+    50→projects_data = [
+    51→    ["Sidi Kacem","KHENICHET","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des canaux en terre","Curage des collecteurs d'assainissement du secteur EST2",2091568],
+    52→    ["Sidi Kacem","KHENICHET","40-21","Travaux de pistes","Travaux de réhabilitation des pistes agricoles","Entretien des pistes agricoles Douar Nouagra et Douar ouled Salem",78000],
+    53→    ["Sidi Kacem","KHENICHET","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Curage des prises sur l'oued, bâche d'aspiration et bassin de régulation.","Curage de la chambre des joints de démontage des siphonnes de la station de pompage EST2.",126000],
+    54→    ["Sidi Kacem","KHENICHET","50-21","Entretien et réparation des stations de pompage","Prestation de maintenance des débitmètres et leurs équipements annexes","Changement trois débitmètre Ø 600mm inondés de la station de pompage EST 2 et deux capteurs VEGASON 62",165500],
+    55→    ["Sidi Kacem","BIR TALEB","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des canaux en terre","Curage du canal d'assainisement Tihli Aval",1000000],
+    56→    ["Sidi Kacem","BIR TALEB","50-23","Entretien et réparation du réseau d'assainissement et de drainage","","Curage des collecteurs d'assainissement du secteur P11/1",846731],
+    57→    ["Sidi Kacem","BIR TALEB","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Curage des prises sur l'oued, bâche d'aspiration et bassin de régulation.","Curage des prises sur l'oued de la station de pompage P11/1.",200000],
+    58→    ["Sidi Kacem","BIR TALEB","50-21","Entretien et réparation des stations de pompage","Prestation de maintenance des débitmètres et leurs équipements annexes","Changement trois débitmètre Ø 400mm inondés de la station de pompage P11/1",141900],
+    59→    ["Sidi Kacem","BIR TALEB","50-21","Entretien et réparation des stations de pompage","Prestations de maintenance et de réparation mécanique des pompes et des groupes motopompes submersibles","Démontage et expertise des roues des pompes principaux et pompes a vide de la station P11/1",26700],
+    60→    ["Sidi Kacem","BIR TALEB","50-21","Entretien et réparation des stations de pompage","Stabilisation Berge oued","Pose de gabions et recouvrement du talus par matelas Reno des stations de pompage P11/1.",480000],
+    61→    ["Sidi Kacem","BIR TALEB","50-21","Entretien et réparation des stations de pompage","Génie civile des locaux des stations de pompage.","Expertise d'état et d'étanchéité des locaux pompes.",300000],
+    62→    ["Sidi Kacem","CHEBANAT","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des canaux en terre","Curage des collecteurs d'assainissement des secteur SH5 et SH6.",1000000],
+    63→    ["Sidi Kacem","CHEBANAT","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des canaux révetés","Curage du canal principal d'irrigation beht partie aval 1.",739200],
+    64→    ["Sidi Kacem","ZIRARA","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des canaux révetés","Curage du canal principal d'irrigation beht partie aval 2.",1276800],
+    65→    ["Sidi Kacem","DAR LAASLOUJI","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des canaux en terre","Curage des collecteurs d'assainissement des secteurs P8-1 et P8-2",5796360],
+    66→    ["Sidi Kacem","DAR LAASLOUJI","40-21","Travaux de pistes","Entretien des pistes agricoles","Entretien des pistes agricoles",340000],
+    67→    ["Sidi Kacem","HOUAFATE","20-11","Travaux de réhabilitation des équipements","Travaux de réhabilitation des canaux portés d'irrigation","Fourniture et de pose de canaux porté et accessoires du réseau S3 du secteur S13",397934],
+    68→    ["Sidi Kacem","HOUAFATE","20-11","Travaux de réhabilitation des équipements","","Fourniture et de pose de canaux porté et accessoires du réseau T2S1 du secteur S13",207575],
+    69→    ["Sidi Kacem","HOUAFATE","40-21","Travaux de pistes","Entretien des pistes agricoles","Entretien des pistes agricoles",2200000],
+    70→    ["Sidi Kacem","HOUAFATE","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Curage des prises sur l'oued, bâche d'aspiration et bassin de régulation.","Curage des prises sur l'oued de la station de pompage S17 et S13.",300000],
+    71→    ["Sidi Kacem","HOUAFATE","50-21","Entretien et réparation des stations de pompage","Prestation de maintenance des débitmètres et leurs équipements annexes","Changement trois débitmètre Ø 600mm inondés de la station de pompage S13.",250000],
+    72→    ["Sidi Kacem","HOUAFATE","50-21","Entretien et réparation des stations de pompage","Prestations de maintenance des moteurs électriques des stations de pompage.","Révision des trois moteurs électriques 200 KW principaux de la station S13.",25000],
+    73→    ["Sidi Kacem","HOUAFATE","50-21","Entretien et réparation des stations de pompage","Prestations de maintenance et de réparation mécanique des pompes et des groupes motopompes submersibles","Démontage et expertise des roues des pompes principaux et pompes a vide de la station S13.",38000],
+    74→    ["Sidi Kacem","HOUAFATE","50-21","Entretien et réparation des stations de pompage","Stabilisation Berge oued","Pose de gabions et recouvrement du talus par matelas Reno des stations de pompage S13.",10560000],
+    75→    ["Sidi Kacem","HOUAFATE","50-21","Entretien et réparation des stations de pompage","Mur clôture des stations de pompage.","Stabilisation du sol et reconstruction des murs clôture (270m) cote oued de la station S17.",144000],
+    76→    ["Sidi Kacem","HOUAFATE","50-21","Entretien et réparation des stations de pompage","Génie civile des locaux des stations de pompage.","Expertise d'état et d'étanchéité des locaux pompes, commande, puissance des stations de pompage S17 et S13.",800000],
+    77→    ["Sidi Kacem","NOUIRAT","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des canaux en terre","Curage des collecteurs d'assainissement des secteurs EST1 et N5",1733306],
+    78→    ["Sidi Kacem","NOUIRAT","40-21","Travaux de pistes","Entretien des pistes agricoles","Entretien des pistes agricoles",670000],
+    79→    ["Sidi Kacem","NOUIRAT","20-11","Travaux de réhabilitation des équipements","Travaux de réhabilitation des ouvrages de génie civil","Réhabilitation de l'ouvrage de l'ouvrage de débouche SE1",2500000],
+    80→    ["Sidi Kacem","NOUIRAT","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Curage des prises sur l'oued, bâche d'aspiration et bassin de régulation.","Curage des prises sur l'oued de la station de pompage E1.",800000],
+    81→    ["Sidi Kacem","NOUIRAT","50-21","Entretien et réparation des stations de pompage","Prestation de maintenance des débitmètres et leurs équipements annexes","Changement du débitmètre Ø 1200mm inondé de la station de pompage E1.",195000],
+    82→    ["Sidi Kacem","NOUIRAT","50-21","Entretien et réparation des stations de pompage","Prestations de maintenance des moteurs électriques des stations de pompage.","Révision des deux moteurs électriques principaux de la station E1.",50000],
+    83→    ["Sidi Kacem","NOUIRAT","50-21","Entretien et réparation des stations de pompage","Prestations de maintenance et de réparation mécanique des pompes et des groupes motopompes submersibles","Démontage et expertise des cinq pompes principaux et pompes a vide de la station E1.",245000],
+    84→    ["Sidi Kacem","NOUIRAT","50-21","Entretien et réparation des stations de pompage","Génie civile des locaux des stations de pompage.","Expertise d'état et d'étanchéité des locaux pompes de la station de pompage E1.",1000000],
+    85→    ["Sidi Kacem","RMILAT","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des canaux en terre","Curage des collecteurs d'assainissement des secteurs P7",5024032],
+    86→    ["Sidi Kacem","RMILAT","40-21","Travaux de pistes","Entretien des pistes agricoles","Entretien des pistes agricoles",400000],
+    87→    ["Sidi Kacem","SAFSAF","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des canaux en terre","Curage des collecteurs d'assainissement des secteurs S7, S9 et S11",6000000],
+    88→    ["Sidi Kacem","SAFSAF","20-11","Travaux de réhabilitation des équipements","Travaux de réhabilitation des canaux portés d'irrigation","Fourniture et pose de canaux porté et accessoires du réseau S4 du secteur S11",232266],
+    89→    ["Sidi Kacem","SAFSAF","20-11","Travaux de réhabilitation des équipements","","Recalage des canaux portés du réseau T5S5 du secteur S9",1055025],
+    90→    ["Sidi Kacem","SAFSAF","20-11","Travaux de réhabilitation des équipements","","Recalage des canaux portés du réseau T7S5 du secteur S9",1004535],
+    91→    ["Sidi Kacem","SAFSAF","20-11","Travaux de réhabilitation des équipements","","Recalage des canaux portés du réseau T2S5 du secteur S9",793830],
+    92→    ["Sidi Kacem","SAFSAF","40-21","Travaux de pistes","Entretien des pistes agricoles","Entretien des pistes agricoles",2000000],
+    93→    ["Sidi Kacem","SAFSAF","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Curage des prises sur l'oued, bâche d'aspiration et bassin de régulation.","Curage des prises sur l'oued des stations de pompage S11, S9, 7D et 7B.",200000],
+    94→    ["Sidi Kacem","SAFSAF","50-21","Entretien et réparation des stations de pompage","Prestation de maintenance des débitmètres et leurs équipements annexes","Changements Sept des débitmètres Ø 600mm inondé des deux stations de pompage S11 et S9.",580000],
+    95→    ["Sidi Kacem","SAFSAF","50-21","Entretien et réparation des stations de pompage","Stabilisation Berge oued","Pose de murs en gabions et recouvrement du talus par matelas Reno des stations de pompage S11, S9, 7D et 7B.",4000000],
+    96→    ["Sidi Kacem","SIDI AZZOUZ","40-21","Travaux de pistes","Entretien des pistes agricoles","Entretien des pistes agricoles",655000],
+    97→    ["Sidi Kacem","SIDI EL KAMEL","20-11","Travaux de réhabilitation des équipements","Travaux de réhabilitation des canaux portés d'irrigation","Fourniture et de pose de canaux porté et accessoires du réseau SR4 du secteur S3R",5182920],
+    98→    ["Sidi Kacem","SIDI EL KAMEL","20-11","Travaux de réhabilitation des équipements","","Fourniture et de pose de canaux porté et accessoires du réseau SR6 du secteur S1RIZ",152818],
+    99→    ["Sidi Kacem","SIDI EL KAMEL","20-11","Travaux de réhabilitation des équipements","","Recalage des canaux portés du réseau SR4 du secteur S3R",1418000],
+   100→    ["Sidi Kacem","SIDI EL KAMEL","20-11","Travaux de réhabilitation des équipements","Travaux de réhabilitation des ouvrages de génie civil","Réhabilitation des murs de soutènements des ouvrages de franchissements du canal d'assainissement CS3",800000],
+   101→    ["Sidi Kacem","SIDI EL KAMEL","40-21","Travaux de pistes","Entretien des pistes agricoles","Entretien des pistes agricoles",3700000],
+   102→    ["Sidi Kacem","SIDI EL KAMEL","50-21","Entretien et réparation des stations de pompage","Prestation de maintenance des débitmètres et leurs équipements annexes","Changement de quatre débitmètres Ø 500mm et trois Ø 800mm inondé des stations de pompage 1R, 3R et 5R.",705000],
+   103→    ["Sidi Kacem","SIDI EL KAMEL","50-21","Entretien et réparation des stations de pompage","Mur clôture des stations de pompage.","Stabilisation et reconstruction des murs clôture cote oued des stations de pompage 7A, 3R et 1R.",372000],
+   104→    ["Kénitra","Bni malek","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des canaux en terre","Curage des emissaires et colatures secondaire au niveau des secteurs MDA ET N9",10000000],
+   105→    ["Kénitra","Bni malek","40-21","Travaux de pistes","Travaux de réhabilitation des pistes agricoles","Entretien des pistes agricoles des secteurs MDA et N3",2000000],
+   106→    ["Kénitra","Bni malek","50-21","Entretien et réparation des stations de pompage","Prestations de maintenance et de réparation mécanique des pompes et des groupes motopompes submersibles","Station de pompage MDA secteur MDA",300000],
+   107→    ["Kénitra","Bni malek","20-11","Travaux de réhabilitation des équipements","Travaux de réhabilitation des ouvrages de génie civil","Rétablissement des bornes affaissées des secteurs N2 et N3",100000],
+   108→    ["Kénitra","SOUK TLET","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des canaux en terre","Curage des emissaires et colatures secondaire au niveau des secteurs N2,N3 ET N4",3000000],
+   109→    ["Kénitra","SOUK TLET","40-21","Travaux de pistes","Travaux de réhabilitation des pistes agricoles","Entretien des pistes des secteurs N2,N3,N4 et C4R",5000000],
+   110→    ["Kénitra","Sidi Med Lahmar","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des canaux en terre","Curage des emissaires et colatures secondaires secteurs N1",3000000],
+   111→    ["Kénitra","Sidi Med Lahmar","40-21","Travaux de pistes","Travaux de réhabilitation des pistes agricoles","Entretien des pistes agricoles des secteurs N9 et N1",3000000],
+   112→    ["Kénitra","Mograne","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des canaux en terre","Curage des canaux d'assainissement Hors secteur équipé ghoufera et laison beht sebou",6000000],
+   113→    ["Kénitra","Mograne","40-21","Travaux de pistes","Travaux de réhabilitation des pistes agricoles","Entretien des pistes agricoles des secteurs SEBOU1,SEBOU2, BEHT3 et BEHT4",6000000],
+   114→    ["Kénitra","Sidi allal tazi","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des canaux en terre","Curage du canal d'assainissement CK",3000000],
+   115→    ["Kénitra","AMEUR SAFLIA","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des canaux en terre","Curage des canaux d'assainissement amont Tiflt Sebou",1000000],
+   116→    ["Kénitra","Oulad SLAMA","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des canaux en terre","Curage des canaux d'assainissement debouche Tiflt aval",1000000],
+   117→    ["Kénitra","BHARA Oulad AYAD","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des canaux en terre","Curage des canaux d'assainissement canal nador bas et haut segment",6600000],
+   118→    ["Sidi Slimane","OULED HCEINE","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des canaux en terre","Curage des collecteurs d'assainissement du secteur EST4.",1805475],
+   119→    ["Sidi Slimane","OULED HCEINE","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des canaux en terre","Curage du canal d'assainissement Tihli central.",2587200],
+   120→    ["Sidi Slimane","OULED HCEINE","40-21","Travaux de pistes","Travaux de réhabilitation des pistes agricoles","Entretien des pistes agricoles",3500000],
+   121→    ["Sidi Slimane","OULED HCEINE","50-21","Entretien et réparation des stations de pompage","Travaux de réparation des équipements hydromécaniques et électriques et entretien de la partie génie civil","Démontage et expertise des roues des pompes de la station EST4 et P11/2",870000],
+   122→    ["Sidi Slimane","OULED HCEINE","50-23","Entretien et réparation du réseau d'assainissement et de drainage","Travaux de curage des prises des stations de pompage.","Curage des siphones des station de pompage EST2 et P11/2.",500000],
+   123→]
+   124→
+   125→for i, proj in enumerate(projects_data):
+   126→    row_num = 5 + i
+   127→    # N°
+   128→    ws1.cell(row=row_num, column=2, value=i + 1)
+   129→    # Province, Commune, Rubrique, Intitulé Rubrique, Intitulé Projet, Consistance
+   130→    for j, val in enumerate(proj):
+   131→        ws1.cell(row=row_num, column=3 + j, value=val)
+   132→    # Budget Prévu (DH) - column I (9)
+   133→    ws1.cell(row=row_num, column=9, value=proj[6])
+   134→    ws1.cell(row=row_num, column=9).number_format = '#,##0'
+   135→    # Avancement Physique (%) - column J (10) - EMPTY for user input
+   136→    # Avancement Financier (%) - column K (11) - EMPTY for user input
+   137→    # Montant Décaissé (DH) - column L (12) - EMPTY for user input
+   138→    # Reste à Décaisser = Budget - Décaissé  (formula)
+   139→    budget_col = 'I'
+   140→    decaisse_col = 'L'
+   141→    ws1.cell(row=row_num, column=13).value = f'=IF({decaisse_col}{row_num}="","",{budget_col}{row_num}-{decaisse_col}{row_num})'
+   142→    ws1.cell(row=row_num, column=13).number_format = '#,##0'
+   143→    # Taux de Décaissement (%) = Décaissé / Budget (formula)
+   144→    ws1.cell(row=row_num, column=14).value = f'=IFERROR(IF({decaisse_col}{row_num}="","",{decaisse_col}{row_num}/{budget_col}{row_num}),"")'
+   145→    ws1.cell(row=row_num, column=14).number_format = '0.0%'
+   146→    # Écart Phys.-Fin. = Avancement Physique - Avancement Financier (formula)
+   147→    phys_col = 'J'
+   148→    fin_col = 'K'
+   149→    ws1.cell(row=row_num, column=15).value = f'=IFERROR(IF(OR({phys_col}{row_num}="",{fin_col}{row_num}=""),"",{phys_col}{row_num}-{fin_col}{row_num}),"")'
+   150→    ws1.cell(row=row_num, column=15).number_format = '0.0'
+   151→    # Statut - column P (16) - EMPTY for user input (with dropdown)
+   152→    # Observations - column Q (17) - EMPTY
+   153→
+   154→    style_data_row(ws1, row_num=row_num, col_start=2, col_end=last_col1, row_index=i)
+   155→
+   156→# Number format for percentage columns
+   157→for i in range(len(projects_data)):
+   158→    row_num = 5 + i
+   159→    ws1.cell(row=row_num, column=10).number_format = '0.0%'
+   160→    ws1.cell(row=row_num, column=11).number_format = '0.0%'
+   161→
+   162→# Totals row
+   163→total_row = 5 + len(projects_data)
+   164→ws1.cell(row=total_row, column=2, value="TOTAL")
+   165→ws1.cell(row=total_row, column=9).value = f'=SUM(I5:I{total_row-1})'
+   166→ws1.cell(row=total_row, column=9).number_format = '#,##0'
+   167→ws1.cell(row=total_row, column=12).value = f'=SUM(L5:L{total_row-1})'
+   168→ws1.cell(row=total_row, column=12).number_format = '#,##0'
+   169→ws1.cell(row=total_row, column=13).value = f'=IFERROR(L{total_row}/I{total_row},"")'
+   170→ws1.cell(row=total_row, column=13).number_format = '#,##0'
+   171→ws1.cell(row=total_row, column=14).value = f'=IFERROR(L{total_row}/I{total_row},"")'
+   172→ws1.cell(row=total_row, column=14).number_format = '0.0%'
+   173→# Average avancement
+   174→ws1.cell(row=total_row, column=10).value = f'=IFERROR(AVERAGE(J5:J{total_row-1}),"")'
+   175→ws1.cell(row=total_row, column=10).number_format = '0.0%'
+   176→ws1.cell(row=total_row, column=11).value = f'=IFERROR(AVERAGE(K5:K{total_row-1}),"")'
+   177→ws1.cell(row=total_row, column=11).number_format = '0.0%'
+   178→ws1.cell(row=total_row, column=15).value = f'=IFERROR(AVERAGE(O5:O{total_row-1}),"")'
+   179→ws1.cell(row=total_row, column=15).number_format = '0.0'
+   180→style_total_row(ws1, row_num=total_row, col_start=2, col_end=last_col1)
+   181→
+   182→# Data validation: Province dropdown
+   183→dv_province = DataValidation(type="list", formula1='"Kénitra,Sidi Kacem,Sidi Slimane"', allow_blank=True)
+   184→dv_province.prompt = "Sélectionner la province"
+   185→dv_province.promptTitle = "Province"
+   186→ws1.add_data_validation(dv_province)
+   187→dv_province.add(f'C5:C{total_row-1}')
+   188→
+   189→# Data validation: Statut dropdown
+   190→dv_statut = DataValidation(type="list", formula1='"Terminé,En cours,Non démarré"', allow_blank=True)
+   191→dv_statut.prompt = "Sélectionner le statut du projet"
+   192→dv_statut.promptTitle = "Statut"
+   193→ws1.add_data_validation(dv_statut)
+   194→dv_statut.add(f'P5:P{total_row-1}')
+   195→
+   196→# Data validation: Avancement physique (0-100%)
+   197→dv_pct = DataValidation(type="decimal", operator="between", formula1="0", formula2="1", allow_blank=True)
+   198→dv_pct.prompt = "Saisir le pourcentage d'avancement (0 à 100%)"
+   199→dv_pct.promptTitle = "Avancement"
+   200→ws1.add_data_validation(dv_pct)
+   201→dv_pct.add(f'J5:J{total_row-1}')
+   202→dv_pct.add(f'K5:K{total_row-1}')
+   203→
+   204→# Conditional formatting: Statut
+   205→green_fill = PatternFill(bgColor="E8F5E9")
+   206→green_font = Font(color="1B7D46")
+   207→red_fill = PatternFill(bgColor="FDEDEC")
+   208→red_font = Font(color="C0392B")
+   209→amber_fill = PatternFill(bgColor="FEF9E7")
+   210→amber_font = Font(color="D4820A")
+   211→
+   212→ws1.conditional_formatting.add(f'P5:P{total_row-1}',
+   213→    CellIsRule(operator='equal', formula=['"Terminé"'], fill=green_fill, font=green_font))
+   214→ws1.conditional_formatting.add(f'P5:P{total_row-1}',
+   215→    CellIsRule(operator='equal', formula=['"En cours"'], fill=amber_fill, font=amber_font))
+   216→ws1.conditional_formatting.add(f'P5:P{total_row-1}',
+   217→    CellIsRule(operator='equal', formula=['"Non démarré"'], fill=red_fill, font=red_font))
+   218→
+   219→# Conditional formatting: Avancement color scale
+   220→ws1.conditional_formatting.add(f'J5:J{total_row-1}',
+   221→    ColorScaleRule(start_type='num', start_value=0, start_color='F8696B',
+   222→                   mid_type='num', mid_value=0.5, mid_color='FFEB84',
+   223→                   end_type='num', end_value=1, end_color='63BE7B'))
+   224→ws1.conditional_formatting.add(f'K5:K{total_row-1}',
+   225→    ColorScaleRule(start_type='num', start_value=0, start_color='F8696B',
+   226→                   mid_type='num', mid_value=0.5, mid_color='FFEB84',
+   227→                   end_type='num', end_value=1, end_color='63BE7B'))
+   228→
+   229→# Conditional formatting: Écart > 15pts → red
+   230→ws1.conditional_formatting.add(f'O5:O{total_row-1}',
+   231→    CellIsRule(operator='lessThan', formula=['-15'], fill=red_fill, font=red_font))
+   232→
+   233→# Data bars on Budget
+   234→ws1.conditional_formatting.add(f'I5:I{total_row-1}',
+   235→    DataBarRule(start_type='min', end_type='max', color=PRIMARY, showValue=True))
+   236→
+   237→# Column widths
+   238→ws1.column_dimensions['A'].width = 3
+   239→ws1.column_dimensions['B'].width = 5
+   240→ws1.column_dimensions['C'].width = 16
+   241→ws1.column_dimensions['D'].width = 18
+   242→ws1.column_dimensions['E'].width = 10
+   243→ws1.column_dimensions['F'].width = 32
+   244→ws1.column_dimensions['G'].width = 32
+   245→ws1.column_dimensions['H'].width = 40
+   246→ws1.column_dimensions['I'].width = 18
+   247→ws1.column_dimensions['J'].width = 16
+   248→ws1.column_dimensions['K'].width = 16
+   249→ws1.column_dimensions['L'].width = 18
+   250→ws1.column_dimensions['M'].width = 18
+   251→ws1.column_dimensions['N'].width = 16
+   252→ws1.column_dimensions['O'].width = 14
+   253→ws1.column_dimensions['P'].width = 14
+   254→ws1.column_dimensions['Q'].width = 30
+   255→
+   256→# Freeze panes
+   257→ws1.freeze_panes = 'C5'
+   258→
+   259→# ===================================================================
+   260→# FEUILLE 2: Récapitulatif par Province
+   261→# ===================================================================
+   262→ws2 = wb.create_sheet("Récap. par Province")
+   263→
+   264→headers2 = [
+   265→    "Province",
+   266→    "Nb Projets",
+   267→    "Nb Communes",
+   268→    "Budget Total (DH)",
+   269→    "Montant Décaissé (DH)",
+   270→    "Reste à Décaisser (DH)",
+   271→    "Taux Décaissement (%)",
+   272→    "Avancement Physique Moyen (%)",
+   273→    "Avancement Financier Moyen (%)",
+   274→    "Écart Phys.-Fin. (pts)",
+   275→]
+   276→
+   277→last_col2 = len(headers2) + 1
+   278→setup_sheet(ws2, title="Récapitulatif par Province — Région du Gharb 2026", last_col=last_col2)
+   279→
+   280→for col_idx, header in enumerate(headers2, start=2):
+   281→    ws2.cell(row=4, column=col_idx, value=header)
+   282→style_header_row(ws2, row_num=4, col_start=2, col_end=last_col2)
+   283→
+   284→provinces = ["Kénitra", "Sidi Kacem", "Sidi Slimane"]
+   285→for i, prov in enumerate(provinces):
+   286→    row_num = 5 + i
+   287→    ws2.cell(row=row_num, column=2, value=prov)
+   288→    # Formulas referencing Suivi des Projets sheet
+   289→    ws2.cell(row=row_num, column=3).value = f'=COUNTIF(\'Suivi des Projets\'!C5:C76,B{row_num})'
+   290→    ws2.cell(row=row_num, column=4).value = f'=COUNTIFS(\'Suivi des Projets\'!C5:C76,B{row_num},\'Suivi des Projets\'!D5:D76,"<>")'
+   291→    ws2.cell(row=row_num, column=5).value = f'=SUMIF(\'Suivi des Projets\'!C5:C76,B{row_num},\'Suivi des Projets\'!I5:I76)'
+   292→    ws2.cell(row=row_num, column=5).number_format = '#,##0'
+   293→    ws2.cell(row=row_num, column=6).value = f'=SUMIF(\'Suivi des Projets\'!C5:C76,B{row_num},\'Suivi des Projets\'!L5:L76)'
+   294→    ws2.cell(row=row_num, column=6).number_format = '#,##0'
+   295→    ws2.cell(row=row_num, column=7).value = f'=F{row_num}-E{row_num}'
+   296→    ws2.cell(row=row_num, column=7).number_format = '#,##0'
+   297→    ws2.cell(row=row_num, column=8).value = f'=IFERROR(F{row_num}/E{row_num},"")'
+   298→    ws2.cell(row=row_num, column=8).number_format = '0.0%'
+   299→    ws2.cell(row=row_num, column=9).value = f'=IFERROR(AVERAGEIF(\'Suivi des Projets\'!C5:C76,B{row_num},\'Suivi des Projets\'!J5:J76),"")'
+   300→    ws2.cell(row=row_num, column=9).number_format = '0.0%'
+   301→    ws2.cell(row=row_num, column=10).value = f'=IFERROR(AVERAGEIF(\'Suivi des Projets\'!C5:C76,B{row_num},\'Suivi des Projets\'!K5:K76),"")'
+   302→    ws2.cell(row=row_num, column=10).number_format = '0.0%'
+   303→    ws2.cell(row=row_num, column=11).value = f'=I{row_num}-J{row_num}'
+   304→    ws2.cell(row=row_num, column=11).number_format = '0.0'
+   305→    style_data_row(ws2, row_num=row_num, col_start=2, col_end=last_col2, row_index=i)
+   306→
+   307→# Total row
+   308→total_row2 = 8
+   309→ws2.cell(row=total_row2, column=2, value="TOTAL RÉGION")
+   310→ws2.cell(row=total_row2, column=3).value = f'=SUM(C5:C7)'
+   311→ws2.cell(row=total_row2, column=5).value = f'=SUM(E5:E7)'
+   312→ws2.cell(row=total_row2, column=5).number_format = '#,##0'
+   313→ws2.cell(row=total_row2, column=6).value = f'=SUM(F5:F7)'
+   314→ws2.cell(row=total_row2, column=6).number_format = '#,##0'
+   315→ws2.cell(row=total_row2, column=7).value = f'=SUM(G5:G7)'
+   316→ws2.cell(row=total_row2, column=7).number_format = '#,##0'
+   317→ws2.cell(row=total_row2, column=8).value = f'=IFERROR(F{total_row2}/E{total_row2},"")'
+   318→ws2.cell(row=total_row2, column=8).number_format = '0.0%'
+   319→ws2.cell(row=total_row2, column=9).value = f'=IFERROR(AVERAGE(I5:I7),"")'
+   320→ws2.cell(row=total_row2, column=9).number_format = '0.0%'
+   321→ws2.cell(row=total_row2, column=10).value = f'=IFERROR(AVERAGE(J5:J7),"")'
+   322→ws2.cell(row=total_row2, column=10).number_format = '0.0%'
+   323→ws2.cell(row=total_row2, column=11).value = f'=I{total_row2}-J{total_row2}'
+   324→ws2.cell(row=total_row2, column=11).number_format = '0.0'
+   325→style_total_row(ws2, row_num=total_row2, col_start=2, col_end=last_col2)
+   326→
+   327→# Conditional formatting on province avancement
+   328→ws2.conditional_formatting.add('I5:I7',
+   329→    ColorScaleRule(start_type='num', start_value=0, start_color='F8696B',
+   330→                   mid_type='num', mid_value=0.5, mid_color='FFEB84',
+   331→                   end_type='num', end_value=1, end_color='63BE7B'))
+   332→ws2.conditional_formatting.add('J5:J7',
+   333→    ColorScaleRule(start_type='num', start_value=0, start_color='F8696B',
+   334→                   mid_type='num', mid_value=0.5, mid_color='FFEB84',
+   335→                   end_type='num', end_value=1, end_color='63BE7B'))
+   336→
+   337→# Column widths
+   338→ws2.column_dimensions['A'].width = 3
+   339→ws2.column_dimensions['B'].width = 18
+   340→ws2.column_dimensions['C'].width = 12
+   341→ws2.column_dimensions['D'].width = 14
+   342→ws2.column_dimensions['E'].width = 18
+   343→ws2.column_dimensions['F'].width = 20
+   344→ws2.column_dimensions['G'].width = 20
+   345→ws2.column_dimensions['H'].width = 18
+   346→ws2.column_dimensions['I'].width = 22
+   347→ws2.column_dimensions['J'].width = 22
+   348→ws2.column_dimensions['K'].width = 16
+   349→
+   350→ws2.freeze_panes = 'C5'
+   351→
+   352→# ===================================================================
+   353→# FEUILLE 3: Récapitulatif par Secteur
+   354→# ===================================================================
+   355→ws3 = wb.create_sheet("Récap. par Secteur")
+   356→
+   357→headers3 = [
+   358→    "Secteur",
+   359→    "Nb Projets",
+   360→    "Nb Communes",
+   361→    "Budget Total (DH)",
+   362→    "Montant Décaissé (DH)",
+   363→    "Reste à Décaisser (DH)",
+   364→    "Taux Décaissement (%)",
+   365→    "Avancement Physique Moyen (%)",
+   366→    "Avancement Financier Moyen (%)",
+   367→    "Écart Phys.-Fin. (pts)",
+   368→]
+   369→
+   370→last_col3 = len(headers3) + 1
+   371→setup_sheet(ws3, title="Récapitulatif par Secteur — Région du Gharb 2026", last_col=last_col3)
+   372→
+   373→for col_idx, header in enumerate(headers3, start=2):
+   374→    ws3.cell(row=4, column=col_idx, value=header)
+   375→style_header_row(ws3, row_num=4, col_start=2, col_end=last_col3)
+   376→
+   377→secteurs = [
+   378→    "Assainissement & Drainage",
+   379→    "Pistes agricoles",
+   380→    "Stations de pompage",
+   381→    "Réhabilitation équipements",
+   382→]
+   383→secteur_full = [
+   384→    "Entretien et réparation du réseau d'assainissement et de drainage",
+   385→    "Travaux de pistes",
+   386→    "Entretien et réparation des stations de pompage",
+   387→    "Travaux de réhabilitation des équipements",
+   388→]
+   389→
+   390→for i, (short, full) in enumerate(zip(secteurs, secteur_full)):
+   391→    row_num = 5 + i
+   392→    ws3.cell(row=row_num, column=2, value=short)
+   393→    ws3.cell(row=row_num, column=3).value = f'=COUNTIF(\'Suivi des Projets\'!F5:F76,"{full}")'
+   394→    ws3.cell(row=row_num, column=5).value = f'=SUMIF(\'Suivi des Projets\'!F5:F76,"{full}",\'Suivi des Projets\'!I5:I76)'
+   395→    ws3.cell(row=row_num, column=5).number_format = '#,##0'
+   396→    ws3.cell(row=row_num, column=6).value = f'=SUMIF(\'Suivi des Projets\'!F5:F76,"{full}",\'Suivi des Projets\'!L5:L76)'
+   397→    ws3.cell(row=row_num, column=6).number_format = '#,##0'
+   398→    ws3.cell(row=row_num, column=7).value = f'=F{row_num}-E{row_num}'
+   399→    ws3.cell(row=row_num, column=7).number_format = '#,##0'
+   400→    ws3.cell(row=row_num, column=8).value = f'=IFERROR(F{row_num}/E{row_num},"")'
+   401→    ws3.cell(row=row_num, column=8).number_format = '0.0%'
+   402→    ws3.cell(row=row_num, column=9).value = f'=IFERROR(AVERAGEIF(\'Suivi des Projets\'!F5:F76,"{full}",\'Suivi des Projets\'!J5:J76),"")'
+   403→    ws3.cell(row=row_num, column=9).number_format = '0.0%'
+   404→    ws3.cell(row=row_num, column=10).value = f'=IFERROR(AVERAGEIF(\'Suivi des Projets\'!F5:F76,"{full}",\'Suivi des Projets\'!K5:K76),"")'
+   405→    ws3.cell(row=row_num, column=10).number_format = '0.0%'
+   406→    ws3.cell(row=row_num, column=11).value = f'=I{row_num}-J{row_num}'
+   407→    ws3.cell(row=row_num, column=11).number_format = '0.0'
+   408→    style_data_row(ws3, row_num=row_num, col_start=2, col_end=last_col3, row_index=i)
+   409→
+   410→# Total row
+   411→total_row3 = 9
+   412→ws3.cell(row=total_row3, column=2, value="TOTAL")
+   413→ws3.cell(row=total_row3, column=3).value = f'=SUM(C5:C8)'
+   414→ws3.cell(row=total_row3, column=5).value = f'=SUM(E5:E8)'
+   415→ws3.cell(row=total_row3, column=5).number_format = '#,##0'
+   416→ws3.cell(row=total_row3, column=6).value = f'=SUM(F5:F8)'
+   417→ws3.cell(row=total_row3, column=6).number_format = '#,##0'
+   418→ws3.cell(row=total_row3, column=7).value = f'=SUM(G5:G8)'
+   419→ws3.cell(row=total_row3, column=7).number_format = '#,##0'
+   420→ws3.cell(row=total_row3, column=8).value = f'=IFERROR(F{total_row3}/E{total_row3},"")'
+   421→ws3.cell(row=total_row3, column=8).number_format = '0.0%'
+   422→ws3.cell(row=total_row3, column=9).value = f'=IFERROR(AVERAGE(I5:I8),"")'
+   423→ws3.cell(row=total_row3, column=9).number_format = '0.0%'
+   424→ws3.cell(row=total_row3, column=10).value = f'=IFERROR(AVERAGE(J5:J8),"")'
+   425→ws3.cell(row=total_row3, column=10).number_format = '0.0%'
+   426→ws3.cell(row=total_row3, column=11).value = f'=I{total_row3}-J{total_row3}'
+   427→ws3.cell(row=total_row3, column=11).number_format = '0.0'
+   428→style_total_row(ws3, row_num=total_row3, col_start=2, col_end=last_col3)
+   429→
+   430→# Conditional formatting
+   431→ws3.conditional_formatting.add('I5:I8',
+   432→    ColorScaleRule(start_type='num', start_value=0, start_color='F8696B',
+   433→                   mid_type='num', mid_value=0.5, mid_color='FFEB84',
+   434→                   end_type='num', end_value=1, end_color='63BE7B'))
+   435→
+   436→ws3.column_dimensions['A'].width = 3
+   437→ws3.column_dimensions['B'].width = 28
+   438→ws3.column_dimensions['C'].width = 12
+   439→ws3.column_dimensions['D'].width = 14
+   440→ws3.column_dimensions['E'].width = 18
+   441→ws3.column_dimensions['F'].width = 20
+   442→ws3.column_dimensions['G'].width = 20
+   443→ws3.column_dimensions['H'].width = 18
+   444→ws3.column_dimensions['I'].width = 22
+   445→ws3.column_dimensions['J'].width = 22
+   446→ws3.column_dimensions['K'].width = 16
+   447→
+   448→ws3.freeze_panes = 'C5'
+   449→
+   450→# ===================================================================
+   451→# FEUILLE 4: Mode d'emploi
+   452→# ===================================================================
+   453→ws4 = wb.create_sheet("Mode d'emploi")
+   454→
+   455→last_col4 = 8
+   456→setup_sheet(ws4, title="Mode d'emploi — Fichier de Suivi", last_col=last_col4)
+   457→
+   458→instructions = [
+   459→    ["", "Ce fichier Excel sert de modèle pour alimenter le dashboard SIG Gharb avec les données de suivi physique et financier des projets."],
+   460→    ["", ""],
+   461→    ["COLONNES À REMPLIR", ""],
+   462→    ["Avancement Physique (%)", "Saisir le pourcentage de progression des travaux sur le terrain (0% à 100%). Exemples : 0%, 25%, 50%, 75%, 100%"],
+   463→    ["Avancement Financier (%)", "Saisir le pourcentage de consommation du budget (0% à 100%). Représente la part du budget engagée/dépensée."],
+   464→    ["Montant Décaissé (DH)", "Saisir le montant effectivement décaissé en Dirhams. Doit être inférieur ou égal au Budget Prévu."],
+   465→    ["Statut", "Sélectionner dans la liste déroulante : Terminé, En cours, ou Non démarré"],
+   466→    ["Observations", "Zone libre pour notes, commentaires, problèmes rencontrés, etc."],
+   467→    ["", ""],
+   468→    ["COLONNES CALCULÉES AUTOMATIQUEMENT", ""],
+   469→    ["Reste à Décaisser", "= Budget Prévu - Montant Décaissé"],
+   470→    ["Taux de Décaissement", "= Montant Décaissé / Budget Prévu"],
+   471→    ["Écart Phys.-Fin. (pts)", "= Avancement Physique - Avancement Financier. Un écart négatif important (>15pts) signale un retard physique."],
+   472→    ["", ""],
+   473→    ["COULEURS CONDITIONNELLES", ""],
+   474→    ["Avancement", "Rouge (0-33%) → Jaune (34-66%) → Vert (67-100%)"],
+   475→    ["Statut", "Vert = Terminé, Orange = En cours, Rouge = Non démarré"],
+   476→    ["Écart", "Rouge si écart < -15pts (retard physique significatif)"],
+   477→    ["", ""],
+   478→    ["FEUILLES DU FICHIER", ""],
+   479→    ["Suivi des Projets", "Liste détaillée des 72 projets avec toutes les informations"],
+   480→    ["Récap. par Province", "Synthèse automatique par province (Kénitra, Sidi Kacem, Sidi Slimane)"],
+   481→    ["Récap. par Secteur", "Synthèse automatique par secteur d'activité"],
+   482→    ["Mode d'emploi", "Cette feuille — guide d'utilisation"],
+   483→    ["", ""],
+   484→    ["IMPORT DANS LE DASHBOARD", ""],
+   485→    ["", "Pour importer les données dans le dashboard SIG Gharb :"],
+   486→    ["1.", "Remplir les colonnes Avancement Physique, Avancement Financier, Montant Décaissé et Statut pour chaque projet"],
+   487→    ["2.", "Exporter le fichier en format CSV ou JSON"],
+   488→    ["3.", "Mettre à jour le fichier dashboard_data.json avec les nouvelles valeurs"],
+   489→    ["4.", "Le dashboard se met à jour automatiquement après déploiement"],
+   490→]
+   491→
+   492→for i, (label, desc) in enumerate(instructions):
+   493→    row_num = 5 + i
+   494→    ws4.cell(row=row_num, column=2, value=label)
+   495→    ws4.cell(row=row_num, column=3, value=desc)
+   496→    if label and label.isupper():
+   497→        ws4.cell(row=row_num, column=2).font = font_subheader()
+   498→    elif label and label[0].isdigit():
+   499→        ws4.cell(row=row_num, column=2).font = Font(name=FONT_NAME, size=11, bold=True, color=PRIMARY)
+   500→    else:
+   501→        ws4.cell(row=row_num, column=2).font = font_body()
+   502→    ws4.cell(row=row_num, column=3).font = font_body()
+   503→    ws4.cell(row=row_num, column=3).alignment = Alignment(wrap_text=True, vertical='center')
+   504→
+   505→ws4.column_dimensions['A'].width = 3
+   506→ws4.column_dimensions['B'].width = 28
+   507→ws4.column_dimensions['C'].width = 80
+   508→
+   509→# Save
+   510→output_path = "/home/z/my-project/download/Modele_Suivi_Avancement_Gharb_2026.xlsx"
+   511→wb.properties.creator = "Z.ai"
+   512→wb.save(output_path)
+   513→print(f"Saved to {output_path}")
+   514→
