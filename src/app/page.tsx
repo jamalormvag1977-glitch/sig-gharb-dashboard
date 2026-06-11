@@ -374,13 +374,13 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2">
               <a
-                href="/Suivi_Hebdomadaire_Gharb_2026.xlsx"
+                href="/Canevas_Hebdomadaire_ORMVAG_Gharb.xlsx"
                 download
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.03] active:scale-95 bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-emerald-400/30 hover:from-emerald-600 hover:to-teal-700"
-                title="Télécharger le modèle Excel de suivi hebdomadaire"
+                title="Télécharger le canevas hebdomadaire avec indicateurs physiques et financiers"
               >
                 <FileDown className="h-4 w-4" />
-                Exporter Modèle Hebdomadaire
+                Canevas Hebdomadaire
               </a>
               <input
                 ref={fileInputRef}
@@ -394,7 +394,9 @@ export default function Home() {
                     const XLSX = await import("xlsx");
                     const arrayBuffer = await file.arrayBuffer();
                     const workbook = XLSX.read(arrayBuffer, { type: "array" });
-                    const sheetName = workbook.SheetNames[0];
+                    // Try to find the latest weekly sheet (S04, S03, S02, S01) or fallback to first sheet
+                    const weekSheetNames = ["S04", "S03", "S02", "S01"];
+                    let sheetName = weekSheetNames.find(n => workbook.SheetNames.includes(n)) || workbook.SheetNames[0];
                     const sheet = workbook.Sheets[sheetName];
                     const rows: Record<string, unknown>[] = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
@@ -403,45 +405,53 @@ export default function Home() {
                     const updatedProjects = [...data.projects];
                     let matchedCount = 0;
 
-                    rows.forEach((row, idx) => {
-                      const projectIndex = idx;
-                      if (projectIndex < updatedProjects.length) {
-                        // Support both old and new weekly template column names
-                        const avPhys = row["Avancement Physique Sem. Act. (%)"] ?? row["Avancement Physique (%)"];
-                        const avFin = row["Avancement Financier Sem. Act. (%)"] ?? row["Avancement Financier (%)"];
-                        const decaisse = row["Montant Décaissé Cumulé (DH)"] ?? row["Montant Décaissé (DH)"];
-                        const statut = row["Statut"];
+                    rows.forEach((row) => {
+                      // Match by project number (N° column)
+                      const num = row["N°"] ?? row["N°"];
+                      const projectIndex = typeof num === "number" ? num - 1 : -1;
+                      if (projectIndex < 0 || projectIndex >= updatedProjects.length) return;
 
-                        if (avPhys !== undefined && avPhys !== "") {
-                          updatedProjects[projectIndex] = {
-                            ...updatedProjects[projectIndex],
-                            avancement_physique: typeof avPhys === "number" ? Math.round(avPhys * 100) : Number(avPhys) || updatedProjects[projectIndex].avancement_physique,
-                          };
-                        }
-                        if (avFin !== undefined && avFin !== "") {
-                          updatedProjects[projectIndex] = {
-                            ...updatedProjects[projectIndex],
-                            avancement_financier: typeof avFin === "number" ? Math.round(avFin * 100) : Number(avFin) || updatedProjects[projectIndex].avancement_financier,
-                          };
-                        }
-                        if (decaisse !== undefined && decaisse !== "") {
-                          const decaisseVal = typeof decaisse === "number" ? decaisse : Number(decaisse) || 0;
-                          updatedProjects[projectIndex] = {
-                            ...updatedProjects[projectIndex],
-                            montant_paye: decaisseVal,
-                          };
-                        }
-                        if (statut !== undefined && statut !== "") {
-                          const statutStr = String(statut).trim();
-                          if (["Terminé", "En cours", "Non démarré"].includes(statutStr)) {
-                            updatedProjects[projectIndex] = {
-                              ...updatedProjects[projectIndex],
-                              statut: statutStr as "Terminé" | "En cours" | "Non démarré",
-                            };
-                          }
-                        }
-                        matchedCount++;
+                      // New canevas: "Avancement Physique %" is auto-calculated from quantities
+                      const avPhys = row["Avancement Physique %"] ?? row["Avancement Physique Sem. Act. (%)"] ?? row["Avancement Physique (%)"];
+                      const avFin = row["Avancement Financier %"] ?? row["Avancement Financier Sem. Act. (%)"] ?? row["Avancement Financier (%)"];
+                      const decaisse = row["Montant Décaissé (DH)"] ?? row["Montant Décaissé Cumulé (DH)"];
+                      const paye = row["Montant Payé (DH)"];
+                      const ordonne = row["Montant Ordonné (DH)"];
+
+                      if (avPhys !== undefined && avPhys !== "") {
+                        updatedProjects[projectIndex] = {
+                          ...updatedProjects[projectIndex],
+                          avancement_physique: typeof avPhys === "number" ? Math.round(avPhys * 100) : Number(avPhys) || updatedProjects[projectIndex].avancement_physique,
+                        };
                       }
+                      if (avFin !== undefined && avFin !== "") {
+                        updatedProjects[projectIndex] = {
+                          ...updatedProjects[projectIndex],
+                          avancement_financier: typeof avFin === "number" ? Math.round(avFin * 100) : Number(avFin) || updatedProjects[projectIndex].avancement_financier,
+                        };
+                      }
+                      if (decaisse !== undefined && decaisse !== "") {
+                        const decaisseVal = typeof decaisse === "number" ? decaisse : Number(decaisse) || 0;
+                        updatedProjects[projectIndex] = {
+                          ...updatedProjects[projectIndex],
+                          montant_paye: paye !== undefined && paye !== "" ? (typeof paye === "number" ? paye : Number(paye) || decaisseVal) : decaisseVal,
+                        };
+                      }
+                      if (paye !== undefined && paye !== "") {
+                        const payeVal = typeof paye === "number" ? paye : Number(paye) || 0;
+                        updatedProjects[projectIndex] = {
+                          ...updatedProjects[projectIndex],
+                          montant_paye: payeVal,
+                        };
+                      }
+                      if (ordonne !== undefined && ordonne !== "") {
+                        const ordonneVal = typeof ordonne === "number" ? ordonne : Number(ordonne) || 0;
+                        updatedProjects[projectIndex] = {
+                          ...updatedProjects[projectIndex],
+                          montant_ordonne: ordonneVal,
+                        };
+                      }
+                      matchedCount++;
                     });
 
                     setData({ ...data, projects: updatedProjects });

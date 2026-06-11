@@ -8,7 +8,10 @@ export interface Project {
   intitule_projet: string;
   consistance: string;
   cout: number;
-  avancement_physique: number; // 0-100 %
+  unite: string; // Unité physique : ml, km, m², m³, U
+  qte_prevue: number; // Quantité prévue
+  qte_realisee: number; // Quantité réalisée cumulée
+  avancement_physique: number; // 0-100 % — calculé automatiquement = qte_realisee / qte_prevue
   avancement_financier: number; // 0-100 %
   montant_paye: number; // DH — montant effectivement payé
   montant_ordonne: number; // DH — montant ordonnancé (engagé mais non encore payé)
