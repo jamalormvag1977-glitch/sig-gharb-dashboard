@@ -119,10 +119,10 @@ const COMMUNE_PALETTE = [
 ];
 
 // Province-matched KPI colors (matching ORMVAG official map)
-const KENITRA_COLOR = { gradient: "from-amber-800 to-yellow-900", bgGradient: "from-amber-50 to-yellow-50", textColor: "text-amber-800", iconBg: "bg-amber-100", iconColor: "text-amber-800" };
-const SIDI_KACEM_COLOR = { gradient: "from-rose-800 to-pink-900", bgGradient: "from-rose-50 to-pink-50", textColor: "text-rose-800", iconBg: "bg-rose-100", iconColor: "text-rose-800" };
-const SIDI_SLIMANE_COLOR = { gradient: "from-emerald-800 to-teal-900", bgGradient: "from-emerald-50 to-teal-50", textColor: "text-emerald-800", iconBg: "bg-emerald-100", iconColor: "text-emerald-800" };
-const DEFAULT_KPI = { gradient: "from-violet-800 to-purple-900", bgGradient: "from-violet-50 to-purple-50", textColor: "text-violet-800", iconBg: "bg-violet-100", iconColor: "text-violet-800" };
+const KENITRA_COLOR = { gradient: "from-indigo-950 to-slate-900", bgGradient: "from-indigo-50 to-slate-50", textColor: "text-indigo-900", iconBg: "bg-indigo-100", iconColor: "text-indigo-900" };
+const SIDI_KACEM_COLOR = { gradient: "from-rose-950 to-red-950", bgGradient: "from-rose-50 to-red-50", textColor: "text-rose-900", iconBg: "bg-rose-100", iconColor: "text-rose-900" };
+const SIDI_SLIMANE_COLOR = { gradient: "from-emerald-950 to-teal-950", bgGradient: "from-emerald-50 to-teal-50", textColor: "text-emerald-900", iconBg: "bg-emerald-100", iconColor: "text-emerald-900" };
+const DEFAULT_KPI = { gradient: "from-slate-800 to-slate-950", bgGradient: "from-slate-50 to-slate-100", textColor: "text-slate-800", iconBg: "bg-slate-100", iconColor: "text-slate-800" };
 
 export default function Home() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -1233,14 +1233,14 @@ export default function Home() {
             const isActive = activeView === item.id;
             let activeBg = "from-emerald-400 to-teal-500";
             let activeShadow = "shadow-emerald-400/25";
-            if (item.id === "kenitra") { activeBg = "from-amber-800 to-yellow-900"; activeShadow = "shadow-amber-800/25"; }
-            if (item.id === "sidi-kacem") { activeBg = "from-rose-800 to-pink-900"; activeShadow = "shadow-rose-800/25"; }
-            if (item.id === "sidi-slimane") { activeBg = "from-emerald-800 to-teal-900"; activeShadow = "shadow-emerald-800/25"; }
-            if (item.id === "rapport") { activeBg = "from-amber-400 to-orange-500"; activeShadow = "shadow-amber-400/25"; }
+            if (item.id === "kenitra") { activeBg = "from-indigo-950 to-slate-900"; activeShadow = "shadow-indigo-950/25"; }
+            if (item.id === "sidi-kacem") { activeBg = "from-rose-950 to-red-950"; activeShadow = "shadow-rose-950/25"; }
+            if (item.id === "sidi-slimane") { activeBg = "from-emerald-950 to-teal-950"; activeShadow = "shadow-emerald-950/25"; }
+            if (item.id === "rapport") { activeBg = "from-slate-700 to-slate-900"; activeShadow = "shadow-slate-700/25"; }
             if (item.id === "suivi-avancement") { activeBg = "from-indigo-400 to-violet-500"; activeShadow = "shadow-indigo-400/25"; }
-            if (item.id === "suivi-kenitra") { activeBg = "from-amber-800 to-yellow-900"; activeShadow = "shadow-amber-800/25"; }
-            if (item.id === "suivi-sidi-kacem") { activeBg = "from-rose-800 to-pink-900"; activeShadow = "shadow-rose-800/25"; }
-            if (item.id === "suivi-sidi-slimane") { activeBg = "from-emerald-800 to-teal-900"; activeShadow = "shadow-emerald-800/25"; }
+            if (item.id === "suivi-kenitra") { activeBg = "from-indigo-950 to-slate-900"; activeShadow = "shadow-indigo-950/25"; }
+            if (item.id === "suivi-sidi-kacem") { activeBg = "from-rose-950 to-red-950"; activeShadow = "shadow-rose-950/25"; }
+            if (item.id === "suivi-sidi-slimane") { activeBg = "from-emerald-950 to-teal-950"; activeShadow = "shadow-emerald-950/25"; }
 
             return (
               <button
@@ -1314,7 +1314,7 @@ export default function Home() {
                     </>
                   ) : activeView === "rapport" ? (
                     <>
-                      <ClipboardCheck className="h-4 w-4 text-amber-600" />
+                      <ClipboardCheck className="h-4 w-4 text-indigo-600" />
                       Rapport d&apos;analyse
                     </>
                   ) : activeView === "suivi-avancement" ? (
@@ -1323,7 +1323,7 @@ export default function Home() {
                       Suivi d&apos;avancement physique et financier
                     </>
                   ) : activeView === "suivi-kenitra" ? (
-                    <><Gauge className="h-4 w-4 text-amber-600" /> Suivi Avancement — Kénitra</>
+                    <><Gauge className="h-4 w-4 text-indigo-600" /> Suivi Avancement — Kénitra</>
                   ) : activeView === "suivi-sidi-kacem" ? (
                     <><Gauge className="h-4 w-4 text-rose-600" /> Suivi Avancement — Sidi Kacem</>
                   ) : activeView === "suivi-sidi-slimane" ? (
@@ -1485,13 +1485,13 @@ export default function Home() {
           {activeView === "rapport" ? (
             <div className="space-y-6">
               {/* Rapport Header */}
-              <Card className="overflow-hidden shadow-xl border-amber-200/60">
-                <CardHeader className="py-5 px-6 bg-gradient-to-r from-amber-400 to-orange-500">
+              <Card className="overflow-hidden shadow-xl border-slate-300/60">
+                <CardHeader className="py-5 px-6 bg-gradient-to-r from-slate-800 to-slate-950">
                   <CardTitle className="text-lg font-extrabold text-white flex items-center gap-3">
                     <ClipboardCheck className="h-6 w-6" />
                     Rapport d&apos;Analyse — Projets de Lutte contre les Inondations
                   </CardTitle>
-                  <p className="text-amber-100 text-xs mt-1">Région du Gharb — ORMVAG — Année 2026</p>
+                  <p className="text-slate-300 text-xs mt-1">Région du Gharb — ORMVAG — Année 2026</p>
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">
                   {/* Rapport Filter Bar */}
@@ -1501,14 +1501,14 @@ export default function Home() {
                     const allCommunes = [...new Set(data.projects.map(p => p.commune))].filter(Boolean).sort();
                     const hasRapportFilters = rapportProvince !== "all" || rapportSecteur !== "all" || rapportCommune !== "all";
                     return (
-                      <div className="bg-gradient-to-r from-amber-50/80 to-orange-50/80 backdrop-blur-sm rounded-xl border border-amber-200/50 shadow-sm p-3">
+                      <div className="bg-gradient-to-r from-slate-50/80 to-slate-100/80 backdrop-blur-sm rounded-xl border border-slate-200/50 shadow-sm p-3">
                         <div className="flex items-center gap-2 mb-2.5">
-                          <Filter className="h-4 w-4 text-amber-500" />
+                          <Filter className="h-4 w-4 text-slate-600" />
                           <span className="text-xs font-extrabold text-slate-700">Filtres du rapport</span>
                           {hasRapportFilters && (
                             <button
                               onClick={() => { setRapportProvince("all"); setRapportSecteur("all"); setRapportCommune("all"); }}
-                              className="text-[10px] font-bold hover:opacity-70 ml-auto flex items-center gap-1 text-amber-600 transition-colors"
+                              className="text-[10px] font-bold hover:opacity-70 ml-auto flex items-center gap-1 text-slate-600 transition-colors"
                             >
                               <XCircle className="h-3 w-3" /> Réinitialiser
                             </button>
@@ -1520,7 +1520,7 @@ export default function Home() {
                             <select
                               value={rapportProvince}
                               onChange={e => setRapportProvince(e.target.value)}
-                              className="appearance-none bg-white border border-amber-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-amber-400 focus:border-amber-400 focus:ring-1 focus:ring-amber-200 transition-colors"
+                              className="appearance-none bg-white border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-slate-400 focus:border-slate-400 focus:ring-1 focus:ring-slate-200 transition-colors"
                             >
                               <option value="all">Toutes provinces</option>
                               {allProvinces.map(p => (
@@ -1534,7 +1534,7 @@ export default function Home() {
                             <select
                               value={rapportSecteur}
                               onChange={e => setRapportSecteur(e.target.value)}
-                              className="appearance-none bg-white border border-amber-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-amber-400 focus:border-amber-400 focus:ring-1 focus:ring-amber-200 transition-colors"
+                              className="appearance-none bg-white border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-slate-400 focus:border-slate-400 focus:ring-1 focus:ring-slate-200 transition-colors"
                             >
                               <option value="all">Tous secteurs</option>
                               {allSecteurs.map(s => (
@@ -1548,7 +1548,7 @@ export default function Home() {
                             <select
                               value={rapportCommune}
                               onChange={e => setRapportCommune(e.target.value)}
-                              className="appearance-none bg-white border border-amber-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-amber-400 focus:border-amber-400 focus:ring-1 focus:ring-amber-200 transition-colors max-w-[220px]"
+                              className="appearance-none bg-white border border-slate-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-slate-400 focus:border-slate-400 focus:ring-1 focus:ring-slate-200 transition-colors max-w-[220px]"
                             >
                               <option value="all">Toutes communes</option>
                               {allCommunes.map(c => (
@@ -1579,9 +1579,9 @@ export default function Home() {
                     const filteredSecteursSet = new Set(filteredProjects.map(p => p.secteur).filter(Boolean));
                     return (
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
-                        <div className="bg-amber-50 rounded-xl p-4 border border-amber-200/60 text-center">
-                          <p className="text-[9px] font-bold text-amber-500 uppercase tracking-widest mb-1">Coût Global</p>
-                          <p className="text-2xl font-black text-amber-600">{(filteredTotalCost / 1e6).toFixed(1)} <span className="text-sm">MDH</span></p>
+                        <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-200/60 text-center">
+                          <p className="text-[9px] font-bold text-indigo-500 uppercase tracking-widest mb-1">Coût Global</p>
+                          <p className="text-2xl font-black text-indigo-700">{(filteredTotalCost / 1e6).toFixed(1)} <span className="text-sm">MDH</span></p>
                         </div>
                         <div className="bg-blue-50 rounded-xl p-4 border border-blue-200/60 text-center">
                           <p className="text-[9px] font-bold text-blue-500 uppercase tracking-widest mb-1">Projets</p>
@@ -1604,7 +1604,7 @@ export default function Home() {
 
               {/* 1. Analyse par Province */}
               <Card className="overflow-hidden shadow-lg border-slate-200/60">
-                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-sky-400 to-blue-500">
+                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-indigo-950 to-slate-800">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2 text-white">
                     <Building2 className="h-4 w-4 text-sky-200" />
                     1. Analyse comparative par province
@@ -1652,7 +1652,7 @@ export default function Home() {
                                     <span className="text-sm font-extrabold text-slate-800">{name}</span>
                                   </div>
                                   {isTop && (
-                                    <Badge className="text-[8px] font-bold px-2 py-0.5 border-0 bg-amber-100 text-amber-600">
+                                    <Badge className="text-[8px] font-bold px-2 py-0.5 border-0 bg-indigo-100 text-indigo-700">
                                       <ArrowUpRight className="h-3 w-3 mr-0.5" /> Dominante
                                     </Badge>
                                   )}
@@ -1682,11 +1682,11 @@ export default function Home() {
                           const minPct = filteredTotalCost > 0 ? (provEntries[provEntries.length - 1][1].cout_total / filteredTotalCost) * 100 : 0;
                           const ecart = maxPct - minPct;
                           return (
-                            <div className="bg-amber-50 rounded-xl p-4 border border-amber-200/60 flex items-start gap-3">
-                              <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+                            <div className="bg-slate-50 rounded-xl p-4 border border-slate-200/60 flex items-start gap-3">
+                              <AlertTriangle className="h-5 w-5 text-slate-400 shrink-0 mt-0.5" />
                               <div>
-                                <p className="text-xs font-bold text-amber-600 mb-1">Constat clé — Disparité inter-provinciale</p>
-                                <p className="text-[11px] text-amber-600 leading-relaxed">
+                                <p className="text-xs font-bold text-slate-600 mb-1">Constat clé — Disparité inter-provinciale</p>
+                                <p className="text-[11px] text-slate-600 leading-relaxed">
                                   L&apos;écart entre la province la plus dotée ({provEntries[0][0]}, {maxPct.toFixed(1)}%) et la moins dotée
                                   ({provEntries[provEntries.length - 1][0]}, {minPct.toFixed(1)}%) est de <strong>{ecart.toFixed(1)} points</strong>.
                                   Cet écart reflète une concentration des investissements sur les zones les plus vulnérables, mais
@@ -1798,7 +1798,7 @@ export default function Home() {
 
               {/* 3. Top Communes */}
               <Card className="overflow-hidden shadow-lg border-slate-200/60">
-                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-emerald-400 to-teal-500">
+                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-emerald-950 to-teal-900">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2 text-white">
                     <TrendingUp className="h-4 w-4 text-emerald-200" />
                     3. Classement des communes par effort d&apos;investissement
@@ -1885,7 +1885,7 @@ export default function Home() {
 
               {/* 4. Indicateurs de performance */}
               <Card className="overflow-hidden shadow-lg border-slate-200/60">
-                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-rose-400 to-pink-500">
+                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-rose-950 to-red-900">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2 text-white">
                     <BarChart3 className="h-4 w-4 text-rose-200" />
                     4. Indicateurs clés de performance (KPI)
@@ -2209,9 +2209,9 @@ export default function Home() {
                             <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Payé</p>
                             <p className="text-lg font-black text-emerald-700">{(payeFiltered / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
                           </div>
-                          <div className="bg-amber-50 rounded-xl p-3 border border-amber-200/60 text-center">
-                            <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest mb-1">Reste à payer</p>
-                            <p className="text-lg font-black text-amber-700">{((totalCostFiltered - payeFiltered) / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
+                          <div className="bg-indigo-50 rounded-xl p-3 border border-indigo-200/60 text-center">
+                            <p className="text-[9px] font-bold text-indigo-600 uppercase tracking-widest mb-1">Reste à payer</p>
+                            <p className="text-lg font-black text-indigo-700">{((totalCostFiltered - payeFiltered) / 1e6).toFixed(1)} <span className="text-xs">MDH</span></p>
                           </div>
                         </div>
                         {totalFiltered < sd.totalProjects && (
@@ -2341,7 +2341,7 @@ export default function Home() {
                   {/* Progress by sector — filtered */}
                   <div>
                     <h4 className="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2">
-                      <Layers className="h-4 w-4 text-amber-500" />
+                      <Layers className="h-4 w-4 text-indigo-500" />
                       Avancement par secteur
                     </h4>
                     <div className="space-y-2">
@@ -2734,7 +2734,7 @@ export default function Home() {
             <Card className="overflow-hidden shadow-lg border-slate-200/60">
               <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-slate-800 to-slate-700">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2 text-white">
-                  <TableIcon className="h-4 w-4 text-amber-400" />
+                  <TableIcon className="h-4 w-4 text-slate-400" />
                   Résumé par commune
                 </CardTitle>
               </CardHeader>
@@ -2878,7 +2878,7 @@ export default function Home() {
           {/* ===== DETAILED PROJECT TABLES - EACH COMMUNE ===== */}
           <div>
             <div className="flex items-center gap-2 mb-4 py-3 px-5 rounded-lg bg-gradient-to-r from-slate-800 to-slate-700">
-              <FileText className="h-4 w-4 text-amber-400" />
+              <FileText className="h-4 w-4 text-slate-400" />
               <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                 Détail des projets par commune
                 {selectedProvince && (
@@ -3071,7 +3071,7 @@ export default function Home() {
           {selectedProvince && (
             <div>
               <div className="flex items-center gap-2 mb-4 py-3 px-5 rounded-lg bg-gradient-to-r from-slate-800 to-slate-700">
-                <Layers className="h-4 w-4 text-amber-400" />
+                <Layers className="h-4 w-4 text-slate-400" />
                 <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                   Analyse par rubrique
                   <Badge

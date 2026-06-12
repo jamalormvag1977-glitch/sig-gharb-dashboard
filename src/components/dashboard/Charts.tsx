@@ -241,7 +241,7 @@ export function ProvinceBarChart({
   byProvince: Record<string, { nb_projets: number; cout_total: number; communes: number }>;
 }) {
   const totalCost = Object.values(byProvince).reduce((s, d) => s + d.cout_total, 0);
-  const PROVINCE_BAR_COLORS = ["#92400e", "#9f1239", "#065f46"];
+  const PROVINCE_BAR_COLORS = ["#1e1b4b", "#881337", "#022c22"];
 
   const data = Object.entries(byProvince).map(([name, d], idx) => ({
     name,

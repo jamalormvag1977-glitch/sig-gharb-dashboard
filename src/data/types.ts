@@ -88,7 +88,7 @@ export const SECTEUR_SHORT: Record<string, string> = {
 };
 
 export const PROVINCE_COLORS: Record<string, string> = {
-  "Kénitra": "#92400e",
-  "Sidi Slimane": "#065f46",
-  "Sidi Kacem": "#9f1239",
+  "Kénitra": "#1e1b4b",
+  "Sidi Slimane": "#022c22",
+  "Sidi Kacem": "#881337",
 };
