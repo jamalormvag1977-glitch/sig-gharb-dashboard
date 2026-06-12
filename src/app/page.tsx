@@ -119,10 +119,10 @@ const COMMUNE_PALETTE = [
 ];
 
 // Province-matched KPI colors (matching ORMVAG official map)
-const KENITRA_COLOR = { gradient: "from-amber-400 to-yellow-500", bgGradient: "from-amber-50 to-yellow-50", textColor: "text-amber-600", iconBg: "bg-amber-100", iconColor: "text-amber-500" };
-const SIDI_KACEM_COLOR = { gradient: "from-rose-400 to-pink-500", bgGradient: "from-rose-50 to-pink-50", textColor: "text-rose-600", iconBg: "bg-rose-100", iconColor: "text-rose-500" };
-const SIDI_SLIMANE_COLOR = { gradient: "from-emerald-400 to-teal-500", bgGradient: "from-emerald-50 to-teal-50", textColor: "text-emerald-600", iconBg: "bg-emerald-100", iconColor: "text-emerald-500" };
-const DEFAULT_KPI = { gradient: "from-violet-400 to-purple-500", bgGradient: "from-violet-50 to-purple-50", textColor: "text-violet-600", iconBg: "bg-violet-100", iconColor: "text-violet-500" };
+const KENITRA_COLOR = { gradient: "from-amber-800 to-yellow-900", bgGradient: "from-amber-50 to-yellow-50", textColor: "text-amber-800", iconBg: "bg-amber-100", iconColor: "text-amber-800" };
+const SIDI_KACEM_COLOR = { gradient: "from-rose-800 to-pink-900", bgGradient: "from-rose-50 to-pink-50", textColor: "text-rose-800", iconBg: "bg-rose-100", iconColor: "text-rose-800" };
+const SIDI_SLIMANE_COLOR = { gradient: "from-emerald-800 to-teal-900", bgGradient: "from-emerald-50 to-teal-50", textColor: "text-emerald-800", iconBg: "bg-emerald-100", iconColor: "text-emerald-800" };
+const DEFAULT_KPI = { gradient: "from-violet-800 to-purple-900", bgGradient: "from-violet-50 to-purple-50", textColor: "text-violet-800", iconBg: "bg-violet-100", iconColor: "text-violet-800" };
 
 export default function Home() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -1233,14 +1233,14 @@ export default function Home() {
             const isActive = activeView === item.id;
             let activeBg = "from-emerald-400 to-teal-500";
             let activeShadow = "shadow-emerald-400/25";
-            if (item.id === "kenitra") { activeBg = "from-amber-400 to-yellow-500"; activeShadow = "shadow-amber-400/25"; }
-            if (item.id === "sidi-kacem") { activeBg = "from-rose-400 to-pink-500"; activeShadow = "shadow-rose-400/25"; }
-            if (item.id === "sidi-slimane") { activeBg = "from-emerald-400 to-teal-500"; activeShadow = "shadow-emerald-400/25"; }
+            if (item.id === "kenitra") { activeBg = "from-amber-800 to-yellow-900"; activeShadow = "shadow-amber-800/25"; }
+            if (item.id === "sidi-kacem") { activeBg = "from-rose-800 to-pink-900"; activeShadow = "shadow-rose-800/25"; }
+            if (item.id === "sidi-slimane") { activeBg = "from-emerald-800 to-teal-900"; activeShadow = "shadow-emerald-800/25"; }
             if (item.id === "rapport") { activeBg = "from-amber-400 to-orange-500"; activeShadow = "shadow-amber-400/25"; }
             if (item.id === "suivi-avancement") { activeBg = "from-indigo-400 to-violet-500"; activeShadow = "shadow-indigo-400/25"; }
-            if (item.id === "suivi-kenitra") { activeBg = "from-amber-400 to-yellow-500"; activeShadow = "shadow-amber-400/25"; }
-            if (item.id === "suivi-sidi-kacem") { activeBg = "from-rose-400 to-pink-500"; activeShadow = "shadow-rose-400/25"; }
-            if (item.id === "suivi-sidi-slimane") { activeBg = "from-emerald-400 to-teal-500"; activeShadow = "shadow-emerald-400/25"; }
+            if (item.id === "suivi-kenitra") { activeBg = "from-amber-800 to-yellow-900"; activeShadow = "shadow-amber-800/25"; }
+            if (item.id === "suivi-sidi-kacem") { activeBg = "from-rose-800 to-pink-900"; activeShadow = "shadow-rose-800/25"; }
+            if (item.id === "suivi-sidi-slimane") { activeBg = "from-emerald-800 to-teal-900"; activeShadow = "shadow-emerald-800/25"; }
 
             return (
               <button
