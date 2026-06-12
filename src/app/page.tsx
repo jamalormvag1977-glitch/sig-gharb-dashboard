@@ -143,6 +143,11 @@ export default function Home() {
   const [filterMois, setFilterMois] = useState<string>("all");
   const [filterSemaine, setFilterSemaine] = useState<string>("all");
 
+  // Rapport filters
+  const [rapportProvince, setRapportProvince] = useState<string>("all");
+  const [rapportSecteur, setRapportSecteur] = useState<string>("all");
+  const [rapportCommune, setRapportCommune] = useState<string>("all");
+
   // Trigger map resize when fullscreen toggles
   useEffect(() => {
     const t = setTimeout(() => window.dispatchEvent(new Event("resize")), 350);
@@ -1481,7 +1486,7 @@ export default function Home() {
             <div className="space-y-6">
               {/* Rapport Header */}
               <Card className="overflow-hidden shadow-xl border-amber-200/60">
-                <CardHeader className="py-5 px-6 bg-gradient-to-r from-amber-600 to-orange-600">
+                <CardHeader className="py-5 px-6 bg-gradient-to-r from-amber-400 to-orange-500">
                   <CardTitle className="text-lg font-extrabold text-white flex items-center gap-3">
                     <ClipboardCheck className="h-6 w-6" />
                     Rapport d&apos;Analyse — Projets de Lutte contre les Inondations
@@ -1489,6 +1494,74 @@ export default function Home() {
                   <p className="text-amber-100 text-xs mt-1">Région du Gharb — ORMVAG — Année 2026</p>
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">
+                  {/* Rapport Filter Bar */}
+                  {(() => {
+                    const allProvinces = Object.keys(PROVINCE_COLORS);
+                    const allSecteurs = Object.keys(data.bySecteur).map(s => SECTEUR_SHORT[s] || s).sort();
+                    const allCommunes = [...new Set(data.projects.map(p => p.commune))].filter(Boolean).sort();
+                    const hasRapportFilters = rapportProvince !== "all" || rapportSecteur !== "all" || rapportCommune !== "all";
+                    return (
+                      <div className="bg-gradient-to-r from-amber-50/80 to-orange-50/80 backdrop-blur-sm rounded-xl border border-amber-200/50 shadow-sm p-3">
+                        <div className="flex items-center gap-2 mb-2.5">
+                          <Filter className="h-4 w-4 text-amber-500" />
+                          <span className="text-xs font-extrabold text-slate-700">Filtres du rapport</span>
+                          {hasRapportFilters && (
+                            <button
+                              onClick={() => { setRapportProvince("all"); setRapportSecteur("all"); setRapportCommune("all"); }}
+                              className="text-[10px] font-bold hover:opacity-70 ml-auto flex items-center gap-1 text-amber-600 transition-colors"
+                            >
+                              <XCircle className="h-3 w-3" /> Réinitialiser
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {/* Province filter */}
+                          <div className="relative">
+                            <select
+                              value={rapportProvince}
+                              onChange={e => setRapportProvince(e.target.value)}
+                              className="appearance-none bg-white border border-amber-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-amber-400 focus:border-amber-400 focus:ring-1 focus:ring-amber-200 transition-colors"
+                            >
+                              <option value="all">Toutes provinces</option>
+                              {allProvinces.map(p => (
+                                <option key={p} value={p}>{p}</option>
+                              ))}
+                            </select>
+                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+                          </div>
+                          {/* Secteur filter */}
+                          <div className="relative">
+                            <select
+                              value={rapportSecteur}
+                              onChange={e => setRapportSecteur(e.target.value)}
+                              className="appearance-none bg-white border border-amber-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-amber-400 focus:border-amber-400 focus:ring-1 focus:ring-amber-200 transition-colors"
+                            >
+                              <option value="all">Tous secteurs</option>
+                              {allSecteurs.map(s => (
+                                <option key={s} value={s}>{s}</option>
+                              ))}
+                            </select>
+                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+                          </div>
+                          {/* Commune filter */}
+                          <div className="relative">
+                            <select
+                              value={rapportCommune}
+                              onChange={e => setRapportCommune(e.target.value)}
+                              className="appearance-none bg-white border border-amber-200/80 rounded-lg px-3 py-1.5 pr-7 text-[11px] font-semibold text-slate-700 cursor-pointer hover:border-amber-400 focus:border-amber-400 focus:ring-1 focus:ring-amber-200 transition-colors max-w-[220px]"
+                            >
+                              <option value="all">Toutes communes</option>
+                              {allCommunes.map(c => (
+                                <option key={c} value={c}>{c}</option>
+                              ))}
+                            </select>
+                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   <p className="text-sm text-slate-700 leading-relaxed">
                     Ce rapport présente une analyse détaillée de l&apos;ensemble des projets de lutte contre les inondations
                     dans la région du Gharb, couvrant les trois provinces de Kénitra, Sidi Kacem et Sidi Slimane.
@@ -1496,33 +1569,44 @@ export default function Home() {
                     et sectorielle des budgets, et de formuler des recommandations stratégiques pour optimiser
                     l&apos;allocation des ressources disponibles.
                   </p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
-                    <div className="bg-amber-50 rounded-xl p-4 border border-amber-200/60 text-center">
-                      <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest mb-1">Coût Global</p>
-                      <p className="text-2xl font-black text-amber-700">{(data.totalCost / 1e6).toFixed(1)} <span className="text-sm">MDH</span></p>
-                    </div>
-                    <div className="bg-blue-50 rounded-xl p-4 border border-blue-200/60 text-center">
-                      <p className="text-[9px] font-bold text-blue-600 uppercase tracking-widest mb-1">Projets</p>
-                      <p className="text-2xl font-black text-blue-700">{data.totalProjects}</p>
-                    </div>
-                    <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200/60 text-center">
-                      <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Communes</p>
-                      <p className="text-2xl font-black text-emerald-700">{Object.keys(data.summary).length}</p>
-                    </div>
-                    <div className="bg-purple-50 rounded-xl p-4 border border-purple-200/60 text-center">
-                      <p className="text-[9px] font-bold text-purple-600 uppercase tracking-widest mb-1">Secteurs</p>
-                      <p className="text-2xl font-black text-purple-700">{Object.keys(data.bySecteur).length}</p>
-                    </div>
-                  </div>
+                  {(() => {
+                    let filteredProjects = data.projects;
+                    if (rapportProvince !== "all") filteredProjects = filteredProjects.filter(p => p.province === rapportProvince);
+                    if (rapportSecteur !== "all") filteredProjects = filteredProjects.filter(p => (SECTEUR_SHORT[p.secteur] || p.secteur) === rapportSecteur);
+                    if (rapportCommune !== "all") filteredProjects = filteredProjects.filter(p => p.commune === rapportCommune);
+                    const filteredTotalCost = filteredProjects.reduce((s, p) => s + (p.cout_total || 0), 0);
+                    const filteredCommunesSet = new Set(filteredProjects.map(p => p.commune).filter(Boolean));
+                    const filteredSecteursSet = new Set(filteredProjects.map(p => p.secteur).filter(Boolean));
+                    return (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
+                        <div className="bg-amber-50 rounded-xl p-4 border border-amber-200/60 text-center">
+                          <p className="text-[9px] font-bold text-amber-500 uppercase tracking-widest mb-1">Coût Global</p>
+                          <p className="text-2xl font-black text-amber-600">{(filteredTotalCost / 1e6).toFixed(1)} <span className="text-sm">MDH</span></p>
+                        </div>
+                        <div className="bg-blue-50 rounded-xl p-4 border border-blue-200/60 text-center">
+                          <p className="text-[9px] font-bold text-blue-500 uppercase tracking-widest mb-1">Projets</p>
+                          <p className="text-2xl font-black text-blue-600">{filteredProjects.length}</p>
+                        </div>
+                        <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200/60 text-center">
+                          <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Communes</p>
+                          <p className="text-2xl font-black text-emerald-600">{filteredCommunesSet.size}</p>
+                        </div>
+                        <div className="bg-violet-50 rounded-xl p-4 border border-violet-200/60 text-center">
+                          <p className="text-[9px] font-bold text-violet-500 uppercase tracking-widest mb-1">Secteurs</p>
+                          <p className="text-2xl font-black text-violet-600">{filteredSecteursSet.size}</p>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                 </CardContent>
               </Card>
 
               {/* 1. Analyse par Province */}
               <Card className="overflow-hidden shadow-lg border-slate-200/60">
-                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-slate-800 to-slate-700">
+                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-sky-400 to-blue-500">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2 text-white">
-                    <Building2 className="h-4 w-4 text-blue-400" />
+                    <Building2 className="h-4 w-4 text-sky-200" />
                     1. Analyse comparative par province
                   </CardTitle>
                 </CardHeader>
@@ -1533,64 +1617,86 @@ export default function Home() {
                     inondation dans chaque province. L&apos;analyse des écarts budgétaires permet d&apos;identifier les provinces
                     nécessitant une attention prioritaire en matière de renforcement des ouvrages de protection.
                   </p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {Object.entries(data.byProvince).sort(([, a], [, b]) => b.cout_total - a.cout_total).map(([name, d]) => {
-                      const pct = data.totalCost > 0 ? (d.cout_total / data.totalCost) * 100 : 0;
-                      const avgCost = d.nb_projets > 0 ? d.cout_total / d.nb_projets : 0;
-                      const provColor = PROVINCE_COLORS[name] || "#6366f1";
-                      const isTop = pct === Math.max(...Object.values(data.byProvince).map(p => data.totalCost > 0 ? (p.cout_total / data.totalCost) * 100 : 0));
-                      return (
-                        <div key={name} className="rounded-xl border-2 p-4 space-y-3 transition-shadow hover:shadow-lg" style={{ borderColor: provColor + "40", backgroundColor: provColor + "08" }}>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <div className="w-4 h-4 rounded-full shadow-md" style={{ backgroundColor: provColor }} />
-                              <span className="text-sm font-extrabold text-slate-800">{name}</span>
-                            </div>
-                            {isTop && (
-                              <Badge className="text-[8px] font-bold px-2 py-0.5 border-0 bg-amber-100 text-amber-700">
-                                <ArrowUpRight className="h-3 w-3 mr-0.5" /> Dominante
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                              <span className="text-[10px] text-slate-500 font-semibold">Budget alloué</span>
-                              <span className="text-sm font-black" style={{ color: provColor }}>{(d.cout_total / 1e6).toFixed(1)} MDH</span>
-                            </div>
-                            <div className="w-full bg-slate-200/80 rounded-full h-3 overflow-hidden shadow-inner">
-                              <div className="h-full rounded-full shadow-sm" style={{ width: `${pct}%`, backgroundColor: provColor }} />
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-[10px] font-bold text-slate-600">{pct.toFixed(1)}% du total</span>
-                              <span className="text-[10px] text-slate-400">{d.nb_projets} projets / {d.communes} communes</span>
-                            </div>
-                          </div>
-                          <div className="bg-white rounded-lg p-2.5 border border-slate-100 mt-1">
-                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Coût moyen / projet</p>
-                            <p className="text-sm font-black text-slate-800">{(avgCost / 1e6).toFixed(2)} MDH</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
                   {(() => {
-                    const provEntries = Object.entries(data.byProvince).sort(([, a], [, b]) => b.cout_total - a.cout_total);
-                    const maxPct = data.totalCost > 0 ? (provEntries[0][1].cout_total / data.totalCost) * 100 : 0;
-                    const minPct = data.totalCost > 0 ? (provEntries[provEntries.length - 1][1].cout_total / data.totalCost) * 100 : 0;
-                    const ecart = maxPct - minPct;
+                    let filteredProjects = data.projects;
+                    if (rapportProvince !== "all") filteredProjects = filteredProjects.filter(p => p.province === rapportProvince);
+                    if (rapportSecteur !== "all") filteredProjects = filteredProjects.filter(p => (SECTEUR_SHORT[p.secteur] || p.secteur) === rapportSecteur);
+                    if (rapportCommune !== "all") filteredProjects = filteredProjects.filter(p => p.commune === rapportCommune);
+                    const filteredTotalCost = filteredProjects.reduce((s, p) => s + (p.cout_total || 0), 0);
+                    const filteredByProvince: Record<string, { nb_projets: number; cout_total: number; communes: number }> = {};
+                    for (const p of filteredProjects) {
+                      if (!filteredByProvince[p.province]) filteredByProvince[p.province] = { nb_projets: 0, cout_total: 0, communes: 0 };
+                      filteredByProvince[p.province].nb_projets++;
+                      filteredByProvince[p.province].cout_total += (p.cout_total || 0);
+                    }
+                    for (const [prov] of Object.entries(filteredByProvince)) {
+                      const provCommunes = new Set(filteredProjects.filter(p => p.province === prov).map(p => p.commune).filter(Boolean));
+                      filteredByProvince[prov].communes = provCommunes.size;
+                    }
+                    const provEntries = Object.entries(filteredByProvince).sort(([, a], [, b]) => b.cout_total - a.cout_total);
+                    if (provEntries.length === 0) return <p className="text-sm text-slate-400 italic">Aucun projet ne correspond aux filtres sélectionnés.</p>;
+                    const maxPct = filteredTotalCost > 0 ? (provEntries[0][1].cout_total / filteredTotalCost) * 100 : 0;
                     return (
-                      <div className="bg-amber-50 rounded-xl p-4 border border-amber-200/60 flex items-start gap-3">
-                        <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-xs font-bold text-amber-700 mb-1">Constat clé — Disparité inter-provinciale</p>
-                          <p className="text-[11px] text-amber-700 leading-relaxed">
-                            L&apos;écart entre la province la plus dotée ({provEntries[0][0]}, {maxPct.toFixed(1)}%) et la moins dotée
-                            ({provEntries[provEntries.length - 1][0]}, {minPct.toFixed(1)}%) est de <strong>{ecart.toFixed(1)} points</strong>.
-                            Cet écart reflète une concentration des investissements sur les zones les plus vulnérables, mais
-                            souligne également la nécessité de renforcer les infrastructures dans les provinces à faible couverture.
-                          </p>
+                      <>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          {provEntries.map(([name, d]) => {
+                            const pct = filteredTotalCost > 0 ? (d.cout_total / filteredTotalCost) * 100 : 0;
+                            const avgCost = d.nb_projets > 0 ? d.cout_total / d.nb_projets : 0;
+                            const provColor = PROVINCE_COLORS[name] || "#6366f1";
+                            const isTop = pct === maxPct;
+                            return (
+                              <div key={name} className="rounded-xl border-2 p-4 space-y-3 transition-shadow hover:shadow-lg" style={{ borderColor: provColor + "50", backgroundColor: provColor + "0A" }}>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 rounded-full shadow-md" style={{ backgroundColor: provColor }} />
+                                    <span className="text-sm font-extrabold text-slate-800">{name}</span>
+                                  </div>
+                                  {isTop && (
+                                    <Badge className="text-[8px] font-bold px-2 py-0.5 border-0 bg-amber-100 text-amber-600">
+                                      <ArrowUpRight className="h-3 w-3 mr-0.5" /> Dominante
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-[10px] text-slate-500 font-semibold">Budget alloué</span>
+                                    <span className="text-sm font-black" style={{ color: provColor }}>{(d.cout_total / 1e6).toFixed(1)} MDH</span>
+                                  </div>
+                                  <div className="w-full bg-slate-200/80 rounded-full h-3 overflow-hidden shadow-inner">
+                                    <div className="h-full rounded-full shadow-sm" style={{ width: `${pct}%`, backgroundColor: provColor }} />
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-[10px] font-bold text-slate-600">{pct.toFixed(1)}% du total</span>
+                                    <span className="text-[10px] text-slate-400">{d.nb_projets} projets / {d.communes} communes</span>
+                                  </div>
+                                </div>
+                                <div className="bg-white rounded-lg p-2.5 border border-slate-100 mt-1">
+                                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Coût moyen / projet</p>
+                                  <p className="text-sm font-black text-slate-800">{(avgCost / 1e6).toFixed(2)} MDH</p>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                      </div>
+                        {provEntries.length >= 2 && (() => {
+                          const minPct = filteredTotalCost > 0 ? (provEntries[provEntries.length - 1][1].cout_total / filteredTotalCost) * 100 : 0;
+                          const ecart = maxPct - minPct;
+                          return (
+                            <div className="bg-amber-50 rounded-xl p-4 border border-amber-200/60 flex items-start gap-3">
+                              <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+                              <div>
+                                <p className="text-xs font-bold text-amber-600 mb-1">Constat clé — Disparité inter-provinciale</p>
+                                <p className="text-[11px] text-amber-600 leading-relaxed">
+                                  L&apos;écart entre la province la plus dotée ({provEntries[0][0]}, {maxPct.toFixed(1)}%) et la moins dotée
+                                  ({provEntries[provEntries.length - 1][0]}, {minPct.toFixed(1)}%) est de <strong>{ecart.toFixed(1)} points</strong>.
+                                  Cet écart reflète une concentration des investissements sur les zones les plus vulnérables, mais
+                                  souligne également la nécessité de renforcer les infrastructures dans les provinces à faible couverture.
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </>
                     );
                   })()}
                 </CardContent>
@@ -1598,9 +1704,9 @@ export default function Home() {
 
               {/* 2. Analyse par Secteur */}
               <Card className="overflow-hidden shadow-lg border-slate-200/60">
-                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-slate-800 to-slate-700">
+                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-violet-400 to-purple-500">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2 text-white">
-                    <Layers className="h-4 w-4 text-amber-400" />
+                    <Layers className="h-4 w-4 text-violet-200" />
                     2. Analyse sectorielle des investissements
                   </CardTitle>
                 </CardHeader>
@@ -1612,59 +1718,79 @@ export default function Home() {
                     d&apos;assainissement et de drainage concentrent logiquement la part la plus importante des budgets,
                     reflétant la nature hydrologique des enjeux dans la plaine du Gharb.
                   </p>
-                  <div className="space-y-3">
-                    {Object.entries(data.bySecteur)
-                      .sort(([, a], [, b]) => b.cout_total - a.cout_total)
-                      .map(([name, d]) => {
-                        const shortName = SECTEUR_SHORT[name] || name;
-                        const dotColor = SECTEUR_DOT_COLORS[shortName] || "#94a3b8";
-                        const pct = data.totalCost > 0 ? (d.cout_total / data.totalCost) * 100 : 0;
-                        const avgCost = d.nb_projets > 0 ? d.cout_total / d.nb_projets : 0;
-                        return (
-                          <div key={name} className="rounded-xl border p-4" style={{ borderColor: dotColor + "30", backgroundColor: dotColor + "06" }}>
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2.5">
-                                <div className="w-4 h-4 rounded-full shadow-md" style={{ backgroundColor: dotColor }} />
-                                <span className="text-sm font-extrabold text-slate-800">{shortName}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-black" style={{ color: dotColor }}>{(d.cout_total / 1e6).toFixed(1)} MDH</span>
-                                <Badge className="text-[10px] font-bold px-2 py-0.5 border-0 shadow-sm" style={{ backgroundColor: dotColor + "15", color: dotColor }}>
-                                  {pct.toFixed(1)}%
-                                </Badge>
-                              </div>
-                            </div>
-                            <div className="w-full bg-slate-200/80 rounded-full h-4 overflow-hidden shadow-inner mb-2">
-                              <div className="h-full rounded-full shadow-sm transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: dotColor }} />
-                            </div>
-                            <div className="flex gap-4 text-[10px] text-slate-500 font-semibold">
-                              <span>{d.nb_projets} projets</span>
-                              <span>{d.communes} communes</span>
-                              <span>Coût moyen: {(avgCost / 1e6).toFixed(2)} MDH/projet</span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                  </div>
                   {(() => {
-                    const secteurEntries = Object.entries(data.bySecteur).sort(([, a], [, b]) => b.cout_total - a.cout_total);
-                    const topSecteur = secteurEntries[0];
-                    const topPct = data.totalCost > 0 ? (topSecteur[1].cout_total / data.totalCost) * 100 : 0;
+                    let filteredProjects = data.projects;
+                    if (rapportProvince !== "all") filteredProjects = filteredProjects.filter(p => p.province === rapportProvince);
+                    if (rapportSecteur !== "all") filteredProjects = filteredProjects.filter(p => (SECTEUR_SHORT[p.secteur] || p.secteur) === rapportSecteur);
+                    if (rapportCommune !== "all") filteredProjects = filteredProjects.filter(p => p.commune === rapportCommune);
+                    const filteredTotalCost = filteredProjects.reduce((s, p) => s + (p.cout_total || 0), 0);
+                    const filteredBySecteur: Record<string, { nb_projets: number; cout_total: number; communes: number }> = {};
+                    for (const p of filteredProjects) {
+                      if (!filteredBySecteur[p.secteur]) filteredBySecteur[p.secteur] = { nb_projets: 0, cout_total: 0, communes: 0 };
+                      filteredBySecteur[p.secteur].nb_projets++;
+                      filteredBySecteur[p.secteur].cout_total += (p.cout_total || 0);
+                    }
+                    for (const [sec] of Object.entries(filteredBySecteur)) {
+                      const secCommunes = new Set(filteredProjects.filter(p => p.secteur === sec).map(p => p.commune).filter(Boolean));
+                      filteredBySecteur[sec].communes = secCommunes.size;
+                    }
+                    const secteurEntries = Object.entries(filteredBySecteur).sort(([, a], [, b]) => b.cout_total - a.cout_total);
+                    if (secteurEntries.length === 0) return <p className="text-sm text-slate-400 italic">Aucun projet ne correspond aux filtres sélectionnés.</p>;
                     return (
-                      <div className="bg-blue-50 rounded-xl p-4 border border-blue-200/60 flex items-start gap-3">
-                        <Target className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-xs font-bold text-blue-800 mb-1">Secteur prédominant</p>
-                          <p className="text-[11px] text-blue-700 leading-relaxed">
-                            Le secteur <strong>{SECTEUR_SHORT[topSecteur[0]] || topSecteur[0]}</strong> capte à lui seul
-                            <strong> {topPct.toFixed(1)}%</strong> du budget total avec <strong>{topSecteur[1].nb_projets} projets</strong> pour
-                            un montant de <strong>{(topSecteur[1].cout_total / 1e6).toFixed(1)} MDH</strong>. Cette dominance
-                            s&apos;explique par la vocation agricole de la région du Gharb, où le réseau d&apos;assainissement
-                            et de drainage constitue l&apos;infrastructure critique pour la gestion des eaux de crue et la
-                            protection des terres agricoles.
-                          </p>
+                      <>
+                        <div className="space-y-3">
+                          {secteurEntries.map(([name, d]) => {
+                            const shortName = SECTEUR_SHORT[name] || name;
+                            const dotColor = SECTEUR_DOT_COLORS[shortName] || "#94a3b8";
+                            const pct = filteredTotalCost > 0 ? (d.cout_total / filteredTotalCost) * 100 : 0;
+                            const avgCost = d.nb_projets > 0 ? d.cout_total / d.nb_projets : 0;
+                            return (
+                              <div key={name} className="rounded-xl border p-4" style={{ borderColor: dotColor + "40", backgroundColor: dotColor + "08" }}>
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="w-4 h-4 rounded-full shadow-md" style={{ backgroundColor: dotColor }} />
+                                    <span className="text-sm font-extrabold text-slate-800">{shortName}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm font-black" style={{ color: dotColor }}>{(d.cout_total / 1e6).toFixed(1)} MDH</span>
+                                    <Badge className="text-[10px] font-bold px-2 py-0.5 border-0 shadow-sm" style={{ backgroundColor: dotColor + "18", color: dotColor }}>
+                                      {pct.toFixed(1)}%
+                                    </Badge>
+                                  </div>
+                                </div>
+                                <div className="w-full bg-slate-200/80 rounded-full h-4 overflow-hidden shadow-inner mb-2">
+                                  <div className="h-full rounded-full shadow-sm transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: dotColor }} />
+                                </div>
+                                <div className="flex gap-4 text-[10px] text-slate-500 font-semibold">
+                                  <span>{d.nb_projets} projets</span>
+                                  <span>{d.communes} communes</span>
+                                  <span>Coût moyen: {(avgCost / 1e6).toFixed(2)} MDH/projet</span>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                      </div>
+                        {secteurEntries.length > 0 && (() => {
+                          const topSecteur = secteurEntries[0];
+                          const topPct = filteredTotalCost > 0 ? (topSecteur[1].cout_total / filteredTotalCost) * 100 : 0;
+                          return (
+                            <div className="bg-sky-50 rounded-xl p-4 border border-sky-200/60 flex items-start gap-3">
+                              <Target className="h-5 w-5 text-sky-400 shrink-0 mt-0.5" />
+                              <div>
+                                <p className="text-xs font-bold text-sky-600 mb-1">Secteur prédominant</p>
+                                <p className="text-[11px] text-sky-600 leading-relaxed">
+                                  Le secteur <strong>{SECTEUR_SHORT[topSecteur[0]] || topSecteur[0]}</strong> capte à lui seul
+                                  <strong> {topPct.toFixed(1)}%</strong> du budget filtré avec <strong>{topSecteur[1].nb_projets} projets</strong> pour
+                                  un montant de <strong>{(topSecteur[1].cout_total / 1e6).toFixed(1)} MDH</strong>. Cette dominance
+                                  s&apos;explique par la vocation agricole de la région du Gharb, où le réseau d&apos;assainissement
+                                  et de drainage constitue l&apos;infrastructure critique pour la gestion des eaux de crue et la
+                                  protection des terres agricoles.
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </>
                     );
                   })()}
                 </CardContent>
@@ -1672,9 +1798,9 @@ export default function Home() {
 
               {/* 3. Top Communes */}
               <Card className="overflow-hidden shadow-lg border-slate-200/60">
-                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-slate-800 to-slate-700">
+                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-emerald-400 to-teal-500">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2 text-white">
-                    <TrendingUp className="h-4 w-4 text-emerald-400" />
+                    <TrendingUp className="h-4 w-4 text-emerald-200" />
                     3. Classement des communes par effort d&apos;investissement
                   </CardTitle>
                 </CardHeader>
@@ -1687,18 +1813,32 @@ export default function Home() {
                     travaux nécessaires pour protéger les populations et les infrastructures agricoles.
                   </p>
                   {(() => {
-                    const allCommunes = Object.entries(data.summary)
+                    let filteredProjects = data.projects;
+                    if (rapportProvince !== "all") filteredProjects = filteredProjects.filter(p => p.province === rapportProvince);
+                    if (rapportSecteur !== "all") filteredProjects = filteredProjects.filter(p => (SECTEUR_SHORT[p.secteur] || p.secteur) === rapportSecteur);
+                    if (rapportCommune !== "all") filteredProjects = filteredProjects.filter(p => p.commune === rapportCommune);
+                    const filteredTotalCost = filteredProjects.reduce((s, p) => s + (p.cout_total || 0), 0);
+                    const filteredSummary: Record<string, { nb_projets: number; cout_total: number; province: string }> = {};
+                    for (const p of filteredProjects) {
+                      if (p.commune) {
+                        if (!filteredSummary[p.commune]) filteredSummary[p.commune] = { nb_projets: 0, cout_total: 0, province: p.province };
+                        filteredSummary[p.commune].nb_projets++;
+                        filteredSummary[p.commune].cout_total += (p.cout_total || 0);
+                      }
+                    }
+                    const allCommunes = Object.entries(filteredSummary)
                       .map(([name, d]) => ({ name, ...d }))
                       .sort((a, b) => b.cout_total - a.cout_total);
-                    const top5 = allCommunes.slice(0, 5);
-                    const top5Cost = top5.reduce((s, d) => s + d.cout_total, 0);
-                    const top5Pct = data.totalCost > 0 ? (top5Cost / data.totalCost) * 100 : 0;
-                    const avgCost = data.totalProjects > 0 ? data.totalCost / data.totalProjects : 0;
+                    if (allCommunes.length === 0) return <p className="text-sm text-slate-400 italic">Aucun projet ne correspond aux filtres sélectionnés.</p>;
+                    const topN = allCommunes.slice(0, 5);
+                    const topCost = topN.reduce((s, d) => s + d.cout_total, 0);
+                    const topPct = filteredTotalCost > 0 ? (topCost / filteredTotalCost) * 100 : 0;
+                    const avgCost = filteredProjects.length > 0 ? filteredTotalCost / filteredProjects.length : 0;
                     return (
                       <>
                         <div className="space-y-2">
-                          {top5.map((d, idx) => {
-                            const pct = data.totalCost > 0 ? (d.cout_total / data.totalCost) * 100 : 0;
+                          {topN.map((d, idx) => {
+                            const pct = filteredTotalCost > 0 ? (d.cout_total / filteredTotalCost) * 100 : 0;
                             const commColor = communeColorMap[d.name] || "#6366f1";
                             const provColor = PROVINCE_COLORS[d.province] || "#6366f1";
                             return (
@@ -1717,7 +1857,7 @@ export default function Home() {
                                   </div>
                                 </div>
                                 <div className="text-right shrink-0">
-                                  <p className="text-sm font-black text-emerald-600">{(d.cout_total / 1e6).toFixed(2)} MDH</p>
+                                  <p className="text-sm font-black text-emerald-500">{(d.cout_total / 1e6).toFixed(2)} MDH</p>
                                   <p className="text-[10px] text-slate-400">{d.nb_projets} projets</p>
                                 </div>
                               </div>
@@ -1725,13 +1865,13 @@ export default function Home() {
                           })}
                         </div>
                         <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200/60 flex items-start gap-3">
-                          <Activity className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
+                          <Activity className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
                           <div>
-                            <p className="text-xs font-bold text-emerald-700 mb-1">Concentration des investissements</p>
-                            <p className="text-[11px] text-emerald-700 leading-relaxed">
-                              Les 5 communes les mieux dotées concentrent <strong>{top5Pct.toFixed(1)}%</strong> du budget total
-                              ({(top5Cost / 1e6).toFixed(1)} MDH sur {(data.totalCost / 1e6).toFixed(1)} MDH). Le coût moyen par projet
-                              à l&apos;échelle régionale s&apos;élève à <strong>{(avgCost / 1e6).toFixed(2)} MDH</strong>. Cette concentration
+                            <p className="text-xs font-bold text-emerald-600 mb-1">Concentration des investissements</p>
+                            <p className="text-[11px] text-emerald-600 leading-relaxed">
+                              Les {topN.length} communes les mieux dotées concentrent <strong>{topPct.toFixed(1)}%</strong> du budget filtré
+                              ({(topCost / 1e6).toFixed(1)} MDH sur {(filteredTotalCost / 1e6).toFixed(1)} MDH). Le coût moyen par projet
+                              s&apos;élève à <strong>{(avgCost / 1e6).toFixed(2)} MDH</strong>. Cette concentration
                               traduit la priorisation des zones les plus vulnérables, mais appelle une vigilance pour
                               maintenir un niveau d&apos;investissement minimal dans les communes moins dotées.
                             </p>
@@ -1745,9 +1885,9 @@ export default function Home() {
 
               {/* 4. Indicateurs de performance */}
               <Card className="overflow-hidden shadow-lg border-slate-200/60">
-                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-slate-800 to-slate-700">
+                <CardHeader className="py-3 px-5 border-b bg-gradient-to-r from-rose-400 to-pink-500">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2 text-white">
-                    <BarChart3 className="h-4 w-4 text-blue-400" />
+                    <BarChart3 className="h-4 w-4 text-rose-200" />
                     4. Indicateurs clés de performance (KPI)
                   </CardTitle>
                 </CardHeader>
@@ -1759,27 +1899,43 @@ export default function Home() {
                     stratégique du programme et l&apos;évaluation de son efficacité.
                   </p>
                   {(() => {
-                    const nbCommunes = Object.keys(data.summary).length;
-                    const nbSecteurs = Object.keys(data.bySecteur).length;
-                    const avgCostPerCommune = nbCommunes > 0 ? data.totalCost / nbCommunes : 0;
-                    const avgCostPerProject = data.totalProjects > 0 ? data.totalCost / data.totalProjects : 0;
-                    const maxCommuneCost = Math.max(...Object.values(data.summary).map(d => d.cout_total));
-                    const minCommuneCost = Math.min(...Object.values(data.summary).map(d => d.cout_total));
+                    let filteredProjects = data.projects;
+                    if (rapportProvince !== "all") filteredProjects = filteredProjects.filter(p => p.province === rapportProvince);
+                    if (rapportSecteur !== "all") filteredProjects = filteredProjects.filter(p => (SECTEUR_SHORT[p.secteur] || p.secteur) === rapportSecteur);
+                    if (rapportCommune !== "all") filteredProjects = filteredProjects.filter(p => p.commune === rapportCommune);
+                    const filteredTotalCost = filteredProjects.reduce((s, p) => s + (p.cout_total || 0), 0);
+                    const filteredCommunesSet = new Set(filteredProjects.map(p => p.commune).filter(Boolean));
+                    const filteredSecteursSet = new Set(filteredProjects.map(p => p.secteur).filter(Boolean));
+                    const nbCommunes = filteredCommunesSet.size;
+                    const nbSecteurs = filteredSecteursSet.size;
+                    const avgCostPerCommune = nbCommunes > 0 ? filteredTotalCost / nbCommunes : 0;
+                    const avgCostPerProject = filteredProjects.length > 0 ? filteredTotalCost / filteredProjects.length : 0;
+                    const communeCosts = Object.values(
+                      filteredProjects.reduce((acc, p) => {
+                        if (p.commune) {
+                          if (!acc[p.commune]) acc[p.commune] = 0;
+                          acc[p.commune] += (p.cout_total || 0);
+                        }
+                        return acc;
+                      }, {} as Record<string, number>)
+                    );
+                    const maxCommuneCost = communeCosts.length > 0 ? Math.max(...communeCosts) : 0;
+                    const minCommuneCost = communeCosts.length > 0 ? Math.min(...communeCosts) : 0;
                     const maxMinRatio = minCommuneCost > 0 ? maxCommuneCost / minCommuneCost : 0;
                     const kpis = [
-                      { label: "Coût moyen / commune", value: `${(avgCostPerCommune / 1e6).toFixed(2)} MDH`, color: "#3b82f6", icon: LandPlot },
-                      { label: "Coût moyen / projet", value: `${(avgCostPerProject / 1e6).toFixed(2)} MDH`, color: "#10b981", icon: Hash },
-                      { label: "Projets / commune", value: (data.totalProjects / nbCommunes).toFixed(1), color: "#3b82f6", icon: MapPin },
-                      { label: "Ratio max/min (commune)", value: `×${maxMinRatio.toFixed(1)}`, color: "#ef4444", icon: AlertTriangle },
-                      { label: "Couverture sectorielle", value: `${nbSecteurs} secteurs`, color: "#8b5cf6", icon: Layers },
-                      { label: "Densité investissement", value: `${(data.totalCost / 1e6 / nbCommunes).toFixed(2)} MDH/commune`, color: "#06b6d4", icon: Activity },
+                      { label: "Coût moyen / commune", value: `${(avgCostPerCommune / 1e6).toFixed(2)} MDH`, color: "#60a5fa", icon: LandPlot },
+                      { label: "Coût moyen / projet", value: `${(avgCostPerProject / 1e6).toFixed(2)} MDH`, color: "#34d399", icon: Hash },
+                      { label: "Projets / commune", value: nbCommunes > 0 ? (filteredProjects.length / nbCommunes).toFixed(1) : "0", color: "#818cf8", icon: MapPin },
+                      { label: "Ratio max/min (commune)", value: `×${maxMinRatio.toFixed(1)}`, color: "#f87171", icon: AlertTriangle },
+                      { label: "Couverture sectorielle", value: `${nbSecteurs} secteurs`, color: "#a78bfa", icon: Layers },
+                      { label: "Densité investissement", value: nbCommunes > 0 ? `${(filteredTotalCost / 1e6 / nbCommunes).toFixed(2)} MDH/comm.` : "—", color: "#22d3ee", icon: Activity },
                     ];
                     return (
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {kpis.map((kpi) => (
                           <div key={kpi.label} className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex items-center gap-2 mb-2">
-                              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: kpi.color + "15" }}>
+                              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: kpi.color + "18" }}>
                                 <kpi.icon className="h-4 w-4" style={{ color: kpi.color }} />
                               </div>
                               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-tight">{kpi.label}</span>
@@ -1803,7 +1959,7 @@ export default function Home() {
             <div className="space-y-6">
               {/* Suivi Header */}
               <Card className="overflow-hidden shadow-xl border-indigo-200/60">
-                <CardHeader className="py-5 px-6 bg-gradient-to-r from-indigo-700 to-violet-700">
+                <CardHeader className="py-5 px-6 bg-gradient-to-r from-indigo-400 to-violet-500">
                   <CardTitle className="text-lg font-extrabold text-white flex items-center gap-3">
                     <Gauge className="h-6 w-6 text-indigo-300" />
                     Suivi d&apos;Avancement Physique et Financier
